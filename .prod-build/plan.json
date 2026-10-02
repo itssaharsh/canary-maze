@@ -483,8 +483,10 @@
         "observe: fresh review recorded, secrets scan clean, demo run three times"
       ],
       "rollback": "n/a",
-      "status": "todo",
-      "notes": ""
+      "status": "doing",
+      "notes": "",
+      "base": "35d0ed2",
+      "started_after": 43
     }
   ]
 }
