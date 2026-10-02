@@ -24,8 +24,14 @@ def client_ip(req) -> str:
     return req.remote_addr or "0.0.0.0"
 
 
-def create_app(db_path: str | None = None) -> Flask:
+def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
+    """`origin` marks every row this instance writes. Production serves real
+    traffic and leaves it "organic"; the seeded replay constructs the app with
+    origin="seeded" so its rows are labelled at the moment they are written,
+    rather than relabelled afterwards - the ledger is append-only, and a record
+    you can retroactively relabel is not a record."""
     app = Flask(__name__)
+    app.config["ORIGIN"] = origin
     app.config["LEDGER_PATH"] = db_path or os.environ.get("CANARY_DB", "canary.sqlite3")
 
     def ledger() -> Ledger:
@@ -56,7 +62,7 @@ def create_app(db_path: str | None = None) -> Flask:
         body = maze.page(slug, mint.canary_path(secret, slug))
         rid = ledger().record_request(method="GET", path=path, status=200, ip=ip,
                                       ua=headers.get("User-Agent", ""), ctx_id=ctx,
-                                      size=len(body))
+                                      origin=app.config["ORIGIN"], size=len(body))
         if ledger().mint_for_secret(secret) is None:
             ledger().record_mint(secret=secret, ctx_id=ctx, path=path,
                                  salt_epoch=epoch, request_id=rid)
@@ -78,9 +84,9 @@ def create_app(db_path: str | None = None) -> Flask:
         rid = ledger().record_request(method="GET", path=f"/c/{secret}/{slug}",
                                       status=200, ip=ip,
                                       ua=headers.get("User-Agent", ""), ctx_id=ctx,
-                                      size=len(body))
+                                      origin=app.config["ORIGIN"], size=len(body))
         detect.on_canary_request(ledger(), secret=secret, seen_ctx_id=ctx,
-                                 seen_request_id=rid, origin="organic")
+                                 seen_request_id=rid, origin=app.config["ORIGIN"])
         return Response(body, mimetype="text/html")
 
     # ---- what the viewer reads -------------------------------------------
