@@ -20,33 +20,33 @@
     "issued": {
      "label": "A",
      "ctx_id": "c0e7aead548d",
-     "at": "21:02:49",
+     "at": "21:03:31",
      "ua": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)",
      "net": "20.171.207.0/24",
-     "raw": "20.171.207.0/24 - - [2026-10-02T21:02:49Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\""
+     "raw": "20.171.207.0/24 - - [2026-10-02T21:03:31Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\""
     },
     "requested": {
      "label": "B",
      "ctx_id": "58a7736b46e0",
-     "at": "21:02:49",
+     "at": "21:03:31",
      "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
      "net": "104.28.52.0/24",
-     "raw": "104.28.52.0/24 - - [2026-10-02T21:02:49Z] \"GET /c/369bf1645c560f02/q3-supplier-review HTTP/1.1\" 200 606 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\""
+     "raw": "104.28.52.0/24 - - [2026-10-02T21:03:31Z] \"GET /c/369bf1645c560f02/q3-supplier-review HTTP/1.1\" 200 606 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\""
     }
    }
   ],
   "mint_sample": {
    "secret": "369bf1645c560f02",
-   "at": "21:02:49",
+   "at": "21:03:31",
    "ua": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)",
    "net": "20.171.207.0/24",
-   "raw": "20.171.207.0/24 - - [2026-10-02T21:02:49Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\""
+   "raw": "20.171.207.0/24 - - [2026-10-02T21:03:31Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\""
   }
  },
  "verification": {
   "ok": true,
   "rows": 4,
-  "root_short": "20db\u20263f",
+  "root_short": "2eef\u202651",
   "problems": []
  }
 }
