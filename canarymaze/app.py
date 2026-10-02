@@ -122,5 +122,28 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
     return app
 
 
+def require_production_salt() -> None:
+    """Refuse to serve publicly on the committed development salt.
+
+    `mint.load_salt()` falls back to a fixed development salt so tests and
+    `make demo` run on a clean checkout with no setup. That fallback is in a
+    PUBLIC repository. Serving with it would mean anyone who read the repo could
+    forge a secret, which destroys the one thing the HMAC genuinely bounds - token
+    provenance - and with it every claim this project makes. The library stays
+    permissive so the offline demo works; the server is strict.
+    """
+    if os.environ.get("CANARY_SALT"):
+        return
+    raise SystemExit(
+        "refusing to start: CANARY_SALT is not set, so minting would use the "
+        "development salt that is committed in this repository, and any reader "
+        "could forge a secret.\n"
+        "  generate one:  python3 -c \"import secrets; print(secrets.token_hex(32))\"\n"
+        "  then:          export CANARY_SALT=<that value>\n"
+        "Set CANARY_ALLOW_DEV_SALT=1 only for local, non-public runs.")
+
+
 if __name__ == "__main__":  # pragma: no cover
+    if not os.environ.get("CANARY_ALLOW_DEV_SALT"):
+        require_production_salt()
     create_app().run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))

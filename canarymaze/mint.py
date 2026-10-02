@@ -41,7 +41,11 @@ def load_salt(epoch: str | None = None) -> str:
     environment. Falls back to a fixed development salt so tests and `make demo`
     run on a clean checkout with no setup, which is also why the fallback is
     obviously named rather than random: a random fallback would make the demo
-    non-reproducible."""
+    non-reproducible.
+
+    THE FALLBACK IS COMMITTED AND PUBLIC. Serving on it would let any reader of
+    this repository forge a secret, so `app.require_production_salt()` refuses to
+    start the server without CANARY_SALT. Never remove that guard."""
     return os.environ.get("CANARY_SALT") or _DEV_SALT
 
 

@@ -93,3 +93,19 @@ def test_sitemap_lists_every_maze_page(client):
     body = client.get("/sitemap.xml").get_data(as_text=True)
     for slug in maze.slugs():
         assert f"/m/{slug}" in body
+
+
+def test_the_server_refuses_to_start_on_the_committed_development_salt(monkeypatch):
+    """The dev salt is public. Serving on it would make every secret forgeable."""
+    import pytest as _pytest
+
+    from canarymaze.app import require_production_salt
+
+    monkeypatch.delenv("CANARY_SALT", raising=False)
+    with _pytest.raises(SystemExit) as e:
+        require_production_salt()
+    assert "CANARY_SALT is not set" in str(e.value)
+    assert "forge a secret" in str(e.value)
+
+    monkeypatch.setenv("CANARY_SALT", "a" * 64)
+    require_production_salt()        # now it is allowed to serve
