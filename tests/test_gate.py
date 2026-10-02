@@ -45,7 +45,7 @@ def test_a_browser_missing_only_accept_language_is_still_a_human():
     assert is_automated(hdr(Accept_Language=None)) is False
 
 
-@pytest.mark.parametrize("ua", [
+CRAWLER_UAS = [
     "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)",
     "Mozilla/5.0 (compatible; ClaudeBot/1.0; +claudebot@anthropic.com)",
     "Mozilla/5.0 (compatible; PerplexityBot/1.0; +https://perplexity.ai/perplexitybot)",
@@ -55,10 +55,36 @@ def test_a_browser_missing_only_accept_language_is_still_a_human():
     "Mozilla/5.0 (compatible; Bytespider; spider-feedback@bytedance.com)",
     "meta-externalagent/1.1",
     "CCBot/2.0 (https://commoncrawl.org/faq/)",
-])
-def test_declared_crawlers_are_automated_even_with_browser_headers(ua):
-    # a declared crawler that also sends browser headers is still a crawler
-    assert is_automated(hdr(User_Agent=ua)) is True
+]
+
+
+@pytest.mark.parametrize("ua", CRAWLER_UAS)
+def test_declared_crawlers_without_browser_shape_are_automated(ua):
+    """The normal case: a crawler announces itself and sends no browser headers."""
+    assert is_automated({"User-Agent": ua, "Accept": "text/html",
+                         "Accept-Encoding": "gzip"}) is True
+
+
+@pytest.mark.parametrize("ua", CRAWLER_UAS)
+def test_a_browser_spoofing_a_crawler_user_agent_is_still_human(ua):
+    """SHAPE BEATS DECLARATION.
+
+    This test previously asserted the opposite, and that assertion is what let the
+    bug ship: a human running Chrome DevTools' built-in Googlebot preset, or any
+    user-agent switcher, was minted for and written to the ledger. A user-agent is
+    a string the client chooses; the header shape is not. The cost is that a real
+    crawler sending a full browser header set is missed, which is the direction the
+    module docstring promises to err in.
+    """
+    assert is_automated(hdr(User_Agent=ua)) is False
+
+
+def test_the_shape_threshold_needs_more_than_one_signal():
+    """One stray browser-ish header must not launder a crawler into looking human."""
+    from canarymaze.gate import browser_shape_score
+    one_signal = {"User-Agent": CRAWLER_UAS[0], "Accept-Language": "en-GB"}
+    assert browser_shape_score(one_signal) == 1
+    assert is_automated(one_signal) is True
 
 
 def test_a_bare_client_with_no_browser_headers_is_automated():

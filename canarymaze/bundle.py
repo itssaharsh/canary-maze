@@ -30,41 +30,89 @@ from typing import Any
 #: The only tables that may enter a bundle.
 PROOF_TABLES = ("request", "mint", "sighting")
 
-FORMAT = "canary-maze-bundle/1"
+FORMAT = "canary-maze-bundle/3"
+
+
+def _norm(v: Any) -> str:
+    """Normalise one value to a tagged string.
+
+    Every value becomes a string before serialization so that a Python verifier and
+    a JavaScript one produce identical bytes. The specific reason: json.dumps(275.0)
+    emits `275.0` while JSON.stringify(275.0) emits `275`, so a float anywhere in a
+    row (delta_s) would make the two implementations disagree on every hash. Fixing
+    the float format at six decimals makes Python's format(v, ".6f") and JS's
+    v.toFixed(6) agree exactly.
+    """
+    if v is None:
+        return "n:"
+    if isinstance(v, bool):
+        return "b:1" if v else "b:0"
+    if isinstance(v, int):
+        return "i:" + str(v)
+    if isinstance(v, float):
+        return "f:" + format(v, ".6f")
+    if isinstance(v, (dict, list)):
+        return "j:" + json.dumps(v, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return "s:" + str(v)
 
 
 def canonical(row: dict[str, Any]) -> bytes:
     """A byte-for-byte reproducible serialization: sorted keys, no whitespace,
-    escaped non-ASCII. Two readers must hash the same row to the same leaf."""
-    return json.dumps(row, sort_keys=True, separators=(",", ":"),
+    escaped non-ASCII, every value a tagged string. Two readers - in two languages -
+    must hash the same row to the same leaf. See `viewer/verify.js` for the
+    JavaScript twin; `tests/test_bundle.py` pins them together."""
+    flat = {str(k): _norm(v) for k, v in row.items()}
+    return json.dumps(flat, sort_keys=True, separators=(",", ":"),
                       ensure_ascii=True).encode("utf-8")
 
 
+#: Domain separation tags. Without these, a leaf hash and an internal node hash are
+#: drawn from the same space, which is the root of CVE-2012-2459: an attacker
+#: duplicates the trailing leaf of an odd level and the tree re-roots to the same
+#: value, so a published root does not pin the number of rows. A review confirmed
+#: collisions here at n=3->4, 5->6, 6->8 and 7->8 before this was added.
+LEAF_TAG = b"\x00"
+NODE_TAG = b"\x01"
+
+
 def leaf(row: dict[str, Any]) -> str:
-    return sha256(canonical(row)).hexdigest()
+    return sha256(LEAF_TAG + canonical(row)).hexdigest()
 
 
 def merkle_root(leaves: list[str]) -> str:
-    """Binary Merkle root. An empty ledger has a defined root rather than an
-    error, so an honest 'nothing observed yet' bundle still verifies."""
+    """Binary Merkle root, domain-separated and length-bound.
+
+    An empty ledger has a defined root rather than an error, so an honest
+    'nothing observed yet' bundle still verifies.
+    """
     if not leaves:
-        return sha256(b"canary-maze/empty").hexdigest()
+        return sha256(b"canary-maze/empty/v2").hexdigest()
     level = [bytes.fromhex(h) for h in leaves]
     while len(level) > 1:
         if len(level) % 2:
             level.append(level[-1])
-        level = [sha256(level[i] + level[i + 1]).digest()
+        level = [sha256(NODE_TAG + level[i] + level[i + 1]).digest()
                  for i in range(0, len(level), 2)]
-    return level[0].hex()
+    # Binding the leaf COUNT into the root closes the duplication attack even if
+    # the tag separation above were ever weakened: n=3 and n=4 cannot share a root.
+    return sha256(NODE_TAG + str(len(leaves)).encode() + b"|" + level[0]).hexdigest()
+
+
+def header_leaf(fmt: str, note: str, counts: dict[str, Any]) -> str:
+    """`counts` and `note` are the two fields a reader actually reads, and they
+    were outside the hash: a review set counts.sightings_organic to 4127 on a
+    shipped bundle and verification still returned clean. They are covered now."""
+    return leaf({"__header__": {"format": fmt, "note": note, "counts": counts}})
 
 
 def build(ledger, *, note: str = "") -> dict[str, Any]:
     rows: dict[str, list[dict[str, Any]]] = {t: ledger.rows(t) for t in PROOF_TABLES}
-    leaves = [leaf(r) for t in PROOF_TABLES for r in rows[t]]
+    counts = ledger.counts()
+    leaves = [header_leaf(FORMAT, note, counts)] + [leaf(r) for t in PROOF_TABLES for r in rows[t]]
     return {
         "format": FORMAT,
         "note": note,
-        "counts": ledger.counts(),
+        "counts": counts,
         "rows": rows,
         "leaves": leaves,
         "root": merkle_root(leaves),
@@ -94,11 +142,18 @@ def verify(bundle: dict[str, Any]) -> tuple[bool, list[str]]:
     stored = list(bundle.get("leaves") or [])
     flat = [(t, r) for t in PROOF_TABLES for r in rows.get(t, [])]
 
-    if len(flat) != len(stored):
-        problems.append(f"bundle lists {len(stored)} leaves for {len(flat)} rows")
+    if len(stored) != len(flat) + 1:
+        problems.append(f"bundle lists {len(stored)} leaves for {len(flat)} rows "
+                        f"plus one header leaf")
         return False, problems
 
-    for i, ((table, row), want) in enumerate(zip(flat, stored)):
+    want_header = header_leaf(bundle.get("format"), bundle.get("note", ""),
+                              bundle.get("counts") or {})
+    if stored[0] != want_header:
+        problems.append("the header (format, note, counts) does not match its leaf: "
+                        "one of those fields was edited after the bundle was built")
+
+    for i, ((table, row), want) in enumerate(zip(flat, stored[1:])):
         got = leaf(row)
         if got != want:
             rid = row.get("id", "?")
@@ -112,14 +167,30 @@ def verify(bundle: dict[str, Any]) -> tuple[bool, list[str]]:
             f"the root does not match the leaves: expected {bundle.get('root', '')[:12]}…, "
             f"recomputed {root[:12]}…")
 
-    # A sighting that points at a context equal to its own mint context would be
-    # a claim the detector should never have made. Check it here too, because the
-    # bundle is what a third party reads and it should be self-consistent.
+    # Self-consistency. The bundle is what a third party reads, so it has to hold
+    # together on its own terms: a reviewer produced a bundle asserting a secret
+    # moved A->B with every mint row deleted, and it verified clean.
+    minted = {m.get("secret") for m in rows.get("mint", [])}
+    mint_ts = {m.get("secret"): m.get("ts") for m in rows.get("mint", [])}
+    req_ids = {r.get("id") for r in rows.get("request", [])}
+
     for s in rows.get("sighting", []):
+        sid = s.get("id")
         if s.get("mint_ctx_id") == s.get("seen_ctx_id"):
-            problems.append(
-                f"sighting id={s.get('id')} names one context on both sides; "
-                "that is not a sighting")
+            problems.append(f"sighting id={sid} names one context on both sides; "
+                            "that is not a sighting")
+        if s.get("secret") not in minted:
+            problems.append(f"sighting id={sid} cites secret "
+                            f"{str(s.get('secret'))[:8]}… with no mint row in this "
+                            "bundle; nothing shows it was ever issued")
+        for key in ("mint_request_id", "seen_request_id"):
+            if s.get(key) not in req_ids:
+                problems.append(f"sighting id={sid} cites {key}={s.get(key)} "
+                                "with no matching request row in this bundle")
+        mt = mint_ts.get(s.get("secret"))
+        if mt and s.get("ts") and s["ts"] < mt:
+            problems.append(f"sighting id={sid} is dated {s['ts']}, before its mint "
+                            f"at {mt}; a secret cannot be fetched before it exists")
 
     return (not problems), problems
 

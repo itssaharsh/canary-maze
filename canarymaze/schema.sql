@@ -64,6 +64,15 @@ CREATE TABLE IF NOT EXISTS laundered (
     ts             TEXT NOT NULL
 );
 
+-- A bare count of requests the gate refused. NO per-request data: no address, no
+-- user-agent, no timestamp. Recording any of those would rebuild the visitor log
+-- the gate exists to prevent. A single row that only goes up, so the claim
+-- "humans are excluded" is falsifiable instead of vacuous.
+CREATE TABLE IF NOT EXISTS gate_rejection (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    n  INTEGER NOT NULL DEFAULT 0
+);
+
 -- Append-only, enforced.
 CREATE TRIGGER IF NOT EXISTS request_no_update BEFORE UPDATE ON request
 BEGIN SELECT RAISE(ABORT, 'request is append-only'); END;

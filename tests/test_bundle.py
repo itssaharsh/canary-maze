@@ -1,6 +1,7 @@
 """The bundle is the whole wedge: a reader who does not trust the operator must be
 able to check it. These tests attack that property."""
 import json
+from pathlib import Path
 
 import pytest
 
@@ -72,10 +73,11 @@ def test_a_sighting_naming_one_context_twice_is_rejected(populated):
     b = bundle.build(populated)
     s = b["rows"]["sighting"][0]
     s["seen_ctx_id"] = s["mint_ctx_id"]
-    b["leaves"] = [bundle.leaf(r) for t in bundle.PROOF_TABLES for r in b["rows"][t]]
+    b["leaves"] = [bundle.header_leaf(b["format"], b["note"], b["counts"])] + \
+                  [bundle.leaf(r) for t in bundle.PROOF_TABLES for r in b["rows"][t]]
     b["root"] = bundle.merkle_root(b["leaves"])
     ok, problems = bundle.verify(b)
-    # leaves and root were recomputed, so only the semantic check can catch this
+    # leaves and root were recomputed honestly, so only the semantic check catches it
     assert not ok
     assert any("names one context on both sides" in p for p in problems), problems
 
@@ -109,3 +111,101 @@ def test_merkle_root_changes_when_any_leaf_changes():
     a = bundle.merkle_root(["aa" * 32, "bb" * 32, "cc" * 32])
     b = bundle.merkle_root(["aa" * 32, "bb" * 32, "cd" * 32])
     assert a != b
+
+
+# --- regression tests for the three tamperings a fresh review got past verify ---
+
+def test_editing_counts_is_caught(populated):
+    """counts and note were outside the hash: setting sightings_organic to 4127 on
+    a shipped bundle returned clean. They are the two fields a reader reads."""
+    b = bundle.build(populated)
+    b["counts"]["sightings_organic"] = 4127
+    ok, problems = bundle.verify(b)
+    assert not ok
+    assert any("header" in p for p in problems), problems
+
+
+def test_editing_the_note_is_caught(populated):
+    b = bundle.build(populated)
+    b["note"] = "independently audited"
+    ok, problems = bundle.verify(b)
+    assert not ok
+    assert any("header" in p for p in problems), problems
+
+
+def test_duplicating_the_trailing_row_cannot_preserve_the_root(populated):
+    """CVE-2012-2459. Appending a copy of the last row and its leaf used to re-root
+    to a byte-identical value, so a published root did not pin the row count."""
+    b = bundle.build(populated)
+    before = b["root"]
+    b["rows"]["sighting"].append(dict(b["rows"]["sighting"][-1]))
+    b["leaves"].append(b["leaves"][-1])
+    assert bundle.merkle_root(b["leaves"]) != before, \
+        "a duplicated trailing leaf must change the root"
+    ok, problems = bundle.verify(b)
+    assert not ok, problems
+
+
+def test_merkle_root_binds_the_leaf_count():
+    three = ["aa" * 32, "bb" * 32, "cc" * 32]
+    four = three + [three[-1]]
+    assert bundle.merkle_root(three) != bundle.merkle_root(four)
+
+
+def test_leaf_and_node_hashes_live_in_different_domains():
+    """Without separation a leaf hash can masquerade as an internal node."""
+    assert bundle.LEAF_TAG != bundle.NODE_TAG
+
+
+def test_a_sighting_with_no_mint_row_is_caught(populated):
+    """A bundle asserting a secret moved A to B, with nothing showing it was ever
+    issued to A, used to verify clean."""
+    b = bundle.build(populated)
+    b["rows"]["mint"] = []
+    b["leaves"] = [bundle.header_leaf(b["format"], b["note"], b["counts"])] + \
+                  [bundle.leaf(r) for t in bundle.PROOF_TABLES for r in b["rows"][t]]
+    b["root"] = bundle.merkle_root(b["leaves"])
+    ok, problems = bundle.verify(b)
+    assert not ok
+    assert any("no mint row" in p for p in problems), problems
+
+
+def test_a_sighting_dated_before_its_mint_is_caught(populated):
+    b = bundle.build(populated)
+    b["rows"]["sighting"][0]["ts"] = "2020-01-01T00:00:00Z"
+    b["leaves"] = [bundle.header_leaf(b["format"], b["note"], b["counts"])] + \
+                  [bundle.leaf(r) for t in bundle.PROOF_TABLES for r in b["rows"][t]]
+    b["root"] = bundle.merkle_root(b["leaves"])
+    ok, problems = bundle.verify(b)
+    assert not ok
+    assert any("before its mint" in p for p in problems), problems
+
+
+def test_the_canonical_form_is_portable_between_python_and_javascript():
+    """bundle.py and viewer/verify.js must produce identical bytes, or the page's
+    verification fails on a valid bundle. The specific hazard: json.dumps(275.0)
+    is '275.0' in Python and JSON.stringify(275.0) is '275' in JavaScript, so
+    every value is normalised to a tagged string first."""
+    from canarymaze.bundle import _norm, canonical
+    assert _norm(275.0) == "f:275.000000"      # JS: (275.0).toFixed(6)
+    assert _norm(0.0) == "f:0.000000"
+    assert _norm(3) == "i:3"
+    assert _norm(None) == "n:"
+    assert _norm(True) == "b:1"
+    assert _norm("x") == "s:x"
+    # keys sorted, no whitespace, every value a tagged string
+    assert canonical({"b": 2, "a": 1.5}) == b'{"a":"f:1.500000","b":"i:2"}'
+    # non-ASCII escaped, as Python's ensure_ascii=True and the JS escape both do
+    assert canonical({"k": "café"}) == b'{"k":"s:caf\\u00e9"}'
+
+
+def test_the_javascript_verifier_mirrors_every_python_check():
+    """If a check exists in Python and not in JS, the page would call a tampered
+    bundle clean. Pin the list rather than trusting it stays in sync."""
+    js = (Path(__file__).resolve().parents[1] / "viewer" / "verify.js").read_text(encoding="utf-8")
+    for marker in ("does not match its leaf", "the root does not match the leaves",
+                   "names one context on both sides", "no mint row in this bundle",
+                   "with no matching request row", "before its mint",
+                   "header (format, note, counts)", "plus one header leaf"):
+        assert marker in js, f"viewer/verify.js is missing the {marker!r} check"
+    assert "crypto.subtle.digest" in js, "the page must actually hash, not read a verdict"

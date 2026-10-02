@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import sqlite3
 from pathlib import Path
 
 from flask import Flask, Response, jsonify, request, send_from_directory
@@ -54,18 +55,31 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
         path = f"/m/{slug}"
 
         if not automated:
-            # A human. No secret, no ledger row, no record that they were here.
-            # The page still renders identically, so this is not cloaking.
+            # A human. No secret, no ledger row, no record that they were here -
+            # only a bare counter, so the exclusion is falsifiable without storing
+            # anything about them. The page renders identically, so this is not
+            # cloaking.
+            ledger().note_gate_rejection()
             return Response(maze.page(slug, f"/m/{slug}"), mimetype="text/html")
 
         secret = mint.secret_for(path, ctx, epoch=epoch)
         body = maze.page(slug, mint.canary_path(secret, slug))
-        rid = ledger().record_request(method="GET", path=path, status=200, ip=ip,
-                                      ua=headers.get("User-Agent", ""), ctx_id=ctx,
-                                      origin=app.config["ORIGIN"], size=len(body))
-        if ledger().mint_for_secret(secret) is None:
-            ledger().record_mint(secret=secret, ctx_id=ctx, path=path,
-                                 salt_epoch=epoch, request_id=rid)
+        # ARCHITECTURE.md and the contract promise: on a ledger failure, serve the
+        # page anyway and never block a crawler. That promise had no implementation
+        # until a review looked for it. A blocked crawler is a lost sighting, which
+        # is strictly worse than a missing row.
+        try:
+            rid = ledger().record_request(method="GET", path=path, status=200, ip=ip,
+                                          ua=headers.get("User-Agent", ""), ctx_id=ctx,
+                                          origin=app.config["ORIGIN"], size=len(body))
+            if ledger().mint_for_secret(secret) is None:
+                try:
+                    ledger().record_mint(secret=secret, ctx_id=ctx, path=path,
+                                         salt_epoch=epoch, request_id=rid)
+                except sqlite3.IntegrityError:
+                    pass          # a concurrent request minted it first; fine
+        except sqlite3.Error:
+            app.logger.warning("ledger unavailable; served without minting", exc_info=True)
         return Response(body, mimetype="text/html")
 
     # ---- the canary: ALWAYS 200, for every context ------------------------
@@ -78,15 +92,22 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
         body = maze.full_text(slug if slug in maze.slugs() else maze.slugs()[0])
 
         if not is_automated(headers):
+            ledger().note_gate_rejection()
             return Response(body, mimetype="text/html")
 
         ctx = derive(headers, ip)
-        rid = ledger().record_request(method="GET", path=f"/c/{secret}/{slug}",
-                                      status=200, ip=ip,
-                                      ua=headers.get("User-Agent", ""), ctx_id=ctx,
-                                      origin=app.config["ORIGIN"], size=len(body))
-        detect.on_canary_request(ledger(), secret=secret, seen_ctx_id=ctx,
-                                 seen_request_id=rid, origin=app.config["ORIGIN"])
+        try:
+            rid = ledger().record_request(method="GET", path=f"/c/{secret}/{slug}",
+                                          status=200, ip=ip,
+                                          ua=headers.get("User-Agent", ""), ctx_id=ctx,
+                                          origin=app.config["ORIGIN"], size=len(body))
+            detect.on_canary_request(ledger(), secret=secret, seen_ctx_id=ctx,
+                                     seen_request_id=rid, origin=app.config["ORIGIN"])
+        except sqlite3.Error:
+            # Losing a sighting here is the worst failure in the product, so it is
+            # logged loudly rather than swallowed silently.
+            app.logger.error("LEDGER FAILURE on the canary route; a sighting may "
+                             "have been lost", exc_info=True)
         return Response(body, mimetype="text/html")
 
     # ---- what the viewer reads -------------------------------------------

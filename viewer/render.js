@@ -157,33 +157,39 @@
     }
   }
 
-  /* Verification runs here, in the page, against the bundle the page was built
-   * from. It contacts nothing. */
+  /* Verification runs HERE, in the page, over the bundle the page was shipped.
+   * It recomputes every hash with crypto.subtle and contacts nothing. */
   function wireVerify() {
     var btn = $("verify-btn"), out = $("verify-result");
     if (!btn) return;
-    btn.addEventListener("click", function () {
-      var v = window.CANARY_VERIFY || null;
-      if (!v) {
+    btn.addEventListener("click", async function () {
+      btn.disabled = true;
+      var label = btn.textContent;
+      btn.textContent = "Recomputing…";
+      out.hidden = true;
+      try {
+        var r = await window.CanaryVerify.verifyBundle(window.CANARY_BUNDLE);
+        out.className = "result " + (r.ok ? "ok" : "bad");
+        if (r.ok) {
+          out.innerHTML = '<span class="headline">Verified. The server was not contacted.</span>' +
+            esc(r.rows) + " hashes recomputed in this page with crypto.subtle · root " +
+            esc(String(r.root).slice(0, 4)) + "\u2026" + esc(String(r.root).slice(-2)) +
+            " · matches the root shipped with the bundle";
+          $("status").textContent = r.rows + " hashes recomputed in the page. The root matches. The server was not contacted.";
+        } else {
+          out.innerHTML = '<span class="headline">Verification failed.</span>' +
+            "<ul>" + r.problems.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") +
+            "</ul>The records above are unchanged.";
+          $("status").textContent = "Verification failed. " + r.problems.length + " problem(s).";
+        }
+      } catch (e) {
         out.className = "result bad";
-        out.innerHTML = '<span class="headline">No bundle was built with this page.</span>' +
-          "Run <code>make demo</code> to produce one.";
-        return;
-      }
-      out.className = "result " + (v.ok ? "ok" : "bad");
-      if (v.ok) {
-        out.innerHTML = '<span class="headline">Verified. The server was not contacted.</span>' +
-          esc(v.rows) + " rows checked · root " + esc(v.root_short) +
-          " · recomputed in this page from the bundle file alone";
-      } else {
-        out.innerHTML = '<span class="headline">Verification failed.</span>' +
-          "<ul>" + v.problems.map(function (p) { return "<li>" + esc(p) + "</li>"; }).join("") +
-          "</ul>The records above are unchanged.";
+        out.innerHTML = '<span class="headline">Could not verify.</span>' + esc(String(e));
+        $("status").textContent = "Could not verify: " + String(e);
       }
       out.hidden = false;
-      $("status").textContent = v.ok
-        ? v.rows + " rows checked. The root matches. The server was not contacted."
-        : "Verification failed. " + v.problems.length + " problem(s).";
+      btn.disabled = false;
+      btn.textContent = label;
     });
   }
 

@@ -31,7 +31,13 @@ def test_awaiting_state_never_names_a_second_context(ledger):
     # that says no second context has been seen
     assert p["sightings"] == []
     assert "No other context has requested" in p["claim"]
-    assert p["mint_sample"] is not None and p["mint_sample"]["secret"] == "s" * 16
+    # the live secret must NOT be published: /export.json is public, and leaking it
+    # let any reader fetch the canary and manufacture an organic sighting
+    ms = p["mint_sample"]
+    assert ms is not None
+    assert "secret" not in ms, "the public export must never carry the live secret"
+    assert ms["secret_prefix"] == "ssss\u2026"
+    assert "s" * 16 not in ms["raw"], "the raw line must have the secret redacted too"
 
 
 def test_sighting_state_claims_exactly_what_happened(ledger):

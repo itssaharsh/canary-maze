@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import ipaddress
 import sqlite3
+import threading
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -67,10 +68,18 @@ class RequestRow:
 class Ledger:
     def __init__(self, path: str | Path = ":memory:") -> None:
         self.path = str(path)
-        self.db = sqlite3.connect(self.path)
+        # check_same_thread=False because one Ledger is shared across Flask's
+        # worker threads. Without it, every concurrent request after the first
+        # raised ProgrammingError and returned 500 - which on the canary route
+        # loses the SIGHTING itself, and crawler fleets fetch in parallel, so that
+        # was the normal case rather than an edge case. The lock below is what
+        # actually makes the sharing safe; the flag only stops sqlite3 refusing.
+        self.db = sqlite3.connect(self.path, check_same_thread=False, timeout=5.0)
         self.db.row_factory = sqlite3.Row
-        self.db.executescript(SCHEMA.read_text(encoding="utf-8"))
-        self.db.commit()
+        self._lock = threading.Lock()
+        with self._lock:
+            self.db.executescript(SCHEMA.read_text(encoding="utf-8"))
+            self.db.commit()
 
     # -- writes ----------------------------------------------------------------
     def record_request(self, *, method: str, path: str, status: int, ip: str,
@@ -82,63 +91,96 @@ class Ledger:
         ts = ts or now_iso()
         ip_net = truncate_ip(ip)
         raw = combined_log_line(ip_net, ts, method, path, status, size, ua)
-        cur = self.db.execute(
-            "INSERT INTO request (ts, method, path, status, ip_net, ua, ctx_id,"
-            " raw_line, origin, is_automated) VALUES (?,?,?,?,?,?,?,?,?,?)",
-            (ts, method, path, status, ip_net, ua, ctx_id, raw, origin,
-             1 if is_automated else 0))
-        self.db.commit()
-        return int(cur.lastrowid)
+        with self._lock:
+            cur = self.db.execute(
+                "INSERT INTO request (ts, method, path, status, ip_net, ua, ctx_id,"
+                " raw_line, origin, is_automated) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                (ts, method, path, status, ip_net, ua, ctx_id, raw, origin,
+                 1 if is_automated else 0))
+            self.db.commit()
+            return int(cur.lastrowid)
 
     def record_mint(self, *, secret: str, ctx_id: str, path: str,
                     salt_epoch: str, request_id: int, ts: str | None = None) -> int:
-        cur = self.db.execute(
-            "INSERT INTO mint (secret, ctx_id, path, salt_epoch, ts, request_id)"
-            " VALUES (?,?,?,?,?,?)",
-            (secret, ctx_id, path, salt_epoch, ts or now_iso(), request_id))
-        self.db.commit()
-        return int(cur.lastrowid)
+        with self._lock:
+            cur = self.db.execute(
+                "INSERT INTO mint (secret, ctx_id, path, salt_epoch, ts, request_id)"
+                " VALUES (?,?,?,?,?,?)",
+                (secret, ctx_id, path, salt_epoch, ts or now_iso(), request_id))
+            self.db.commit()
+            return int(cur.lastrowid)
 
     def record_sighting(self, *, secret: str, mint_ctx_id: str, seen_ctx_id: str,
                         mint_request_id: int, seen_request_id: int, delta_s: float,
                         origin: str, ts: str | None = None) -> int:
-        cur = self.db.execute(
-            "INSERT INTO sighting (secret, mint_ctx_id, seen_ctx_id, mint_request_id,"
-            " seen_request_id, delta_s, origin, ts) VALUES (?,?,?,?,?,?,?,?)",
-            (secret, mint_ctx_id, seen_ctx_id, mint_request_id, seen_request_id,
-             float(delta_s), origin, ts or now_iso()))
-        self.db.commit()
-        return int(cur.lastrowid)
+        with self._lock:
+            cur = self.db.execute(
+                "INSERT INTO sighting (secret, mint_ctx_id, seen_ctx_id, mint_request_id,"
+                " seen_request_id, delta_s, origin, ts) VALUES (?,?,?,?,?,?,?,?)",
+                (secret, mint_ctx_id, seen_ctx_id, mint_request_id, seen_request_id,
+                 float(delta_s), origin, ts or now_iso()))
+            self.db.commit()
+            return int(cur.lastrowid)
 
     # -- reads -----------------------------------------------------------------
     def mint_for_secret(self, secret: str) -> sqlite3.Row | None:
-        return self.db.execute("SELECT * FROM mint WHERE secret = ?", (secret,)).fetchone()
+        with self._lock:
+            return self.db.execute("SELECT * FROM mint WHERE secret = ?", (secret,)).fetchone()
 
     def mint_for(self, ctx_id: str, path: str, salt_epoch: str) -> sqlite3.Row | None:
-        return self.db.execute(
-            "SELECT * FROM mint WHERE ctx_id = ? AND path = ? AND salt_epoch = ?",
-            (ctx_id, path, salt_epoch)).fetchone()
+        with self._lock:
+            return self.db.execute(
+                "SELECT * FROM mint WHERE ctx_id = ? AND path = ? AND salt_epoch = ?",
+                (ctx_id, path, salt_epoch)).fetchone()
 
     def request(self, request_id: int) -> sqlite3.Row | None:
-        return self.db.execute("SELECT * FROM request WHERE id = ?", (request_id,)).fetchone()
+        with self._lock:
+            return self.db.execute("SELECT * FROM request WHERE id = ?", (request_id,)).fetchone()
 
     def rows(self, table: str) -> list[dict[str, Any]]:
         if table not in ("request", "mint", "sighting"):
             raise ValueError(f"{table!r} is not part of the proof graph")
-        return [dict(r) for r in self.db.execute(f"SELECT * FROM {table} ORDER BY id")]
+        with self._lock:
+            return [dict(r) for r in self.db.execute(f"SELECT * FROM {table} ORDER BY id")]
+
+    def note_gate_rejection(self) -> None:
+        """Count a request the gate refused, storing NOTHING about it.
+
+        This exists because the previous honesty counter was vacuous: it counted
+        `request` rows with is_automated=0, and nothing in the codebase ever wrote
+        one, so it was pinned to 0 by construction rather than by the gate working.
+        A reviewer pointed out you could delete the gate entirely and the number
+        would not move.
+
+        This counter can move. It is a bare integer with no address, no user-agent
+        and no timestamp per event - recording any of that would rebuild the
+        visitor log the gate exists to prevent - but a non-zero value is positive
+        evidence that humans arrived and were turned away, which is the claim.
+        """
+        with self._lock:
+            self.db.execute(
+                "INSERT INTO gate_rejection (id, n) VALUES (1, 1) "
+                "ON CONFLICT(id) DO UPDATE SET n = n + 1")
+            self.db.commit()
 
     def counts(self) -> dict[str, int]:
-        """The honesty counters. `human_requests` exists so the claim that humans
-        are excluded is checkable rather than asserted; the gate should keep it 0."""
-        one = lambda q, *a: int(self.db.execute(q, a).fetchone()[0])
-        return {
-            "mints": one("SELECT COUNT(*) FROM mint"),
-            "sightings_organic": one("SELECT COUNT(*) FROM sighting WHERE origin='organic'"),
-            "sightings_seeded": one("SELECT COUNT(*) FROM sighting WHERE origin='seeded'"),
-            "sightings_paste": one("SELECT COUNT(*) FROM sighting WHERE origin='paste'"),
-            "human_requests": one("SELECT COUNT(*) FROM request WHERE is_automated=0"),
-            "requests": one("SELECT COUNT(*) FROM request"),
-        }
+        """The honesty counters.
+
+        `humans_turned_away` is the falsifiable one: it rises when the gate fires.
+        `human_requests` is retained and must stay 0 - it counts ledger rows marked
+        non-automated, so a non-zero value means a human reached storage.
+        """
+        with self._lock:
+            one = lambda q, *a: int(self.db.execute(q, a).fetchone()[0])
+            return {
+                "mints": one("SELECT COUNT(*) FROM mint"),
+                "sightings_organic": one("SELECT COUNT(*) FROM sighting WHERE origin='organic'"),
+                "sightings_seeded": one("SELECT COUNT(*) FROM sighting WHERE origin='seeded'"),
+                "sightings_paste": one("SELECT COUNT(*) FROM sighting WHERE origin='paste'"),
+                "human_requests": one("SELECT COUNT(*) FROM request WHERE is_automated=0"),
+                "humans_turned_away": one("SELECT COALESCE(MAX(n), 0) FROM gate_rejection"),
+                "requests": one("SELECT COUNT(*) FROM request"),
+            }
 
     def close(self) -> None:
         self.db.close()

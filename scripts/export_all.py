@@ -40,20 +40,17 @@ def main() -> int:
 
     # What the viewer shows for its verification block. Computed here from the real
     # bundle so the page cannot claim a result the bundle does not support.
-    verify_payload = {
-        "ok": ok,
-        "rows": len(b["leaves"]),
-        "root_short": b["root"][:4] + "…" + b["root"][-2:],
-        "problems": problems,
-    }
-
     (ROOT / "viewer").mkdir(exist_ok=True)
+    # The BUNDLE itself goes to the browser, not a precomputed verdict. An earlier
+    # version shipped only {ok, rows, root} and the page printed that boolean while
+    # claiming to have recomputed it - so editing a record left the page still
+    # saying "Verified". viewer/verify.js now redoes every hash with crypto.subtle.
     (ROOT / "viewer" / "data.js").write_text(
         "window.CANARY_DATA = " + json.dumps(payload, indent=1) + ";\n"
-        "window.CANARY_VERIFY = " + json.dumps(verify_payload, indent=1) + ";\n",
+        "window.CANARY_BUNDLE = " + json.dumps(b, indent=1) + ";\n",
         encoding="utf-8")
     (ROOT / "viewer" / "data.json").write_text(
-        json.dumps({"viewer": payload, "verification": verify_payload}, indent=1),
+        json.dumps({"viewer": payload, "bundle": b}, indent=1),
         encoding="utf-8")
 
     print(f"bundle   {bundle_path.relative_to(ROOT)}  "

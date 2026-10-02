@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Canary Maze</title>
-<meta name="description" content="Prove two automated clients shared information, instead of guessing from how alike they look.">
+<meta name="description" content="Record when a planted secret moves between AI clients, instead of guessing from how alike they look.">
 <meta name="theme-color" content="#FDFCFA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -112,7 +112,7 @@ footer a{color:var(--ink)}
 
   <header class="hero">
     <div>
-      <h1>Prove two AI clients shared information.</h1>
+      <h1>Watch a secret move between AI clients.</h1>
       <p class="sub">Every automated visitor gets its own secret. When a different client
         comes asking for it, that is a record — not a resemblance.</p>
       <div class="cta">
@@ -198,12 +198,16 @@ footer a{color:var(--ink)}
     <p class="lede">Every number below comes from the ledger, not from a slide.</p>
     <div class="tablewrap" role="region" aria-labelledby="real-h" tabindex="0">
     <table>
-      <tr><th>Mints</th><td class="num">1</td><td>secrets issued to an automated context</td></tr>
+<!--COUNTS-->
+      <tr><th>Mints</th><td class="num">1</td><td>secrets issued to automated contexts</td></tr>
       <tr><th>Seeded sightings</th><td class="num">1</td><td>two clients we control, driven through the real gate, mint and detector</td></tr>
       <tr><th>Organic sightings</th><td class="num">0</td><td>reported exactly as it stands — this is the honest number, not a rounding</td></tr>
-      <tr><th>Paste-triggered</th><td class="num">0</td><td>counted separately: a fetcher following a human’s paste is <em>not</em> two agents sharing</td></tr>
-      <tr><th>Human requests in ledger</th><td class="num zero">0</td><td>the gate holds — without this it would be a visitor-tracking tool</td></tr>
-      <tr><th>Tests</th><td class="num">89</td><td><code>make verify</code> PASS</td></tr>
+      <tr><th>Paste-triggered</th><td class="num">0</td><td>counted separately: a fetcher following a human&rsquo;s paste is <em>not</em> two agents sharing</td></tr>
+      <tr><th>Humans turned away</th><td class="num">0</td><td>the gate fired this many times and stored nothing about any of them</td></tr>
+      <tr><th>Human requests in ledger</th><td class="num zero">0</td><td>must be 0 — a non-zero value would mean a human reached storage</td></tr>
+      <tr><th>Hashes in the bundle</th><td class="num">5</td><td>each one recomputed in your browser by the button above</td></tr>
+      <tr><th>Tests</th><td class="num">108</td><td><code>make verify</code> PASS</td></tr>
+    <!--/COUNTS-->
     </table>
     </div>
   </section>

@@ -6,14 +6,20 @@ have positive reason to think otherwise. Being wrong in the automated direction
 costs a sighting; being wrong in the human direction costs the right to ship this
 at all. We choose to lose sightings.
 
-Two rules, in order:
+Two rules, and the ORDER MATTERS - it was wrong once and a review caught it:
 
-  1. A client that *declares* itself a crawler is automated, even if it also sends
-     browser headers. Declaration is the strongest signal available and it is the
-     one we should reward.
-  2. Otherwise the request is human if it has the SHAPE of a browser request:
-     an `Accept-Language` header, or any `Sec-Fetch-*` header. Every mainstream
-     browser sends at least one; scripted clients usually send neither.
+  1. If the request has the full SHAPE of a browser request, it is human, WHATEVER
+     the user-agent says. A user-agent is a string the client chooses; Chrome
+     DevTools ships a built-in Googlebot preset and every UA-switcher extension has
+     one, so letting the UA override the shape means a human who flips that switch
+     gets minted for and ledgered. Shape beats declaration.
+  2. Otherwise, a client that *declares* itself a crawler is automated, and so is
+     anything with no browser shape at all.
+
+The cost of rule 1 is real: a crawler that sends a full browser header set is
+missed. We accept that, because the docstring above promises we choose to lose
+sightings rather than ledger a human, and an earlier version violated its own
+promise by checking the user-agent first.
 
 Rule 2 keys on the request's shape rather than on the user-agent string, because
 the user-agent is the one field the client fully controls - Cloudflare documented
@@ -60,9 +66,24 @@ def has_browser_shape(headers: Mapping[str, str]) -> bool:
     return any(h.get(name) for name in BROWSER_SHAPE)
 
 
+#: How many browser-shaped signals a request must carry before we treat it as
+#: human even though its user-agent claims to be a crawler. One is enough to make
+#: a scripted client look human by accident; two is a real browser.
+BROWSER_SHAPE_THRESHOLD = 2
+
+
+def browser_shape_score(headers: Mapping[str, str]) -> int:
+    h = _lower(headers)
+    return sum(1 for name in BROWSER_SHAPE if h.get(name))
+
+
 def is_automated(headers: Mapping[str, str]) -> bool:
     """True when we may mint for this request and write it to the ledger."""
     h = _lower(headers)
+    # Rule 1: shape beats declaration. See the module docstring.
+    if browser_shape_score(h) >= BROWSER_SHAPE_THRESHOLD:
+        return False
+    # Rule 2: a declared crawler, or anything with no browser shape at all.
     if declares_crawler(h.get("user-agent", "")):
         return True
     return not has_browser_shape(h)

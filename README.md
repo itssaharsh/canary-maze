@@ -1,12 +1,16 @@
 # Canary Maze
 
-**Prove two automated clients shared information, instead of guessing from how alike they look.**
+**Record when a planted secret moves between AI clients, instead of guessing from how alike they look.**
 
 **[Live site](https://site-nine-hazel-35.vercel.app)** · **[Live evidence](https://site-nine-hazel-35.vercel.app/viewer/)**
 
 A website that issues every automated visitor its own secret, then records who else comes
 asking for it. The output is not a dashboard. It is an evidence bundle that verifies with
-the server switched off, for a reader who does not trust the operator.
+the server switched off.
+
+It records that a secret **moved**. It does not claim the two clients talked to each other,
+and the headline no longer says otherwise - an earlier one did, two screens above the
+limitation that contradicts it.
 
 ```
 Secret 7f3a9c…  issued to context A at 11:04:12   (GPTBot/1.2, AS8075)

@@ -94,7 +94,7 @@ def export(led: Ledger) -> dict[str, Any]:
         "claim": _claim(state, out_sightings, mints),
         "counts": counts,
         "sightings": out_sightings,
-        "mint_sample": _mint_sample(mints, requests),
+        "mint_sample": _mint_sample(mints, requests, state),
     }
 
 
@@ -118,17 +118,23 @@ def _claim(state: str, sightings: list[dict], mints: list[dict]) -> str:
     return "No secrets issued yet. Start the surface and let a crawler reach it."
 
 
-def _mint_sample(mints: list[dict], requests: dict) -> dict[str, Any] | None:
-    """Shown only in the awaiting state, so the page has something real to display
-    without inventing a second context that does not exist."""
-    if not mints:
+def _mint_sample(mints: list[dict], requests: dict, state: str) -> dict[str, Any] | None:
+    """Shown ONLY in the awaiting state, so the page has something real to display
+    without inventing a second context that does not exist. Returns None otherwise:
+    an earlier version emitted it unconditionally, contradicting this docstring."""
+    if state != "awaiting" or not mints:
         return None
     m = mints[-1]
     req = requests.get(m["request_id"], {})
+    # The secret is NOT published. /export.json is public, and emitting the live
+    # secret let any reader fetch the canary themselves and manufacture an
+    # `origin='organic'` sighting with two unauthenticated GETs - which made the
+    # one number this project asks to be believed on remotely writable.
     return {
-        "secret": m["secret"],
+        "secret_prefix": m["secret"][:4] + "\u2026",
         "at": _hhmmss(m["ts"]),
         "ua": req.get("ua", ""),
         "net": req.get("ip_net", ""),
-        "raw": req.get("raw_line", ""),
+        # the raw line embeds the canary path, so redact the secret out of it too
+        "raw": req.get("raw_line", "").replace(m["secret"], m["secret"][:4] + "\u2026"),
     }

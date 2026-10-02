@@ -25,3 +25,8 @@ graphify-out/cost.json
 .serve.log
 .tunnel.log
 .pubtest.log
+
+# carries live canary URLs; publishing it lets any reader fabricate a sighting
+docs/paste_log.json
+viewer/.vercel
+site/.vercel
