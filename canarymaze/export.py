@@ -35,6 +35,10 @@ def _hhmmss(ts: str) -> str:
 
 def human_delta(seconds: float) -> str:
     s = int(round(seconds))
+    if s < 1:
+        # The seeded replay genuinely completes within one second. Saying "4m 35s"
+        # here would be a lie in a record, so the copy reads naturally instead.
+        return "within the same second"
     if s < 60:
         return f"{s}s"
     m, s = divmod(s, 60)
@@ -98,9 +102,15 @@ def _claim(state: str, sightings: list[dict], mints: list[dict]) -> str:
     """Derived, never hardcoded. Each state gets a sentence that is true in it."""
     if state == "sighting":
         s = sightings[0]
+        when = (s["elapsed"] if s["elapsed"].startswith("within")
+                else f"{s['elapsed']} later")
+        # "on a different network" is DERIVED, never asserted: it is only said when
+        # the two truncated networks actually differ. Asserting it unconditionally
+        # is the mistake U-0001 was written about.
+        where = ("" if s["issued"]["net"] == s["requested"]["net"]
+                 else ", on a different network")
         return (f"A URL that only context {s['issued']['label']} was ever shown was "
-                f"requested {s['elapsed']} later by context {s['requested']['label']}, "
-                f"on a different network.")
+                f"requested {when} by context {s['requested']['label']}{where}.")
     if state == "awaiting":
         n = len(mints)
         return (f"{n} secret{'s' if n != 1 else ''} issued. No other context has "

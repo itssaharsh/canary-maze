@@ -39,15 +39,21 @@ One deployable, one datastore, no model on the proof path.
 
 ## Decisions
 
-**ADR-0001 — SQLite, append-only, one file.** One deployable with zero ops, and the durable artifact is the *bundle*, not the database. Postgres would add a service for no gain: nothing here is concurrent beyond one process, and the record a third party checks is a file.
+> Numbering note: these are **D1-D5**, local to this file. They are NOT the same
+> sequence as `docs/memory/decisions/ADR-*`, which numbers independently and is the
+> canonical record. Each entry below cites its ADR where one exists. Two further
+> decisions live only in memory: ADR-0004 (viewer on Vercel, surface on a host with
+> a persistent disk) and ADR-0005 (keep SQLite and tunnel the surface).
 
-**ADR-0002 — No model on the proof path.** A verbatim sighting is a table lookup. Laundered (paraphrased) token matching is the only place a model could help, and it ships **disabled** in a separate table that is never joined into the proof graph, so a judge can switch the model off and diff the graph to byte-identical. Also removes the inference bill, which matters because this entrant gets no compute reimbursement.
+**D1 — SQLite, append-only, one file.** *(no memory record; architecture-local)* One deployable with zero ops, and the durable artifact is the *bundle*, not the database. Postgres would add a service for no gain: nothing here is concurrent beyond one process, and the record a third party checks is a file.
 
-**ADR-0003 — Write the maze; do not fork Pyison.** The brief said to fork [Pyison](https://github.com/JonasLong/Pyison) (MIT) for the serving layer. Reversed, deliberately: the maze is the one component that is *never demoed*, the critic pass named "forking an unfamiliar 125-star repo" as the single most likely way to lose Saturday, and the maze we need is ~60 lines fully understood. Pyison is credited in the README as the alternative considered. **This is a documented deviation from the build brief, not an oversight.**
+**D2 — No model on the proof path.** *(canonical record: `docs/memory/decisions/ADR-0001`)* A verbatim sighting is a table lookup. Laundered (paraphrased) token matching is the only place a model could help, and it ships **disabled** in a separate table that is never joined into the proof graph, so a judge can switch the model off and diff the graph to byte-identical. Also removes the inference bill, which matters because this entrant gets no compute reimbursement.
 
-**ADR-0004 — There is no actor entity.** The schema has `request`, `mint`, `sighting` and a context identifier. It has no `actor` table and no join that would produce one, because one actor label in the organizers' own dump spans 741 distinct addresses. The product's claim is bounded by its data model, not by a disclaimer in the copy.
+**D3 — Write the maze; do not fork Pyison.** *(canonical record: `docs/memory/decisions/ADR-0003`)* The brief said to fork [Pyison](https://github.com/JonasLong/Pyison) (MIT) for the serving layer. Reversed, deliberately: the maze is the one component that is *never demoed*, the critic pass named "forking an unfamiliar 125-star repo" as the single most likely way to lose Saturday, and the maze we need is ~60 lines fully understood. Pyison is credited in the README as the alternative considered. **This is a documented deviation from the build brief, not an oversight.**
 
-**ADR-0005 — Merkle root over canonicalized rows.** Rows are serialized with sorted keys and no whitespace, SHA-256 leaf-hashed, and combined into a root. A verifier needs the file and nothing else: no server, no network, no trust in the operator. This is the whole wedge, so it is the one place worth the extra 40 lines.
+**D4 — There is no actor entity.** *(canonical record: `docs/memory/decisions/ADR-0002`)* The schema has `request`, `mint`, `sighting` and a context identifier. It has no `actor` table and no join that would produce one, because one actor label in the organizers' own dump spans 741 distinct addresses. The product's claim is bounded by its data model, not by a disclaimer in the copy.
+
+**D5 — Merkle root over canonicalized rows.** *(no memory record; architecture-local)* Rows are serialized with sorted keys and no whitespace, SHA-256 leaf-hashed, and combined into a root. A verifier needs the file and nothing else: no server, no network, no trust in the operator. This is the whole wedge, so it is the one place worth the extra 40 lines.
 
 ## Review gate
 

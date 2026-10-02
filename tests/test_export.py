@@ -105,3 +105,32 @@ def test_the_seeded_replay_runs_end_to_end_and_marks_everything_seeded(tmp_path)
     assert p["state"] == "sighting"
     assert p["sightings"][0]["origin"] == "seeded"
     led.close()
+
+
+def _sighting(ledger, ip_a, ip_b):
+    a = ledger.record_request(method="GET", path="/m/x", status=200, ip=ip_a,
+                              ua="GPTBot/1.2", ctx_id="ctxA", ts="2026-10-03T11:04:12Z")
+    ledger.record_mint(secret="s" * 16, ctx_id="ctxA", path="/m/x", salt_epoch="E",
+                       request_id=a, ts="2026-10-03T11:04:12Z")
+    b = ledger.record_request(method="GET", path="/c/s/x", status=200, ip=ip_b,
+                              ua="Chrome/124", ctx_id="ctxB", ts="2026-10-03T11:04:12Z")
+    from canarymaze.detect import on_canary_request
+    on_canary_request(ledger, secret="s" * 16, seen_ctx_id="ctxB", seen_request_id=b)
+    return export(ledger)["claim"]
+
+
+def test_the_network_clause_is_derived_not_asserted(ledger):
+    claim = _sighting(ledger, "20.171.207.14", "104.28.52.9")
+    assert "on a different network" in claim
+
+
+def test_no_network_clause_when_the_networks_match(ledger):
+    # same /24: saying "on a different network" here would be false
+    claim = _sighting(ledger, "20.171.207.14", "20.171.207.99")
+    assert "on a different network" not in claim
+
+
+def test_a_sub_second_gap_is_described_honestly_not_padded(ledger):
+    claim = _sighting(ledger, "1.2.3.4", "9.9.9.9")
+    assert "within the same second" in claim
+    assert "0s later" not in claim
