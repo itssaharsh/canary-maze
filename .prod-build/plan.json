@@ -208,8 +208,10 @@
         "python3 -m pytest -q tests/test_detect.py"
       ],
       "rollback": "git revert the T04 commit",
-      "status": "todo",
-      "notes": ""
+      "status": "doing",
+      "notes": "",
+      "base": "8122aa4",
+      "started_after": 8
     },
     {
       "id": "T05",
