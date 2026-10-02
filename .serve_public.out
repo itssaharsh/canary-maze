@@ -1,16 +1,16 @@
 ledger: /home/saharsh/contri/ai_swarm/canary.sqlite3
 surface up on :8000
-waiting for the tunnel hostname........
+waiting for the tunnel hostname.......
 
-  PUBLIC SURFACE:  https://examinations-creature-kernel-push.trycloudflare.com
+  PUBLIC SURFACE:  https://respondent-logging-probably-simpsons.trycloudflare.com
 
-  sitemap:  https://examinations-creature-kernel-push.trycloudflare.com/sitemap.xml
-  robots:   https://examinations-creature-kernel-push.trycloudflare.com/robots.txt   (Disallow nothing - we are measuring what clients
+  sitemap:  https://respondent-logging-probably-simpsons.trycloudflare.com/sitemap.xml
+  robots:   https://respondent-logging-probably-simpsons.trycloudflare.com/robots.txt   (Disallow nothing - we are measuring what clients
                                do when they are NOT blocked)
 
   Next, to give crawlers a reason to arrive:
-    1. paste https://examinations-creature-kernel-push.trycloudflare.com/sitemap.xml into a public model product and ask it to read a page
-    2. run:  python3 scripts/trigger_paste.py https://examinations-creature-kernel-push.trycloudflare.com
+    1. paste https://respondent-logging-probably-simpsons.trycloudflare.com/sitemap.xml into a public model product and ask it to read a page
+    2. run:  python3 scripts/trigger_paste.py https://respondent-logging-probably-simpsons.trycloudflare.com
 
   Leave this running. Ctrl-C stops the surface and the tunnel; the ledger and any
   bundle you have already exported survive, because they are files.
