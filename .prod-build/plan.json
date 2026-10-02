@@ -338,8 +338,10 @@
         "python3 -m pytest -q tests/test_viewer_data.py"
       ],
       "rollback": "git revert the T07 commit; ui-prototype/index.html still renders",
-      "status": "todo",
-      "notes": "Evaluator findings in docs/memory/feedback/U-0001."
+      "status": "doing",
+      "notes": "Evaluator findings in docs/memory/feedback/U-0001.",
+      "base": "efdc3db",
+      "started_after": 18
     },
     {
       "id": "T08",
