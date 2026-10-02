@@ -20,3 +20,8 @@ viewer/data.json
 # graphify scratch (the built outputs graph.json / graph.html / GRAPH_REPORT.md are kept)
 graphify-out/.graphify_*
 graphify-out/cost.json
+
+# runtime scratch
+.serve.log
+.tunnel.log
+.pubtest.log
