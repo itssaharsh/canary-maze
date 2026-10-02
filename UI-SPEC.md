@@ -7,7 +7,8 @@ registers: { claim: serious, figure: productive, records: productive, verificati
 direction: "derived from the tamper-evident chain-of-custody form: canvas warm document stock #FDFCFA · ink printed near-black #16140F · accent serial vermilion #C8361B (the colour a unique serial is printed in on evidence-bag tape) · body Public Sans (the lettering of official records; US Web Design System) · mono IBM Plex Mono (unambiguous 0/O and 1/l/I, because hex secrets and IPs are compared character by character). Body candidates considered: Public Sans (chosen), Libre Franklin, Host Grotesk."
 personality: precise
 dials: { variance: 3, motion: 3, density: 7 }
-stack: { page: "single HTML file", fonts: "Google Fonts (Public Sans, IBM Plex Mono)" }   # no framework: one screen, no routes, no server state. The real app serves canary surface separately; this page reads a JSON export of the two ledgers.
+stack: { page: "single HTML file", fonts: "Google Fonts (Public Sans, IBM Plex Mono)" }
+superseded_prototype: "ui-prototype/ was the design source and was DELETED at cleanup: it hardcoded its copy, which is exactly the construction U-0001 blames for three on-screen contradictions. The shipped implementation is viewer/, which derives every line from canarymaze/export.py."   # no framework: one screen, no routes, no server state. The real app serves canary surface separately; this page reads a JSON export of the two ledgers.
 archetype: "none of B13 — closest is (l) spatial scene + HUD with the scene replaced by a 160px sequence figure, because 2-6 lanes do not earn a canvas"
 viewports: [320x640, 390x844, 1024x768, 1440x900]
 signature:
