@@ -1,0 +1,1490 @@
+{
+ "run": {
+  "mode": "hackathon",
+  "context": "general",
+  "depth": "full",
+  "date": "2026-10-02",
+  "slug": "ai-swarm-dynamics",
+  "request": "https://swarmchasing.com/#register /prod-idea:prod-idea and tell me if you need the dataset from the huggingface | mid-run addition: \"you can use exsisting projects tweak them if they produce better chance of winning\"",
+  "scope": "tools to understand and discover agent swarms (set by the event theme)",
+  "request_type": "generate",
+  "discovery_method": "blind_subagent",
+  "problems_considered": 12,
+  "user_groups": [
+   "open-source maintainers",
+   "wiki cleanup patrollers",
+   "fediverse and forum admins",
+   "site and public-API operators",
+   "production multi-agent engineers",
+   "platform trust-and-safety staff",
+   "package-registry staff",
+   "agent-populated venue operators",
+   "incident investigators"
+  ],
+  "context_seen": false,
+  "research_unavailable": false,
+  "seeds": {
+   "lenses": [
+    "painful workflows",
+    "money already spent on a worse fix",
+    "bad incumbents",
+    "forced change (rules and deadlines)",
+    "newly possible",
+    "boring back office",
+    "underserved groups",
+    "AI-native",
+    "capability lens"
+   ],
+   "source_types": [
+    "maintainer blogs (primary)",
+    "forum comments",
+    "incumbent issue trackers",
+    "code-host APIs",
+    "community project pages",
+    "platform measurement categories",
+    "organisation engineering blogs",
+    "job board APIs",
+    "regulation text",
+    "standards-body trackers",
+    "preprints and peer-reviewed papers",
+    "vendor documentation and changelogs",
+    "security-vendor incident research",
+    "dataset and dump pages"
+   ]
+  }
+ },
+ "personal": {
+  "explicit_request": "",
+  "facts_used": [],
+  "build_on": []
+ },
+ "event": {
+  "name": "AI Swarm Dynamics Hackathon (AI Village x Grove Research)",
+  "url": "https://swarmchasing.com/",
+  "platform": "custom site with an Airtable application form; not Devpost, Devfolio or MLH, so no gallery, no public voting and no star-rating rubric",
+  "window": "Sat 2026-10-03 10:00 PT to Sun 2026-10-04 17:00 PT, about 31 hours elapsed and roughly 20 working hours; pre-work explicitly permitted",
+  "judging_format": "Submission is a short write-up or video plus a public GitHub repo plus, optionally, a write-up of real results found using the tool. Home page: \"We're assembling a team of ~3-5 judges (members of the AI Village staff and experts in the field).\" Logistics page: \"A panel of Grove Research and AI Village staff will review submissions\", with decisions roughly a week after the event. In-person demos 18:00-19:00 PT Sunday, livestreamed; this builder is online, so the written submission and the repo carry the whole entry.",
+  "sponsors": [
+   "AI Village (The AI Digest)",
+   "Grove Research",
+   "Anthropic"
+  ],
+  "criteria": [
+   {
+    "criterion": "Execution quality and methodological soundness",
+    "weight": "assumed ~30%",
+    "source": "assumed",
+    "implication": "No rubric is published and the jury is research staff reading over about a week, so the repo and write-up are the judgement surface. State the sample, the gate, the error behaviour."
+   },
+   {
+    "criterion": "Impact on the investigators' real workflow",
+    "weight": "assumed ~25%",
+    "source": "assumed",
+    "implication": "Open by naming the gap being closed in the investigators' or hosts' own words, cited."
+   },
+   {
+    "criterion": "Real results on real data",
+    "weight": "assumed ~20%",
+    "source": "assumed",
+    "implication": "The organizers list a results write-up as optional; treat it as mandatory, because the hosts are research staff and one has said publicly that unprocessed data is their binding constraint."
+   },
+   {
+    "criterion": "Originality and prior art",
+    "weight": "assumed ~15%",
+    "source": "assumed",
+    "implication": "The suggestion list is public and two of its seven items are already shipped products, so differentiate on mechanism rather than on topic."
+   },
+   {
+    "criterion": "Presentation and clarity",
+    "weight": "assumed ~10%",
+    "source": "assumed",
+    "implication": "Judged as writing, not interface polish, because an online entry is read rather than demonstrated."
+   },
+   {
+    "criterion": "Theme fit",
+    "weight": "assumed, a gate rather than a weight",
+    "source": "assumed",
+    "implication": "Tie to swarm discovery or understanding in the first two sentences; it most likely filters rather than scores."
+   }
+  ]
+ },
+ "sponsor_verdicts": [
+  {
+   "sponsor": "AI Village (The AI Digest)",
+   "verdict": "does not fit any surviving idea as a technology; it supplies the problem framing and a dataset none of the three needs at core depth",
+   "why": "AI Village provides a 177 GB gated transcript corpus, not an API. None of the three survivors analyses agent transcripts: two work on public code and web artifacts and one on wiki citations, which is a direct consequence of the builder being online with no compute reimbursement, since an inference pass over 1.14M computer-use turns is out of financial reach. The honest statement is that no host technology is used, and the host-provided data appears only as a secondary showcase in the wiki idea."
+  },
+  {
+   "sponsor": "Grove Research",
+   "verdict": "does not fit as a technology; relevant only as published interests on the panel",
+   "why": "Grove Research supplies no API, SDK or dataset to this event. Its published writing on agent identity and on authorship and ownership confusion overlaps the provenance concern in all three ideas, but that is taste context for the write-up, not an integration, and nothing was shaped to appeal to it."
+  },
+  {
+   "sponsor": "Anthropic",
+   "verdict": "does not fit: unavailable to this builder",
+   "why": "The compute benefit is a $200 reimbursement for in-person attendees only, and this builder is online. No surviving idea requires any Anthropic-specific capability, and all three are deliberately designed so the deterministic core carries the result, precisely because inference is unfunded here."
+  }
+ ],
+ "defaults": [
+  "D1 Swarm discovery crawler - crawl public platforms and flag clusters of agent-run accounts (organizer suggestion 1)",
+  "D2 Better transcript summarizer - hierarchical summarization of 170k agent messages into a readable brief (organizer suggestion 2)",
+  "D3 Agent trajectory visualizer - timeline and tree explorer for agent traces (organizer suggestion 2)",
+  "D4 Standard question battery - a runner asking ~20 pre-written questions of any multi-agent group (organizer suggestion 3)",
+  "D5 AI whistleblowing channel - an endpoint making it easy to report agent misbehaviour (organizer suggestion 4)",
+  "D6 Information-spread tracer - track how a claim or instruction propagates through a group of agents (organizer suggestion 5)",
+  "D7 Open-source-intel forensics tracer - go beyond transcripts using the web (organizer suggestion 6)",
+  "D8 Incident aggregator dataset - every agent-swarm incident in one queryable place (organizer suggestion 7)",
+  "D9 Generic multi-agent observability dashboard - spans, token spend, error rates",
+  "D10 Chat with the corpus - retrieval over the transcript dump, ask it anything",
+  "D11 Agent-text detector - a classifier saying 'this post was written by an agent'",
+  "D12 Multi-agent simulation sandbox - spin up N agents and watch emergent behaviour",
+  "D13 Embedding and UMAP cluster map of agent messages, coloured by topic",
+  "D14 LLM-judge intent scorer - score deception, goal drift and sycophancy per message",
+  "D15 Anomaly detector over agent logs - statistical outliers flagged for review",
+  "D16 Agent passport or identity registry - attestations of who runs which agent, possibly on-chain",
+  "D17 Browser extension labelling agent-written posts on a social platform",
+  "D18 Auto-written incident report - feed the logs, get a post-mortem document",
+  "D19 MCP server exposing the corpus so any model can query it",
+  "D20 Slack or Discord digest bot - 'what did our agents do overnight?'",
+  "D21 Agentic SOC triage queue - an agentic version of an existing alerting workflow",
+  "D22 Swarm red-team harness - inject a jailbreak into one agent and see if it spreads"
+ ],
+ "research_gaps": [
+  "Commercial research-integrity vendors were never opened for the wiki idea, which was killed on other grounds before that mattered.",
+  "Socket's product pages were not opened. Socket published the reputation-farming research and holds cross-ecosystem data, so whether it already ships a maintainer-facing batch view is the biggest unchecked competitive risk for the maintainer idea.",
+  "GitLab and Codeberg were not checked for equivalent maintainer tooling.",
+  "No non-English evidence for the wiki patroller group: the one attempt at a German-language cleanup project returned a 404. That group is closest to one of the two incidents named in the event theme, and there are zero items from it.",
+  "Transluce's agent query logs are listed by the organizers as an available dataset, but no public distribution route was found.",
+  "The collusion.wiki dump page states no licence or terms, so redistribution status is unknown; derived aggregates are safer than republishing rows.",
+  "CrowdSec's leaky-bucket groupby documentation fetched empty, so no claim is made about what CrowdSec can or cannot group.",
+  "Indeed and Upwork both returned 403, so the platform trust-and-safety problem's spend signal rested on a single employer and that problem was killed rather than guessed at.",
+  "No accuracy figure exists in the one attribution paper opened, so no surviving idea assumes model-fingerprinting works.",
+  "HUMAN, Netacea, Fingerprint.com, Imperva, Fastly, Akamai, Castle and Arkose were not opened for the log-attribution idea before it was killed on other grounds.",
+  "Apart Research project pages were swept at search grade only; individual project pages were not opened, so 'no comparable past project' is a search-grade absence claim.",
+  "In the organizers' own link table, `followed` is False for all 23,877 rows and `relation` carries a single value, so the dump never records whether a link was actually retrieved; and 92.8% of intermediary rows are url_withheld. Any future idea keyed on retrieval behaviour in that corpus must account for both.",
+  "The untouched channels in the organizers' dump are per-account IP and /16-subnet structure and timestamp dynamics. The incident report already leans on IPs, so any idea built there should be checked for the same already-published trap before it is shortlisted."
+ ],
+ "killed": [
+  {
+   "name": "Tooling fingerprint join (regenerated from the citation kill)",
+   "stage": "wrapper",
+   "reason": "Group agent accounts by the retrieval infrastructure they share rather than by what they wrote. Regenerated after the citation join died, then KILLED on four independent grounds, all measured against the organizers' own three dump files. (1) The premise is factually false: the shared proxy URLs are the same literal string, copied - https://md.succ.ai/https://www.sec.gov/files/county.json appears under 198 distinct accounts and the r.jina.ai equivalent under 147. 198 agents did not independently configure a proxy and independently prefix that exact SEC path with it; they read it off a wiki page and pasted it, and the incident report states that 'The most typical way the agents used the wiki was to store links.' So the load-bearing claim that plumbing is incidental to output inverts - here the plumbing was the broadcast payload. (2) Already known: the incident report (Von Arx et al., 2026-09-04) names the tooling itself - 'In total, they used four providers: Pinggy, Serveo, localhost.run, and localtunnel' - and quotes r.jina.ai and markdown.new URLs inline. (3) Low entropy and baseline-dominated: only 41 distinct multi-proxy combinations exist across 3,103 accounts, the top combination is shared by 78 accounts, 136 of the 231 accounts sharing the top proxy URL edited the same welcome page, and the explorer's /explorer/sites view already classifies hosts by infrastructure type. (4) Prior art with a contrary result: A2FV (arXiv 2607.18826, 2026-07-21) already scores 'pairwise campaign similarity from proxy-observable tool-use, timing, and prompt residue' and reports that 'the strongest fixed signal is carried by structural and stylometric residue' - text beat tool-use, the opposite of the premise. It also fails the wrapper filter outright: about 150 lines of pandas over a 12-entry host dictionary, with the only model-shaped step being the write-up, and a reduction sentence - the user gives a corpus of agent edits to a model and gets a narrative case file back - that is a fair summary. The measurement is kept as a critique asset: shared URLs in this corpus are copied strings rather than independent choices, which falsifies the whole family of join-the-agents-by-what-they-linked ideas on this dump before any of them is built.",
+   "fingerprint": {
+    "user": "investigator holding an agent-wiki dump",
+    "job": "group agent accounts by shared retrieval infrastructure",
+    "mechanism": "join accounts on an improbable combination of retrieval intermediaries"
+   }
+  },
+  {
+   "name": "Non-existent Source Sweep",
+   "stage": "critic",
+   "reason": "Group wiki accounts by a cited source that a resolver establishes does not exist. KILLED by measurement on the organizers' own dump, not by argument: running the idea's own extractors over all 14,591 revisions of revisions.jsonl.gz returned 0 DOIs, 0 ISBNs and 0 ref-or-cite templates, so three of its four extractors have no input at all. Of the 69% of revisions that do carry a bare URL, 8,473 URLs are shared by two or more accounts and the top hosts are wikiservice.at (2,412), jqp.vercel.app (1,523), api.datausa.io (1,017) and markdown-scraping proxies including r.jina.ai, pure.md and md.succ.ai - shared tooling, not shared sources, which falsifies 'a fabricated citation is a near-perfect join key' on the event's own data. Three further findings independently sank it: the dump already ships links.jsonl.gz (23,877 rows of url, host, record_ids, relation, followed), which is the inverted index with a resolution flag the idea proposed building; 'resolves deterministically' is wrong, because HTTP HEAD against the live web returns 403, 429, paywalls, geo-blocks and link rot, each of which becomes a false fabrication claim against a named account; and the honest venue and the workable venue are different wikis, since the agent-run wiki has no citations while the wiki that has citations is edited by humans. Regenerated as the shared-tooling join, which is under separate validation and is not shown as a candidate.",
+   "fingerprint": {
+    "user": "volunteer wiki patroller opening a flagged diff",
+    "job": "find out whether the same hand is at work elsewhere",
+    "mechanism": "join accounts on a cited source that does not resolve"
+   }
+  },
+  {
+   "name": "Ask the log",
+   "stage": "wrapper",
+   "reason": "Feed the access log to a model and print the explanation. The reduction sentence - the user gives their access log to a model and gets an explanation back - is a fair summary, and nothing survives the model: no stable identity, no rules produced, nothing persisted, no claim re-checkable. Regenerated into the two site-operator solutions.",
+   "fingerprint": {
+    "user": "site operator during a traffic anomaly",
+    "job": "understand what the swarm was doing",
+    "mechanism": "upload a log to a model and read the prose answer"
+   }
+  },
+  {
+   "name": "Swarm brief / standard question battery",
+   "stage": "wrapper",
+   "reason": "Point it at a corpus, run ~20 pre-written questions, get a brief. Fuses three organizer suggestions, and its reduction sentence - the user gives 170k agent transcripts to a model and gets a brief back - is verbatim the one pre-registered in defaults.md before any research. Owns no provenance, no record, no action and no check. A hash-chained re-runnable case file would have survived but was judged out of reach for a solo 20-hour build, so the investigator audience group was dropped and reported as a gap rather than patched.",
+   "fingerprint": {
+    "user": "incident investigator facing a corpus",
+    "job": "produce an overview of what a multi-agent group did",
+    "mechanism": "run a fixed prompt battery over a dump and emit a document"
+   }
+  },
+  {
+   "name": "Swarm Ledger",
+   "stage": "competition",
+   "reason": "Operator-side attribution clustering an access log into persistent operator identities. Killed on the competitor scan, not on evidence: the mechanism is claimed by PayPal US12034731B2 (grouping log entries and assigning 'a corresponding common actor identifier', persisting over 12 months), marketed commercially by WebDecoy ('JA4 as a correlation key inside a persistent actor identity'), and already stubbed in a public repo. Its own core claim that nobody answers whether requests are one actor is falsifiable in one search. Separately, the only real recent CC-BY access-log release pseudonymises IPs and user-agents, so the decisive join keys cannot be demonstrated on real public data in a weekend. Same problem as the surviving canary idea, which kept the slot.",
+   "fingerprint": {
+    "user": "site or API operator in the hour a traffic anomaly is costing money",
+    "job": "attribute traffic to an actor so the response fits the cause",
+    "mechanism": "cluster log lines into persistent operator identities with a stable id"
+   }
+  },
+  {
+   "name": "Cohort console",
+   "stage": "shortlist",
+   "reason": "Make the signup wave rather than the account the unit of moderation action. Strong product, wrong event: its evidence is 2024-dated and the problem predates the agent era by the discovery pass's own account, why_now.kind is none, and a signup-spam wave is not demonstrably a coordinated AI agent swarm, so it risks reading off-theme.",
+   "fingerprint": {
+    "user": "unpaid instance or forum admin at 3am during a signup wave",
+    "job": "stop the wave without cutting off legitimate neighbours",
+    "mechanism": "moderation's unit of action becomes the cohort with a reversible record"
+   }
+  },
+  {
+   "name": "Participation receipts",
+   "stage": "shortlist",
+   "reason": "Signed admission receipts for an agent-populated venue, grouping accounts by operator key rather than by inference, with no model in the loop. The market rests on a single opened evidence item, so the problem is a hypothesis. Retained inside the canary idea's demo plan as a venue rather than shown as its own idea.",
+   "fingerprint": {
+    "user": "operator of an agent-populated venue facing a bot-farm allegation",
+    "job": "establish whether N accounts are one operator",
+    "mechanism": "coordination recorded at admission via signed receipts instead of inferred afterwards"
+   }
+  },
+  {
+   "name": "Reciprocal evidence exchange",
+   "stage": "shortlist",
+   "reason": "Maintainers publish signed batch fingerprints, hashes only and no accusations, and subscribers auto-label matches. Judged thin at the wrapper filter: a dependent second surface with nothing to publish without the batch index upstream. Retained as that idea's expansion path.",
+   "fingerprint": {
+    "user": "maintainer the week after a wave",
+    "job": "warn peers without publishing accusations",
+    "mechanism": "abuse signal becomes a shared privacy-preserving feed"
+   }
+  },
+  {
+   "name": "Fabrication registry",
+   "stage": "shortlist",
+   "reason": "Publish the verified-non-existent citation index as an open dataset plus a one-call lookup so other venues can check an incoming citation. Thin for the same reason: without the sweep upstream nothing fills it. Retained as that idea's expansion path.",
+   "fingerprint": {
+    "user": "a reviewer at any venue when a citation arrives",
+    "job": "check a source cheaply",
+    "mechanism": "one-off manual resolution becomes a shared accumulating registry"
+   }
+  },
+  {
+   "name": "Platform trust-and-safety actor clustering",
+   "stage": "validation",
+   "reason": "Eleven open safety and security engineering roles at one employer is spend, but a single organisation, and no first-person account from this segment could be opened. The field is also the best-funded one adjacent to the theme and these teams build in-house. Indeed and Upwork both returned 403, so the second employer signal was unreachable.",
+   "fingerprint": {
+    "user": "safety processing engineer clustering actors",
+    "job": "cluster actors behind coordinated agent activity",
+    "mechanism": "in-house actor clustering at platform scale"
+   }
+  },
+  {
+   "name": "Debugging your own multi-agent system",
+   "stage": "prior-art",
+   "reason": "Genuinely good evidence - three engineers describing the pain in their own words - but the market answered in 2026. A repo search for multi-agent observability created since 2026-01-01 returns open-multi-agent at 6,972 stars with 'durable approvals and verifiable run records', plus four more above 400 stars. Two of the three evidence items are people who already shipped the product.",
+   "fingerprint": {
+    "user": "engineer whose multi-agent chain broke in the middle",
+    "job": "find out what happened inside the chain",
+    "mechanism": "instrument your own runtime and replay traces"
+   }
+  },
+  {
+   "name": "Alert fatigue at swarm scale",
+   "stage": "validation",
+   "reason": "One opened comment speaking only for its author, sitting inside the already-crowded multi-agent observability field. Not worth a second lookup against that prior art.",
+   "fingerprint": {
+    "user": "on-call engineer with a large agent fleet",
+    "job": "avoid being paged for false positives",
+    "mechanism": "alert aggregation over agent fleets"
+   }
+  },
+  {
+   "name": "Package-registry abuse-report triage",
+   "stage": "validation",
+   "reason": "Registry staff's own words describe free-form email reporting that 'scales poorly', but the two best items date from 2022-11 and 2018-02, far outside the 24-month window, and there was no budget to check whether the reporting API they proposed has since shipped. Killed rather than guessed.",
+   "fingerprint": {
+    "user": "registry admin reading a free-form malware report",
+    "job": "triage an abuse report that arrived as prose",
+    "mechanism": "standardised reporting API for trusted reporters"
+   }
+  },
+  {
+   "name": "EU AI Act Article 50 marking duties",
+   "stage": "validation",
+   "reason": "A rule proves an obligation, not pain. Retained as a forced-change why-now contribution to the wiki and community-moderation problems rather than kept as a problem of its own, which also held rules-and-deadlines to one twelfth of the pool.",
+   "fingerprint": {
+    "user": "EU provider or deployer of a generative system",
+    "job": "mark synthetic output machine-readably",
+    "mechanism": "compliance marking and disclosure"
+   }
+  },
+  {
+   "name": "The two-tier agent-identity world",
+   "stage": "validation",
+   "reason": "Cloudflare signed agents went GA 2025-08-28 covering five named agents, while the Web Bot Auth architecture draft expired and was replaced. This is the enabling change behind the site-operator problem, not a separate user problem, so it was folded in as a why-now including the honest read that the protocol is still in flux.",
+   "fingerprint": {
+    "user": "operator facing declared and undeclared automated clients",
+    "job": "tell a verifiable client from an unverifiable one",
+    "mechanism": "cryptographic request signing for a named allowlist"
+   }
+  },
+  {
+   "name": "Small-forum admin signup waves",
+   "stage": "validation",
+   "reason": "Real, consumer-adjacent and non-US, but the same job as the community-moderation problem at a tenth of the volume. Merged into it as the low-end segment rather than counted twice; its value was proving the cohort-action job exists on a second unrelated platform.",
+   "fingerprint": {
+    "user": "admin of a small hobby forum the morning after a signup wave",
+    "job": "stop automated signups without losing real members",
+    "mechanism": "cohort action on registration-path keys"
+   }
+  }
+ ],
+ "ideas": [
+  {
+   "name": "Canary Maze",
+   "origin": "problem",
+   "problem_status": "validated",
+   "wedge_status": "untested",
+   "fingerprint": {
+    "domain": "web infrastructure and agent forensics",
+    "user": "the operator of a site or public API, at the moment they are asked to prove what happened rather than just block it",
+    "job": "establish that two automated clients shared information",
+    "mechanism": "coordination stops being inferred from similarity and becomes recorded from a secret planted per visitor",
+    "mechanism_family": "create",
+    "buyer_or_demo": "a graph edge appears as a second client fetches a URL only the first client was ever shown"
+   },
+   "recycled": {
+    "category": "none",
+    "wedge": ""
+   },
+   "default_match": {
+    "matches": "D6 Information-spread tracer (organizer suggestion: 'tools to trace how information spreads within a group')",
+    "why_different": "D6 traces propagation inside a corpus of transcripts you already hold, by reading messages a group of agents exchanged. This works where there are no transcripts at all: on the operator's own property, against clients that report nothing, by issuing a secret only one client was shown and recording who else asks for it. The unit is a request record whose false-positive rate is bounded by HMAC collision, not a similarity score over messages."
+   },
+   "claims": [
+    {
+     "type": "evidence",
+     "text": "The operator of the UNCTADstat API reports the agents 'did get rate-limited (\"please stop rinsing my site\") and continued rinsing the API with requests regardless', and that he cannot tell 'whether it's the same swarm, let alone the same agents'.",
+     "strength": "moderate",
+     "source": "https://news.ycombinator.com/item?id=49868377",
+     "org": "UNCTAD",
+     "speaker": "roarch",
+     "about": "a UN statistics API's own traffic",
+     "how": "opened",
+     "date": "2026-09-27",
+     "segment": "same",
+     "source_type": "forum comment"
+    },
+    {
+     "type": "evidence",
+     "text": "Wikimedia Foundation engineering: 'Since January 2024, we have seen the bandwidth used for downloading multimedia content grow by 50%'; bots are about 35% of pageviews but 'at least 65% of this resource-consuming traffic'.",
+     "strength": "strong",
+     "source": "https://diff.wikimedia.org/2025/04/01/how-crawlers-impact-the-operations-of-the-wikimedia-projects/",
+     "org": "Wikimedia Foundation",
+     "speaker": "Wikimedia Foundation SRE and engineering staff",
+     "about": "Wikimedia's own infrastructure",
+     "how": "opened",
+     "date": "2025-04-01",
+     "segment": "same",
+     "source_type": "organisation engineering blog"
+    },
+    {
+     "type": "evidence",
+     "text": "A Read the Docs engineer reports they see misconfigured data scrapers weekly, and that one attack was engineered to exploit autoscaling by targeting non-CDN URLs.",
+     "strength": "moderate",
+     "source": "https://news.ycombinator.com/item?id=49630503",
+     "org": "Read the Docs",
+     "speaker": "davidfischer",
+     "about": "their own infrastructure",
+     "how": "opened",
+     "date": "2026-09-09",
+     "segment": "same",
+     "source_type": "forum comment by an employee"
+    },
+    {
+     "type": "fact",
+     "text": "Cloudflare tested undeclared crawling by creating 'multiple brand-new domains, similar to testexample.com and secretexample.com' that 'had not yet been indexed by any search engine nor made publicly accessible in any discoverable way', implemented 'a robots.txt file with directives to stop any respectful bots', then queried a model about them. It observed '3-6m daily requests' from a stealth variant presenting 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', rotating IPs 'not listed in Perplexity's official IP range' and 'different ASNs in attempts to further evade website blocks'.",
+     "strength": "strong",
+     "source": "https://blog.cloudflare.com/perplexity-is-using-stealth-undeclared-crawlers-to-evade-website-no-crawl-directives/",
+     "org": "Cloudflare",
+     "speaker": "Cloudflare",
+     "about": "an undeclared crawler's observed behaviour across tens of thousands of domains",
+     "how": "opened",
+     "date": "2025-08-04",
+     "segment": "same",
+     "source_type": "vendor engineering blog"
+    },
+    {
+     "type": "evidence",
+     "text": "Anubis, a proof-of-work gate whose tagline is 'Weighs the soul of incoming HTTP requests to stop AI crawlers', has 22,995 stars, 743 forks and 379 open issues, created 2025-03-17; third parties have independently built an install guide, a managed-hosting CLI for a Swiss provider and a Helm chart around it.",
+     "strength": "strong",
+     "source": "https://api.github.com/repos/TecharoHQ/anubis",
+     "org": "Techaro and independent adopters",
+     "speaker": "repository metadata published by Techaro",
+     "about": "adoption of a proof-of-work crawler gate across independent deployments",
+     "how": "opened",
+     "date": "2026-10 (accessed)",
+     "segment": "same",
+     "source_type": "code-host API"
+    },
+    {
+     "type": "fact",
+     "text": "Cloudflare's Web Bot Auth documentation states the limit of signing: 'Verification proves operator identity only. It is not authorization, not intent, and not a decision about whether the request is welcome.'",
+     "strength": "strong",
+     "source": "https://developers.cloudflare.com/bots/reference/bot-verification/web-bot-auth",
+     "org": "Cloudflare",
+     "speaker": "Cloudflare documentation",
+     "about": "what request signing does and does not establish",
+     "how": "opened",
+     "date": "2026-10 (accessed)",
+     "segment": "same",
+     "source_type": "vendor documentation"
+    },
+    {
+     "type": "fact",
+     "text": "The closest prior art already owns the minting primitive AND the ledger. arXiv:2605.13706v1, revised 2026-09-03: 'We host dynamic websites that serve unique canary tokens to each visiting scraper'; 'we maintain a mapping between scrapers and the tokens served to them, so we can later map tokens found in chatbot responses back to scrapers'; it identifies clients by User-Agent and ASN and notes this 'can be easily extended to use arbitrarily complex fingerprinting techniques, such as TLS fingerprinting or browser fingerprinting'. It verifies by prompting model products and they 'wait for two months to allow the scrapers to retrieve the content'.",
+     "strength": "strong",
+     "source": "https://arxiv.org/html/2605.13706v1",
+     "org": "Duke University / the paper's authors",
+     "speaker": "Seiden, Ren, Zhang, Kim, Liu and Wenger",
+     "about": "their own method and its client-identity scheme",
+     "how": "opened",
+     "date": "2026-09-03",
+     "segment": "same",
+     "source_type": "preprint"
+    },
+    {
+     "type": "fact",
+     "text": "One actor label in the organizers' own dump carries stored_revisions: 899 against stored_revision_ips: 741 and stored_revision_ip16: 114 - one actor operating from 741 distinct addresses. Every change of address within a single actor would present as a different request context.",
+     "strength": "strong",
+     "source": "https://collusion.wiki/explorer/download",
+     "org": "Nightingale Collective",
+     "speaker": "the dump's own labels table",
+     "about": "one agent actor's address spread across its own edits",
+     "how": "opened",
+     "date": "2026-10-02",
+     "segment": "same",
+     "source_type": "dataset"
+    },
+    {
+     "type": "assumption",
+     "text": "An operator will accept serving a small amount of decoy surface to automated clients in order to obtain records, and can do so without degrading human visitors' experience.",
+     "how": "opened",
+     "date": "2026-10",
+     "source_type": "reasoning"
+    },
+    {
+     "type": "hypothesis",
+     "text": "On a newly deployed domain with an XML sitemap and no proof-of-work gate, at least one sighting by a fingerprint other than the minting fingerprint will be recorded within 24 hours.",
+     "how": "opened",
+     "date": "2026-10",
+     "source_type": "reasoning"
+    }
+   ],
+   "evidence_summary": {
+    "strength": "strong",
+    "why": "Five independent organisations document the operator-side problem with their own numbers: a UN statistics API, the Wikimedia Foundation, Read the Docs, an independent publisher and Cloudflare. Cloudflare's own investigation independently demonstrates the specific failure this idea addresses, that the identifiers a client presents are under the client's control.",
+    "counter": "Two findings cut hard. First, the prior art is deeper than it looked: the Duke paper, revised one month before this event, already mints per visitor keyed to a client identity and already keeps the mint-to-client ledger, so only the sighting channel is left. Second, and more serious, a sighting across two request contexts does not establish two actors - one actor label in the organizers' own dump spans 741 addresses - so the original claim that false positives were bounded by HMAC collision was wrong, and actor distinctness remains an open inference the tool does not solve. Beyond that, an operator behind a large CDN can buy bot management today; the segment that survives is the operator who is not that vendor's customer and needs a record rather than a block.",
+    "missing_voices": "CDN and bot-management engineers; the agent operators themselves, for whom no source in the run speaks."
+   },
+   "competition_scan": {
+    "startup": "Canarytokens/Thinkst is the incumbent primitive: 'motion sensors for your networks, computers and clouds', one token per asset, generated by a human in a form; the guide page opened describes no per-visitor generation, no cross-client tracking and no graph. Bot-management vendors (DataDome opened; HUMAN, Netacea and Fingerprint.com are leads only) are uniformly similarity-side, and DataDome's stated edge is cross-network reputation, which links clients by resemblance and shared IP history.",
+    "oss": "A GitHub search for per-request web-canary middleware returned total_count: 0, so it does not exist as a package. Decoy-page servers exist and are plumbing: Pyison (MIT, 125 stars) and nepenthes-py (MIT, 36 stars, 'Traps LLM crawlers in an infinite maze of fake pages and Markov babble'). Two honeytoken reference implementations are GPL-3.0 and stale. CanaryTokenScanner (150 stars) detects and strips tokens without triggering them, which is the threat model, not a competitor.",
+    "hackathon": "No prior edition of this event and no prior hackathon by its hosts. Apart Research sprints were swept; no canary, honeytoken or propagation project surfaced among the winners the queries reached. 'SwarmTrace - pytest for AI Agent Swarms' on lablab.ai shares only the word trace: it instruments agents you own, from the inside, via code you inserted.",
+    "platform": "None of the platform products opened uses planted unique content to establish that two clients shared information. Cloudflare AI Labyrinth plants decoys, but they are pre-generated and stored in R2 and exist to feed 'our machine learning models' - a labelling source for a classifier, which is the approach this idea argues is failing. AI Crawl Control accounts per declared crawler. Web Bot Auth names a cooperating client and explicitly disclaims intent.",
+    "research": "arXiv:2605.13706 (Duke, May 2026) already owns per-visitor minting - 'We host dynamic websites that serve unique canary tokens to each visiting scraper' - but verifies through model output, 'prompt LLMs for information about our sites', after waiting 'two months', and observes scraper-to-model ingestion rather than client-to-client sharing, with no propagation graph and no evidence bundle. The agent-forensics cluster (HANSARD 2608.22512, 2609.04017, 2609.08481, 2609.11030) all assume cooperating, self-reporting agents.",
+    "workaround": "Proof-of-work gates, which block the traffic the operator needs to observe; robots.txt, which the Cloudflare case shows is ignored by undeclared clients; rate limits, reported as simply ignored; $25 robots.txt audits; passive fingerprint similarity; log dashboards; tarpits. Every one blocks, counts, guesses or wastes. None records."
+   },
+   "competitors": [
+    {
+     "name": "Identifying AI Web Scrapers Using Canary Tokens (Duke)",
+     "kind": "research",
+     "url": "https://arxiv.org/abs/2605.13706",
+     "difference": "Same minting primitive, different proof. It verifies by prompting 22 production model systems after waiting 'two months', which establishes that a scraper fed a model. This verifies in the site's own request log within minutes, with no model on the proof path, and establishes that one client fetched a secret issued to another."
+    },
+    {
+     "name": "Canarytokens (Thinkst)",
+     "kind": "startup",
+     "url": "https://docs.canarytokens.org/guide/",
+     "difference": "One token per asset, planted by hand, answering 'was this asset touched?'. Here a fetch by the minting fingerprint is a no-op and only a fetch by a different fingerprint is signal, which requires per-request minting and a mint ledger the incumbent has no notion of."
+    },
+    {
+     "name": "Cloudflare AI Labyrinth",
+     "kind": "platform",
+     "url": "https://blog.cloudflare.com/ai-labyrinth/",
+     "difference": "Its decoys are pre-generated in R2 and shared across visitors, and exist so that 'this information is recorded and automatically fed to our machine learning models'. A shared corpus can train a classifier; it cannot prove two clients shared a secret, because every visitor saw the same pages."
+    },
+    {
+     "name": "Cloudflare stealth-crawler investigation",
+     "kind": "platform",
+     "url": "https://blog.cloudflare.com/perplexity-is-using-stealth-undeclared-crawlers-to-evade-website-no-crawl-directives/",
+     "difference": "The closest methodology precedent anywhere, and it was manual, one-off and verified by asking a model about freshly bought domains. It proved an operator fetched what it should not have; it did not establish sharing between clients, and the post contains no records a reader could check independently."
+    },
+    {
+     "name": "Cloudflare Web Bot Auth / signed agents",
+     "kind": "platform",
+     "url": "https://blog.cloudflare.com/signed-agents/",
+     "difference": "A complement, not a rival, and worth saying so on stage: signatures name a cooperating client and, in Cloudflare's own words, prove 'operator identity only'. A signed request fetching a secret minted for a different fingerprint is the strongest evidence either system can produce."
+    },
+    {
+     "name": "Pyison",
+     "kind": "oss",
+     "url": "https://github.com/JonasLong/Pyison",
+     "difference": "MIT, 125 stars, a working crawl-maze server with an infinite link graph and generated prose. It is the serving layer and none of the mechanism: it has no mint keyed to a fingerprint, no ledger, no sighting detection and no graph. Intended as the fork base."
+    },
+    {
+     "name": "nepenthes-py",
+     "kind": "oss",
+     "url": "https://github.com/NEPENTHESWEB/nepenthes-py",
+     "difference": "MIT, 36 stars, 'The first anti-AI tarpit... Traps LLM crawlers in an infinite maze of fake pages and Markov babble'. Its purpose is to waste a crawler's time; this serves a unique secret in order to record who passes it on. Its babble is reusable as carrier prose."
+    },
+    {
+     "name": "SwarmTrace - pytest for AI Agent Swarms",
+     "kind": "hackathon",
+     "url": "https://lablab.ai/submissions/wi33nwr3w8yhumqflx6s35oe",
+     "difference": "Instruments agents you own from the inside via an @observe decorator you inserted. This observes clients you do not control, from the outside, via content you served. No overlap beyond the word trace."
+    },
+    {
+     "name": "Grepping the access log for known user-agent strings",
+     "kind": "workaround",
+     "difference": "The published state of the art for a non-CDN operator, taught by a cottage industry of maintained user-agent lists. Cloudflare's own finding of a crawler presenting desktop Chrome shows it is one spoofed header away from useless."
+    }
+   ],
+   "wedge": "The sighting channel. A prior paper already mints a secret per visitor and keeps the mint-to-client ledger; it then verifies by prompting 22 model products and waiting two months. This verifies in the operator's own request log in minutes, with no model on the proof path, and emits a bundle a third party can check offline - so the claim is about traffic the operator already serves rather than about what a chatbot says weeks later.",
+   "card": {
+    "concept": "A site that issues every automated visitor its own secret, then records who else comes asking for it - turning 'these clients look similar' into 'this client fetched a URL only that client was ever shown, four minutes earlier'.",
+    "problem": "An operator watching automated traffic cannot establish that two clients are coordinating. Passive detection compares traffic characteristics, and those characteristics are controlled by the client: Cloudflare documented an undeclared crawler reaching robots.txt-blocked, newly purchased, unindexed domains at 3-6m requests a day while presenting a desktop Chrome user-agent and rotating ASNs. The operator of a UN statistics API says plainly that he cannot tell 'whether it's the same swarm, let alone the same agents'.",
+    "user": "The operator of a site or public API, at the moment they are asked to show a third party what happened rather than just block it.",
+    "why_it_matters": "Every available answer blocks, counts, guesses or wastes; none records. When the industry's best-resourced actor investigated this in August 2025 it had to buy fresh domains and ask a model about them, and the post it published contains no records a reader can check. Evidence about coordinated automated behaviour on the open web currently rests on one vendor's word, which is exactly the gap the incident investigators describe when they write that agent activity 'can itself modify or delete relevant data'.",
+    "core_workflow": "1. Middleware in the operator's existing request path classifies each inbound request as human or automated and, for automated ones only, derives a fingerprint. 2. For each automated request it mints a secret - a canary URL and a fact-token embedded in carrier prose - as an HMAC over (path, fingerprint, salt), and writes a mint row binding that secret to that fingerprint and timestamp. 3. Every subsequent request is checked against the mint table. 4. A request for a secret by a fingerprint other than the one it was minted for is written to the sighting table as an edge, with both raw request records. 5. The sighting table renders as a propagation graph and exports an evidence bundle - mint rows, sighting rows, raw requests, hashes - that verifies offline with the operator's server switched off.",
+    "ai_role": "Matching, and only on an optional side path. When a client restates a planted fact in its own words instead of fetching the canary URL, exact and fuzzy string matching both miss it, and deciding that a reworded sentence is the same planted fact needs semantic comparison. Those laundered sightings are written to a separate lower-confidence table that never enters the proof graph; the verbatim path uses no model at all.",
+    "non_ai_product": "The HMAC mint, the per-visitor middleware, the mint ledger, the sighting ledger, the propagation graph and the offline-verifiable evidence bundle - the entire proof path, unchanged.",
+    "data_loop": "Every mint and every sighting accumulates into a propagation history only this operator holds. More canary surface and more visitors produce a denser graph, and the set of fingerprint pairs that have ever shared a secret is a record that cannot be reconstructed after the fact.",
+    "hard_part": "Making a sighting mean something. The secret has to be bound to the requesting fingerprint so that a later fetch by a different fingerprint is provable rather than suggestive; the bundle has to verify for someone who does not trust the publisher; and human visitors have to be kept out of the ledger entirely, or the tool becomes visitor tracking. A judge can see all three: the mint table, a bundle verified with the server stopped, and the human-exclusion gate.",
+    "technical_implementation": "Fork Pyison (MIT) for the maze and serving layer. Write from scratch: the HMAC mint and salt rotation, the mint and sighting tables in SQLite, the fingerprint deriver, the sighting detector, a static SVG propagation graph, and a bundle writer with a Merkle root so a verifier needs nothing but the file. Deploy behind no proof-of-work gate, with an XML sitemap as the discovery vector.",
+    "mvp_scope": "IN: per-context minting of canary URLs, the two ledgers, verbatim sighting detection, the propagation graph, the evidence bundle and its offline verifier, the human-exclusion gate, and - as the PRIMARY deliverable rather than a fallback - a seeded replay in which two clients the builder controls demonstrate the full path end to end, clearly labelled as seeded. OUT: laundered-token semantic matching (shipped disabled), multi-site federation, any blocking or mitigation, any claim that two contexts are two actors, and any dependence on an organic sighting arriving inside the window.",
+    "differentiation": "Against the Duke paper, which is the one to cite first and not be caught by: it already mints per visitor keyed to a client identity and already keeps the mint-to-client mapping, and says it extends to TLS fingerprinting. What is left is the sighting channel - it verifies by prompting 22 model products after waiting two months, establishing scraper-to-model ingestion; this reads the operator's own request log in minutes and establishes that a secret moved between request contexts. Against Canarytokens: per-context minting rather than one token per asset, and a fetch by the issuing context is deliberately a no-op. Against AI Labyrinth: a unique secret per visitor rather than a shared decoy corpus, so the output is a record rather than classifier training data.",
+    "risks": [
+     "A sighting does not establish two actors. One actor label in the organizers' own dump spans 741 addresses, so intra-actor address rotation would present as a sighting. The tool reports that a secret moved between request contexts and must not claim more; the actor-distinctness inference is exactly the classifier problem it cannot escape, and saying so is the honest position.",
+     "The prior art is closer than it first appeared: the Duke paper already mints per visitor keyed to a client identity and keeps the ledger. The remaining contribution is the sighting channel and the offline-verifiable bundle, which is a narrower claim than the pitch originally made.",
+     "An organic sighting may not fire at all in 31 hours - the published experiment in this space waited two months. Mitigation: the seeded two-client replay is the primary deliverable, not the fallback, with the live organic count reported honestly however low; and pasting minted URLs into public model products triggers fetchers in minutes, with the caveat that this shows a fetcher following a human's paste rather than two agents sharing.",
+     "A framing risk rather than a competitor: the decoy-page neighbourhood is crowded and familiar, so the project can be mistaken for another crawler tarpit. Mitigation is presentational and firm - never demo the maze, always demo the graph and the bundle.",
+     "Two clients can request the same secret without having talked, if one simply follows the other through the same link graph. The sighting is evidence of a shared artifact, not proof of intent, and the write-up has to say so.",
+     "Tokens can be stripped: a tool with 150 stars already detects canary tokens 'without triggering alerts'. A motivated client defeats this.",
+     "Privacy: per-visitor minting applied to human visitors would be a tracking tool. The human-exclusion gate is a correctness requirement, not a nicety."
+    ],
+    "buildable_in_event": "Solo, about 20 hours, and the schedule is set by what is outside the builder's control. Sat 10:00-13:00 domain, DNS, TLS, sitemap and a deployed per-context URL space that stays stable, because a secret issued to A must still return 200 for B or no sighting is possible - this is the real long pole, not the ledger. 13:00-16:00 mint, salt, ledgers, context deriver, human-exclusion gate. 16:00-19:00 sighting detector, the seeded two-client replay, the graph. Sun 10:00-12:00 evidence bundle and offline verifier. 12:00-14:00 paste minted URLs into public model products and record which fetchers return, which fires in minutes and is repeatable. 14:00-15:00 report organic sightings honestly, however few. 15:00-17:00 write-up, README and video. Cut first: semantic matching, which ships disabled."
+   },
+   "wrapper_test": {
+    "product_is": "A website that issues a unique secret to each automated request context and keeps two ledgers - which context each secret was issued to, and which context later asked for it - plus the graph derived from them and a bundle that verifies without trusting the publisher.",
+    "ai_in_loop": true,
+    "reduction": {
+     "sentence": "the user gives candidate text to a model and gets back whether it matches one of their tokens",
+     "fair": false
+    },
+    "ai_leverage": {
+     "kinds": [
+      "matching",
+      "normalization"
+     ],
+     "why_not_deterministic": "A planted fact comes back reworded, reordered or part-quoted, so exact and fuzzy string matching both miss it; judging that a differently-phrased sentence carries the same planted fact is a semantic comparison no rule, index or template performs."
+    },
+    "without_model": {
+     "what": "the HMAC mint and salt rotation, the per-visitor middleware, the mint ledger, the sighting ledger, the propagation graph, the evidence bundle and its offline verifier - the whole proof path is untouched",
+     "survives": "substantial"
+    },
+    "archetype": {
+     "matches": "none",
+     "differs": ""
+    },
+    "smell": {
+     "q1_one_api_call": false,
+     "q2_textbox_ui": false,
+     "q3_prompt_differentiator": false,
+     "q4_workflow_outside_model": true,
+     "q5_touches_real_systems": true,
+     "q6_improves_with_use": true,
+     "q7_pays_after_novelty": true,
+     "q8_chatgpt_would_suggest": false
+    }
+   },
+   "authenticity": [
+    {
+     "signal": "narrow_persona",
+     "how": "an operator holding only their own request log who has been asked to show someone else what happened, like the statistics-API operator who could not tell whether repeat traffic was one swarm",
+     "basis": "evidence"
+    },
+    {
+     "signal": "existing_workaround",
+     "how": "it replaces a proof-of-work gate adopted across 22,995 starred deployments, which blocks the very traffic the operator needs to observe, and the robots.txt audits sold for $25 as a substitute",
+     "basis": "evidence"
+    },
+    {
+     "signal": "takes_responsibility_for_outcome",
+     "how": "it asserts one narrow factual claim, that this secret moved from the context it was issued to into a different one, and stores the rows that back it; the test is that the bundle verifies with the publisher's server switched off",
+     "basis": "commitment"
+    },
+    {
+     "signal": "integration",
+     "how": "drop-in middleware for nginx, Express and Flask, sitting in the request path the operator already runs rather than asking them to move traffic to a vendor",
+     "basis": "commitment"
+    },
+    {
+     "signal": "accumulated_history",
+     "how": "the mint and sighting ledgers become a propagation history nobody can reconstruct later, because a sighting only exists if the secret was already being served",
+     "basis": "commitment"
+    },
+    {
+     "signal": "better_with_repeat_use",
+     "how": "more canary surface and more automated visitors produce a denser graph, so the instrument improves simply by being left running",
+     "basis": "commitment"
+    },
+    {
+     "signal": "deterministic_core",
+     "how": "a verbatim sighting is an HMAC table lookup; the test is that running the demo with the model switched off leaves the proof graph byte-identical",
+     "basis": "commitment"
+    },
+    {
+     "signal": "distribution_or_trust",
+     "how": "the bundle is built to be checked by someone who does not trust the operator, which is the gap the best-resourced published investigation in this space left open",
+     "basis": "commitment"
+    }
+   ],
+   "moat": {
+    "mechanism": [
+     "accumulated history",
+     "operational complexity"
+    ],
+    "why_not_copyable": "Minting an HMAC token takes an afternoon. What cannot be copied is a dated ledger of which fingerprints have already shared which secrets, because a sighting only exists if the secret was being served before the sharing happened. The record is retrospective and cannot be backfilled, and running canary surface at scale without ever minting for a human is operational work, not a prompt."
+   },
+   "alternatives": [
+    {
+     "alternative": "manual process",
+     "today": "buy fresh domains, block them in robots.txt, ask a model about them and read the answer - the method Cloudflare used in August 2025",
+     "better": "the sighting is recorded in the operator's own request log within minutes, and the records verify offline without anyone taking the operator's word"
+    },
+    {
+     "alternative": "existing saas",
+     "today": "buy bot management from a CDN, which classifies each request as bot or human and names the crawlers that declare themselves",
+     "better": "it establishes a relation between two clients instead of attaching a label to one request, and the operator keeps the record"
+    },
+    {
+     "alternative": "scripts",
+     "today": "grep the access log for known user-agent strings from a maintained list",
+     "better": "the signal does not depend on any identifier the client chooses for itself"
+    },
+    {
+     "alternative": "doing nothing",
+     "today": "rate-limit, be ignored, and absorb the cost",
+     "better": "the week ends with records rather than a shrug"
+    }
+   ],
+   "why_now": {
+    "kind": "behavior",
+    "date": "2025-08",
+    "change": "On 2025-08-04 Cloudflare published that an undeclared crawler was reaching robots.txt-blocked, newly purchased, unindexed domains at '3-6m daily requests' while presenting a desktop Chrome user-agent and rotating through IPs 'not listed in Perplexity's official IP range' and 'different ASNs in attempts to further evade website blocks'. Three weeks later, on 2025-08-28, the industry's answer shipped as voluntary cryptographic signing covering a named allowlist.",
+    "threshold": "accuracy relative to the cost of an error: a passive classifier infers sharing from resemblance, and its precision collapses once the client controls every observable signal, which the stealth user-agent finding demonstrates at 3-6m requests a day from 1 documented crawler; a canary sighting instead records that a specific secret moved, which is a logged fact rather than an inference, though attributing the two contexts to two distinct actors remains a separate and unsolved inference",
+    "who_couldnt_before": "an operator who needs evidence rather than blocking - a UN agency, a foundation, an independent publisher, anyone who must show a third party what happened and cannot point at a vendor dashboard they do not own",
+    "sentence": "Since 2025-08 the identifiers automated clients present have been demonstrably under the client's own control, with an undeclared crawler reaching blocked new domains at 3-6m requests a day behind a desktop Chrome user-agent and rotating ASNs; earlier attempts at passive fingerprint detection failed because the adversary controls every observable signal, which planting a secret the adversary does not control removes."
+   },
+   "sponsors": [],
+   "criteria_alignment": [
+    {
+     "criterion": "Execution quality and methodological soundness",
+     "how": "The method is inspectable rather than asserted: the mint table shows what was issued to whom, and the bundle verifies with the server stopped. A reader can check the claim without running anything.",
+     "basis": "inference",
+     "gap": "No published rubric exists, so this weighting is assumed, not official."
+    },
+    {
+     "criterion": "Impact on the investigators' real workflow",
+     "how": "It addresses the first gap the incident investigators name, that relevant activity is hard to surface and 'can itself modify or delete relevant data', by recording the evidence at serve time instead of reconstructing it afterwards.",
+     "basis": "inference",
+     "gap": "It serves the open-web operator, not an investigator holding a transcript corpus; the connection has to be made explicitly in the write-up."
+    },
+    {
+     "criterion": "Real results on real data",
+     "how": "The seeded two-client replay is built rather than waited for, so the full path is demonstrated regardless; the chat-paste trigger produces real third-party fetcher traffic in minutes; and the organic sighting count from live traffic is reported exactly as it stands.",
+     "basis": "inference",
+     "gap": "A seeded result is weaker than an organic one, and this project can least afford an empty results section because its thesis is manufacturing evidence rather than inferring it. The honest result is a labelled mixture."
+    },
+    {
+     "criterion": "Originality and prior art",
+     "how": "No opened repository mints per-context secrets and detects movement between contexts in the request log; the contribution is the sighting channel and a bundle a third party can verify offline.",
+     "basis": "inference",
+     "gap": "The Duke paper, revised a month before the event, owns per-visitor minting, the client-identity scheme and the ledger, and says it extends to TLS fingerprinting. Cite it in the first minute or the originality claim collapses on contact."
+    },
+    {
+     "criterion": "Presentation and clarity",
+     "how": "One sentence, one graph, one bundle. The write-up leads with the gap in the investigators' own words and states plainly what a sighting does and does not prove.",
+     "basis": "inference",
+     "gap": "The decoy-maze framing can swamp the explanation if the maze is shown at all."
+    },
+    {
+     "criterion": "Theme fit",
+     "how": "Directly answers two of the organizers' own suggestions - tracing how information spreads within a group, and going beyond transcripts using the web and digital forensics - at a moment and with a mechanism neither suggestion implies.",
+     "basis": "inference",
+     "gap": "It never touches the hosts' own corpus, so the theme connection is argued rather than demonstrated on their data."
+    }
+   ],
+   "demo": {
+    "first_10s": "'We help site operators prove two AI clients shared information, without guessing from how alike they look.' Then the problem said out loud: the operator of a UN statistics API cannot tell whether repeat traffic is one swarm or many strangers.",
+    "first_minute": "Open the mint table: secret X was issued to context A at 11:04. Open the sighting table: secret X was requested by context B at 11:08, different IP range, different declared purpose. Then the graph with that edge. Then the live log beside it, stating exactly how many organic sightings fired and how many were produced by the seeded replay - labelled, not blurred.",
+    "wow_moment": "Stop the server. Run the verifier against the bundle file alone. It still confirms that the secret moved. The claim survives without trusting the person making it - which is precisely what the best-resourced published investigation in this space could not offer, because it asked a chatbot and published no records.",
+    "technical_depth": "Show the HMAC mint keyed to the request context, then disable the model entirely and re-run: the proof graph is byte-identical, because nothing on the proof path was ever a model call. Then show the human-exclusion gate and the count of human visitors in the ledger, which is zero. Then state what the HMAC does and does not bound: it bounds whether this is your secret, not whether these are two actors.",
+    "story": "Cloudflare, August 2025: to establish that one crawler was reaching pages it had been told not to, it had to buy new domains, block them, and ask a model about them. The published research route is slower still - the Duke team waited two months for tokens to surface in chatbot answers. Those are the two published routes for proving what automated clients did, and neither leaves the reader records to check.",
+    "unhappy_path": "Show the limit that matters, using the organizers' own data: one account label in their dump carries 899 revisions across 741 distinct IPs. One actor, 741 addresses. So a sighting across two contexts is not evidence of two actors, and the tool reports secret movement without claiming actor distinctness. Then show a near-miss refused: two contexts that look alike but never touched each other's secrets produce no edge.",
+    "judge_touches": "A public repo with the committed real-traffic sample, a one-command demo that needs no credentials and no dataset approval, the bundle file and its verifier, and the live URL. A judge who never got dataset access can still reproduce every claim.",
+    "moments": [
+     {
+      "criterion": "Execution quality and methodological soundness",
+      "moment": "disable the model, re-run, show the byte-identical proof graph"
+     },
+     {
+      "criterion": "Impact on the investigators' real workflow",
+      "moment": "the opening line quoting the investigators on evidence that modifies itself"
+     },
+     {
+      "criterion": "Real results on real data",
+      "moment": "the seeded replay end to end, then the organic log beside it with its real count"
+     },
+     {
+      "criterion": "Originality and prior art",
+      "moment": "naming the Duke paper in the first minute, then the request-log channel beside its two-month chatbot channel"
+     },
+     {
+      "criterion": "Presentation and clarity",
+      "moment": "one sentence, one graph, one bundle, no maze shown"
+     },
+     {
+      "criterion": "Theme fit",
+      "moment": "naming which organizer suggestion this answers and at which different moment"
+     }
+    ]
+   },
+   "closest_past_winner": {
+    "name": "Two Witnesses: an evidentiary coalition audit of AI-agent incident disclosure (Apart Research x CeSIA AI Incident Response Sprint)",
+    "url": "https://github.com/MichelleThuo/two-witnesses",
+    "difference": "It re-codes 32 already-published incident claims and toggles developer-sourced against independent evidence to see which claims survive. It audits disclosures after the fact and plants nothing. This produces first-party evidence at serve time about clients that disclose nothing. Different user, job and mechanism; the shared concern is only that evidence about agents should be checkable by someone other than its author."
+   },
+   "outsider": "30-second script, to run on one person outside the team, ideally someone who operates a public site: 'Say you run a website and a swarm of AI agents is hammering it. Today you can block them, but you cannot show anyone that two of them were working together. This gives every visitor its own secret page and records who else comes asking for it - so when a second agent fetches a URL only the first was ever shown, you have a record, not a hunch. Would you use this?' It lands if they ask about their own site, ask to try it, or retell it correctly. A polite nod or questions only about the stack means it did not. Not yet run with a person.",
+   "anti_patterns": {
+    "no_clear_user": {
+     "hit": false,
+     "why": "n/a: one role at one named moment, carried in the fingerprint"
+    },
+    "nonexistent_problem": {
+     "hit": false,
+     "why": "n/a: opened primary accounts from independent organisations, listed in claims"
+    },
+    "technology_first": {
+     "hit": false,
+     "why": "discovery was blind to the event, its hosts and its sponsors, and seeded from user groups' own words; the pain was evidenced before any mechanism was chosen"
+    },
+    "clone": {
+     "hit": false,
+     "why": "the competitor scan found no product sharing user, job and mechanism"
+    },
+    "recycled_generic": {
+     "hit": false,
+     "why": "n/a: not a recycled category; see recycled.category"
+    },
+    "default_match": {
+     "hit": false,
+     "why": "the overlap with the organizers' suggestion list is declared in default_match with a research-backed difference"
+    },
+    "ledger_repeat": {
+     "hit": false,
+     "why": "n/a: first run against this ledger"
+    },
+    "chatgpt_wrapper": {
+     "hit": false,
+     "why": "removing the model leaves the workflow, the records and the checks intact; see wrapper_test.without_model"
+    },
+    "generic_rag": {
+     "hit": false,
+     "why": "n/a: nothing is retrieved and fed to a model to answer questions"
+    },
+    "generic_agent": {
+     "hit": false,
+     "why": "n/a: no autonomous agent; a bounded pipeline with a deterministic gate"
+    },
+    "generic_dashboard": {
+     "hit": false,
+     "why": "the output is a record and an action, not a view of data"
+    },
+    "llm_wrapper": {
+     "hit": false,
+     "why": "the reduction sentence is written out in wrapper_test and is not a fair summary"
+    },
+    "no_product_without_model": {
+     "hit": false,
+     "why": "without_model.survives is substantial"
+    },
+    "prompt_moat": {
+     "hit": false,
+     "why": "no prompt is load-bearing; the moat mechanism is named in moat.mechanism"
+    },
+    "textbox_ui": {
+     "hit": false,
+     "why": "n/a: no textbox, no generated answer as the interface"
+    },
+    "chatgpt_obvious": {
+     "hit": false,
+     "why": "it was generated away from 22 pre-registered defaults that include all eight organizer suggestions, and it does not appear among them"
+    },
+    "sponsor_first": {
+     "hit": false,
+     "why": "n/a: this event offers no sponsor API; nothing was chosen to fit a vendor"
+    },
+    "default_entry": {
+     "hit": false,
+     "why": "the organizers' list asks for information-spread tracing inside a group whose transcripts you hold; this operates where no transcripts exist, on the operator's own property, and records rather than infers"
+    },
+    "wrong_brief": {
+     "hit": false,
+     "why": "answers two organizer suggestions at once - tracing information spread within a group, and going beyond transcripts using the web and digital forensics - which the judging-intelligence scan found to be the emptiest slot on their list"
+    },
+    "impossible_demo": {
+     "hit": false,
+     "why": "after the critic pass the demo no longer depends on luck: the seeded two-client replay is the primary deliverable and demonstrates the whole path, and the chat-paste trigger produces third-party fetcher traffic in minutes. The organic sighting is reported as whatever it is, so an empty organic log weakens the result without preventing the demo."
+    },
+    "unrealistic_data": {
+     "hit": false,
+     "why": "it runs on the builder's own real inbound traffic, with whatever fires committed to the repo as a sample"
+    },
+    "forced_blockchain": {
+     "hit": false,
+     "why": "n/a: none used"
+    },
+    "forced_ar_vr": {
+     "hit": false,
+     "why": "n/a: none used"
+    },
+    "forced_iot": {
+     "hit": false,
+     "why": "n/a: none used"
+    },
+    "forced_multi_agent": {
+     "hit": false,
+     "why": "n/a: no agent orchestration; a single pipeline"
+    },
+    "superficial_sponsor": {
+     "hit": false,
+     "why": "n/a: no sponsor technology is used at all, so there is nothing superficial to disclose"
+    },
+    "platformmaxxing": {
+     "hit": false,
+     "why": "n/a: no sponsor features are used for show"
+    },
+    "weekend_clone": {
+     "hit": false,
+     "why": "a model API plus a frontend reproduces none of the deterministic core"
+    },
+    "resume_first": {
+     "hit": false,
+     "why": "the run was GENERAL: the builder's background was not read until after the ideas were final, and did not shape, choose or judge any of them"
+    },
+    "prior_project_variation": {
+     "hit": false,
+     "why": "checked at Stage 9 against the identifiers available in session; no past project of the builder's was found to share the user, mechanism and job"
+    }
+   }
+  },
+  {
+   "name": "Batch Card",
+   "origin": "problem",
+   "problem_status": "validated",
+   "wedge_status": "untested",
+   "fingerprint": {
+    "domain": "open-source project operations",
+    "user": "a volunteer maintainer at the moment a submission lands in the queue they work through on their own time",
+    "job": "decide in under a minute whether this submission deserves human review",
+    "mechanism": "the triage unit changes from one submission to the batch it belongs to, reconstructed from public cross-repository event data and kept as a record",
+    "mechanism_family": "inform",
+    "buyer_or_demo": "a real submission is opened and the card names the other 111 it arrived with"
+   },
+   "recycled": {
+    "category": "none",
+    "wedge": ""
+   },
+   "default_match": {
+    "matches": "none: it shares the words 'discover' and 'in the wild' with organizer suggestion D1, but neither the user, the job nor the mechanism",
+    "why_different": ""
+   },
+   "claims": [
+    {
+     "type": "evidence",
+     "text": "curl's lead reports that in 2025 the project received about two security submissions a week, that '20% of all submissions' were machine-generated slop while valid vulnerabilities fell to 'about 5% of the submissions in 2025', that each report engages '3-4 persons' for '30 minutes, sometimes up to an hour or three. Each.', that the bounty has paid 'over 90,000 USD' for 81 vulnerabilities since 2019, and that they were considering dropping monetary rewards.",
+     "strength": "strong",
+     "source": "https://daniel.haxx.se/blog/2025/07/14/death-by-a-thousand-slops/",
+     "org": "curl",
+     "speaker": "Daniel Stenberg",
+     "about": "curl's own security-team operations",
+     "how": "opened",
+     "date": "2025-07-14",
+     "segment": "same",
+     "source_type": "maintainer blog (primary)"
+    },
+    {
+     "type": "evidence",
+     "text": "Wiz Research documented a campaign titled 'Six Accounts, One Actor': six named accounts operated by one actor opened 500+ malicious pull requests between 2026-03-11 and 2026-04-03, including 'over 475 malicious PRs in 26 hours' from one account, with credentials stolen from 50+ repositories. The accounts were linked by identical branch pattern, identical title and body text, Proton Mail address variants and timing clusters.",
+     "strength": "strong",
+     "source": "https://www.wiz.io/blog/six-accounts-one-actor-inside-the-prt-scan-supply-chain-campaign",
+     "org": "Wiz",
+     "speaker": "Wiz Research (McCarthy, Ramati, Piper, Read)",
+     "about": "one actor's six accounts and their 500+ pull requests across many repositories",
+     "how": "opened",
+     "date": "2026-04-04",
+     "segment": "same",
+     "source_type": "security vendor incident research"
+    },
+    {
+     "type": "evidence",
+     "text": "A maintainer stopped accepting pull requests outright: 'When you waste time trying to deal with \"AI\" generated pull-requests, in your free time, you might change your mind.'",
+     "strength": "moderate",
+     "source": "https://news.ycombinator.com/item?id=47414995",
+     "org": "an independent maintainer",
+     "speaker": "stevekemp",
+     "about": "his own project",
+     "how": "opened",
+     "date": "2026-03-17",
+     "segment": "same",
+     "source_type": "forum comment"
+    },
+    {
+     "type": "evidence",
+     "text": "A study of AI-contribution policies across 2,000 repositories documents 281 written policies and tabulates the countermeasures they deploy: close the PR 48.4%, ban or block the user 20.8%, disallow autonomous agents 13.8%, restrict new or external contributors 4.8%, label the PR 2.1%, limit PR count 1.6%. Its countermeasure taxonomy is entirely per-item or per-user.",
+     "strength": "moderate",
+     "source": "https://arxiv.org/html/2609.07542",
+     "org": "the paper's authors (Hora, Robbes, Zacchiroli)",
+     "speaker": "Hora, Robbes and Zacchiroli",
+     "about": "281 written AI policies across 2,000 repositories",
+     "how": "opened",
+     "date": "2026-09",
+     "segment": "same",
+     "source_type": "preprint"
+    },
+    {
+     "type": "evidence",
+     "text": "An account created on 1 February 'within days had 103 pull requests (PRs) opened across 95 repositories, resulting in 23 commits across 22 of those projects', tied to an agent platform, with a profile that 'doesn't identify it as an AI agent'.",
+     "strength": "moderate",
+     "source": "https://www.infoworld.com/article/4132851/open-source-maintainers-are-being-targeted-by-ai-agent-as-part-of-reputation-farming.html",
+     "org": "Socket (reported by InfoWorld)",
+     "speaker": "Socket researchers via InfoWorld",
+     "about": "one account's cross-repository submission burst",
+     "how": "opened",
+     "date": "2026",
+     "segment": "same",
+     "source_type": "trade press reporting vendor research"
+    },
+    {
+     "type": "evidence",
+     "text": "GitHub's own post on its open-pull-request cap states the limit of the feature in its own words: it 'does nothing when someone opens pull requests across hundreds of repositories at once', and lists cross-repository controls as still being explored rather than implemented.",
+     "strength": "strong",
+     "source": "https://github.blog/open-source/maintainers/how-pull-request-limits-are-cutting-down-the-noise/",
+     "org": "GitHub",
+     "speaker": "GitHub",
+     "about": "the stated limitation of its own shipped countermeasure",
+     "how": "opened",
+     "date": "2026-06-18",
+     "segment": "same",
+     "source_type": "platform engineering blog (primary)"
+    },
+    {
+     "type": "evidence",
+     "text": "In the documented six-account campaign, 'the attacker, operating under the account ezmtebo, opened over 475 malicious PRs in 26 hours' out of 500+ in total - so roughly 95% of the volume came from one account, and the genuinely cross-account portion is a tail of about 25 submissions.",
+     "strength": "strong",
+     "source": "https://www.wiz.io/blog/six-accounts-one-actor-inside-the-prt-scan-supply-chain-campaign",
+     "org": "Wiz",
+     "speaker": "Wiz Research",
+     "about": "the per-account distribution of one actor's campaign volume",
+     "how": "opened",
+     "date": "2026-04-04",
+     "segment": "same",
+     "source_type": "security vendor incident research"
+    },
+    {
+     "type": "evidence",
+     "text": "In GitHub's own maintainer discussion running January to August 2026, blocking and rate-limiting were the most requested responses, cross-repository detection 'wasn't a common theme', and 'No maintainers explicitly asked for batch-identifying labels'; the thread 'emphasizes friction-adding mechanisms... over detection/attribution approaches'.",
+     "strength": "moderate",
+     "source": "https://github.com/orgs/community/discussions/185387",
+     "org": "GitHub community (maintainers)",
+     "speaker": "maintainers posting in GitHub's own discussion",
+     "about": "what maintainers actually asked for",
+     "how": "opened",
+     "date": "2026-08",
+     "segment": "same",
+     "source_type": "platform community discussion"
+    },
+    {
+     "type": "assumption",
+     "text": "A maintainer will install a third-party GitHub App that writes a comment and a label on their queue, and will act on a batch claim it cannot independently verify at the moment of triage.",
+     "how": "opened",
+     "date": "2026-10",
+     "source_type": "reasoning"
+    },
+    {
+     "type": "hypothesis",
+     "text": "Replayed against public event data for 2026-03-11 to 2026-04-03, the batch rule will group at least five of the six accounts Wiz named into one batch, using only deterministic keys and without being told the accounts in advance.",
+     "how": "opened",
+     "date": "2026-10",
+     "source_type": "reasoning"
+    }
+   ],
+   "evidence_summary": {
+    "strength": "strong",
+    "why": "The pain is documented with numbers by the affected project itself, the coordinated-campaign phenomenon is documented with named accounts and dates by a security vendor, two further independent maintainers describe their own responses, and an academic survey of 281 written policies shows every deployed countermeasure is per-item or per-user. Five independent organisations.",
+    "counter": "Three things cut against it, and the second is the serious one. Scale: there were roughly 90M pull requests a month in 2026 and machine-generated ones grew from about 4M to 17M+, so coordinated multi-account campaigns are the malicious minority. Demand: in GitHub's own maintainer discussion, cross-repository detection 'wasn't a common theme' and 'No maintainers explicitly asked for batch-identifying labels' - expressed demand is for friction, not attribution, which matches the 2.1% label adoption. And the available ground truth barely exercises the feature: about 95% of the documented campaign's 500+ submissions came from one account, so the cross-account join applies to a tail of roughly 25. GitHub also holds all the cross-repository data.",
+    "missing_voices": "Paid maintainers at foundations; maintainers on GitLab and Codeberg, neither of which was checked; any non-English project; and the operators running the campaigns."
+   },
+   "competition_scan": {
+    "startup": "None of the four commercial products opened detects cross-repository campaign membership; all four score the single submission. Greptile 'analyzes changes with full context' and builds 'a graph of your entire repository', with no cross-repository or cross-customer analysis, no author history and no multi-account correlation. Socket published the reputation-farming research and holds cross-ecosystem data but no Socket product page was opened, which is the biggest unchecked risk in this scan.",
+    "oss": "Fourteen repositories tabled, all created in 2026, none above 5 stars, zero forks - a fashion hazard rather than competition. open-slop (8 stars) is the closest, with velocity, account-age and a 'shotgun' signal that asks whether a user opened 15 pull requests in 15 unrelated repositories; its own docs say it analyses single-PR behaviour and account history, not coordinated campaigns, and it holds one account at a time. contributor-summary and PR-slop are thinner on the same per-author axis. Duplicate-issue detection was not established: the search returned junk.",
+    "hackathon": "No prior edition of this event and no prior hackathon by its hosts. The nearest Apart Research sprint project, 'Prompt+Question Shield', protects website comment sections from machine-generated spam using prompt injection and challenge questions - prevention only, different user, job, mechanism and unit. No Apart sprint on maintainer triage or campaign detection.",
+    "platform": "No. Of the GitHub surfaces opened, none tells a maintainer that a submission is one of 112 by 9 accounts across 40 repositories. GitHub ships per-item abuse reporting and, since 2026-06-17, a per-contributor-per-repository open-PR cap. Reported as still under consideration: disabling pull requests entirely, restricting to collaborators, granular permissions and 'triage tools, possibly AI-based'. GitLab and Codeberg were not checked.",
+    "research": "None of six works examined groups submissions into operator-attributable campaigns. The only actors doing it are security vendors, manually and weeks after the fact. Adjacent: a 2026 study finds machine-generated security patches 'repeat a narrow set of weaknesses', which is the structural tell, scored one item at a time; an 'AI-DDoS' study covers '294 repositories and more than two million pull requests and issues' in aggregate only.",
+    "workaround": "Reading everything; closing the project to pull requests; dropping bounty money; and 281 written policies whose top countermeasures are closing the PR (48.4%) and banning the user (20.8%). None of them changes the unit of judgement from the item to the batch."
+   },
+   "competitors": [
+    {
+     "name": "GitHub's per-contributor open-PR cap",
+     "kind": "platform",
+     "url": "https://github.blog/open-source/maintainers/how-pull-request-limits-are-cutting-down-the-noise/",
+     "difference": "The nearest platform countermeasure, and GitHub says in the same post that it 'does nothing when someone opens pull requests across hundreds of repositories at once', with cross-repository controls still only being explored. The cap is per contributor per repository, so nine accounts across forty repositories at a cap of three each is up to 1,080 fully compliant submissions. Quote the platform's own sentence rather than arguing the point."
+    },
+    {
+     "name": "open-slop",
+     "kind": "oss",
+     "url": "https://github.com/marketplace/actions/open-slop",
+     "difference": "Owns one of the three signals - it asks whether a user opened 15 pull requests in 15 unrelated repositories - but its own docs say it analyses single-PR behaviour and account history, not coordinated campaigns. It holds one account at a time, so it can never say 'nine accounts'. Explicitly not a fork candidate: taking it would hand over the one signal that already reads as swarm detection."
+    },
+    {
+     "name": "PR-slop",
+     "kind": "oss",
+     "url": "https://github.com/visrutsuresh/PR-slop",
+     "difference": "Closest on batch triage as an interface, sorting a queue into read-first, read-next and likely-to-be-closed. It sorts one repository's queue by per-item score and never discovers that items belong together. No licence, so not forkable in any case."
+    },
+    {
+     "name": "Greptile",
+     "kind": "startup",
+     "url": "https://www.greptile.com/docs/introduction",
+     "difference": "Reviews each pull request with full repository context and builds a graph of the repository. No cross-repository analysis, no author history, no multi-account correlation. It answers whether the code is good; this answers whether the submission arrived alone."
+    },
+    {
+     "name": "scanaislop",
+     "kind": "oss",
+     "url": "https://scanaislop.com",
+     "difference": "A deterministic CI gate that states it is 'not an authorship detector', which is the same restraint this idea adopts - but it scores one submission at a time and never looks outside the repository."
+    },
+    {
+     "name": "Wiz Research's manual campaign attribution",
+     "kind": "research",
+     "url": "https://www.wiz.io/blog/six-accounts-one-actor-inside-the-prt-scan-supply-chain-campaign",
+     "difference": "It did exactly this analysis, with the same three signals, and published it three weeks after the campaign ended. The page never addresses whether a maintainer could have seen it at triage time. This does it in ten seconds, at the moment the submission lands, and its output can be checked against their published account."
+    },
+    {
+     "name": "Prompt+Question Shield",
+     "kind": "hackathon",
+     "url": "https://apartresearch.com/sprints/projects/collusion-and-mitigation-in-ai-control-pm60",
+     "difference": "Protects comment sections from machine-generated spam using prompt injection and challenge questions. Prevention only, with no informing half; different user, job, mechanism and unit of action."
+    },
+    {
+     "name": "Reading every submission, then closing the project",
+     "kind": "workaround",
+     "difference": "The documented endpoint: one maintainer stopped accepting pull requests, and curl considered dropping bounty money. Both change policy rather than the unit of judgement, and both cost the project its real contributors too."
+    },
+    {
+     "name": "What maintainers actually asked GitHub for",
+     "kind": "workaround",
+     "difference": "The honest counterweight, and it belongs in the write-up rather than buried: in GitHub's own discussion, blocking and rate-limiting dominated, cross-repository detection 'wasn't a common theme', and no maintainer asked for batch-identifying labels. Expressed demand is for friction, not attribution - so this has to argue that the shape changes which friction is correct, not that anyone requested it."
+    }
+   ],
+   "wedge": "It separates one operator running many accounts from many unrelated people, which no tool opened does and which GitHub says its own cap does not do: a maintainer facing 112 submissions cannot tell which they are looking at, and the right response differs - a policy page versus a platform abuse report - so the product asserts a batch from deterministic keys across repositories and never judges one item's authorship.",
+   "card": {
+    "concept": "A tool that answers the question a maintainer cannot answer alone, and that GitHub says its own pull-request cap does not answer: did this submission arrive on its own? It renders one collapsed card - 'submission 14 of 112 opened by 9 accounts in 6h across 40 repos' - and never says anything about who wrote it.",
+    "problem": "A maintainer decides one submission at a time with no view of the batch. curl measured the cost: about two security submissions a week, '20% of all submissions' machine-generated slop, valid findings down to 'about 5%', each report engaging '3-4 persons' for '30 minutes, sometimes up to an hour or three. Each.' Producing one costs the sender nothing. And the batch is invisible: Wiz needed three weeks to establish that six accounts opening 500+ pull requests were one actor.",
+    "user": "A volunteer maintainer, at the moment a submission lands in the queue they work through on their own time.",
+    "why_it_matters": "The platform owner has written the gap down. GitHub's own post on its pull-request cap says the limit 'does nothing when someone opens pull requests across hundreds of repositories at once', and lists cross-repository controls as still being explored. The decision that matters is not whether a text is machine-written - it is whether this is a crowd or a campaign, because the responses differ and only one of them is a platform abuse report. A study of 281 written AI policies found the top countermeasures are closing the PR at 48.4% and banning the user at 20.8%: one in five instructs a volunteer to accuse a person, the claim they are least equipped to defend.",
+    "core_workflow": "1. A webhook fires on every issue or pull request opened in an installed repository. 2. Compute three things: a normalised minhash of title and body against a rolling index spanning all installations; the author's cross-repository burst profile from the public events API; and structural tells, such as an identical branch pattern, identical section headers or the same non-resolving reference. 3. Assert a batch only when at least N members share a deterministic key; matches found only by embedding similarity render as 'possible' and never count toward N. 4. If the item belongs to a batch, write a label, persist a batch record, and post one collapsed comment naming the batch size, the account count, the time window and the repository count, plus how many are already closed. 5. Apply the maintainer's own pre-set rule: label only, require a checkbox, or close with a template.",
+    "ai_role": "Classification and matching: mapping two differently-worded submissions to the same underlying template. Minhash catches copy-paste and misses paraphrase, and a campaign that regenerates its text each time defeats exact fingerprinting entirely. A batch is never asserted on a model match alone - the deterministic key gate is what makes the claim defensible to a maintainer.",
+    "non_ai_product": "The webhooks, the cross-installation fingerprint index, the burst profiler over the public events API, the batch records, the labels and comments written to GitHub, the per-repository rules and the outcome history of every batch.",
+    "data_loop": "Each installation enlarges the index every other installation queries, and each batch accumulates an outcome history - 'nine of 112 already closed as not-planned' - which is itself the most useful line on the card and exists only because earlier maintainers acted.",
+    "hard_part": "Reconstructing cross-repository bursts from the public events API inside its rate limits, and the restraint in the claim: a batch assertion has to survive a maintainer checking it, so the deterministic gate has to be tight enough that the card is never wrong about the shape even when the model is wrong about the text. A judge can see the gate, and see the system refuse to assert on a model-only match.",
+    "technical_implementation": "Cut the GitHub App. A third-party App sees only installed repositories, so on a solo weekend there is no cross-installation index to speak of - and the public events API plus the public event archive give the cross-repository burst profile with no install, no auth flow and no cold start. Use Octokit's events pager. Write from scratch: the cross-repository index, the deterministic key extractors, the batch assertion rule and gate, the batch record store and the card renderer, rendered onto a real pull request in a demo organisation for the screenshot.",
+    "mvp_scope": "IN: the three signals computed from public event data, the deterministic gate, the batch record, the collapsed card rendered on a real pull request in a demo organisation, and a replay of the documented campaign window as the result. OUT: the GitHub App and its install flow, any authorship judgement, any automated closing, cross-maintainer fingerprint publication, and GitLab or Codeberg support.",
+    "differentiation": "Against GitHub's cap: per contributor per repository, so nine accounts across forty repositories stay fully compliant. Against open-slop: it owns the per-author burst signal but holds one account at a time, so it cannot say 'nine accounts'. Against the per-submission scorers: they answer whether this item is slop; this answers whether it arrived alone. Against Wiz: the same three signals, at triage time rather than three weeks later.",
+    "risks": [
+     "Maintainers did not ask for this. In GitHub's own discussion, blocking and rate-limiting dominated, cross-repository detection 'wasn't a common theme' and nobody asked for batch-identifying labels - which matches label adoption at 2.1%. The argument has to be that the shape changes which friction is correct, not that anyone requested attribution.",
+     "The available ground truth barely exercises the mechanism: about 95% of the documented campaign came from one account, so the cross-account join applies to a tail of roughly 25 submissions. A single-account burst is already handled by a rate limit.",
+     "Coordinated campaigns are the minority. With roughly 90M pull requests a month and machine-generated ones growing from about 4M to 17M+, most of the flood is uncoordinated individuals, so the tool separates a campaign from a crowd rather than solving the volume problem.",
+     "Theme fit is the weakest of the surviving set: the documented campaign is one human running six accounts with machine-generated payloads, not agents coordinating with each other. Calling it a swarm in front of this jury would be borrowing the word.",
+     "GitHub is the incumbent, holds all the cross-installation data, and has said it is focused on pull-request volume amplified by AI. A platform feature could absorb this - though a platform is institutionally reluctant to tell a user that another user is running a campaign.",
+     "The cold start is real: the cross-installation index is worthless with one installation. Seeding from public event data is the mitigation and has to be disclosed rather than hidden.",
+     "Labels are nearly unused in practice - 2.1% of deployed countermeasures - so a label-first design would land on the least-adopted lever. The card and the record have to carry the value.",
+     "A campaign that regenerates its text each time defeats minhash, and the deterministic keys then rest on burst timing and structural tells alone.",
+     "False batching has a social cost: wrongly telling a maintainer that a genuine contributor is part of a campaign is worse than saying nothing, which is why the gate must not fire on model-only matches."
+    ],
+    "buildable_in_event": "Solo, about 20 hours, with the App deliberately cut - building an App and a 24-day event-archive pipeline in parallel is two weekends, and the App adds nothing when it has one install. Sat 10:00-14:00 pull and index the public event archive for the documented campaign window, which is the long pole. 14:00-17:00 the deterministic key extractors and the burst profiler inside rate limits. 17:00-20:00 the batch rule and gate, and get one real batch to render. Sun 10:00-13:00 check the reconstruction against the published independent account of that campaign. 13:00-15:00 the card on a real pull request in a demo organisation, the record store. 15:00-17:00 write-up, README and video. Cut first: the paraphrase matcher, leaving deterministic keys only, with recall stated."
+   },
+   "wrapper_test": {
+    "product_is": "A cross-repository index of submissions, built from public event data rather than from installations, that puts one collapsed card and a persisted batch record in front of a maintainer, naming how many submissions arrived together, from how many accounts, over what window and across how many repositories.",
+    "ai_in_loop": true,
+    "reduction": {
+     "sentence": "the user gives a pull request to a model and gets back whether it is machine-generated slop",
+     "fair": false
+    },
+    "ai_leverage": {
+     "kinds": [
+      "classification",
+      "matching"
+     ],
+     "why_not_deterministic": "Two submissions generated from the same template arrive differently worded every time, so minhash and exact fingerprinting catch only copy-paste; recognising that differently-phrased bodies came from one template is a semantic judgement, and the structural tells alone miss campaigns that vary their scaffolding."
+    },
+    "without_model": {
+     "what": "the webhooks, the cross-installation fingerprint index, the deterministic key extractors, the events-API burst profiler, the batch records, the labels and comments written into GitHub, the per-repository rules and the outcome history of every batch",
+     "survives": "substantial"
+    },
+    "archetype": {
+     "matches": "none",
+     "differs": ""
+    },
+    "smell": {
+     "q1_one_api_call": false,
+     "q2_textbox_ui": false,
+     "q3_prompt_differentiator": false,
+     "q4_workflow_outside_model": true,
+     "q5_touches_real_systems": true,
+     "q6_improves_with_use": true,
+     "q7_pays_after_novelty": true,
+     "q8_chatgpt_would_suggest": false
+    }
+   },
+   "authenticity": [
+    {
+     "signal": "narrow_persona",
+     "how": "a volunteer maintainer with one queue and no view of the other forty repositories the same batch is hitting, working in their own time",
+     "basis": "evidence"
+    },
+    {
+     "signal": "existing_workaround",
+     "how": "it replaces reading everything, closing a project to pull requests, and dropping bounty money - all three documented as actually done",
+     "basis": "evidence"
+    },
+    {
+     "signal": "writes_to_system_of_record",
+     "how": "it writes a label and a collapsed comment onto the pull request itself, and optionally closes with a template, inside the queue the maintainer already works",
+     "basis": "commitment"
+    },
+    {
+     "signal": "domain_logic",
+     "how": "it never accuses an author and describes only the batch, because a volunteer cannot defend an authorship accusation - and banning the user is the second most common deployed countermeasure at 20.8%",
+     "basis": "evidence"
+    },
+    {
+     "signal": "usage_data",
+     "how": "which campaign shapes recur across windows - branch patterns, title templates, burst profiles - accumulates into the key list the deterministic gate fires on, so the gate gets tighter from observed campaigns rather than from guesswork",
+     "basis": "commitment"
+    },
+    {
+     "signal": "accumulated_history",
+     "how": "each batch carries the outcome history of its siblings - nine of 112 already closed as not-planned - which is the line that actually saves the reader time",
+     "basis": "commitment"
+    },
+    {
+     "signal": "deterministic_core",
+     "how": "a batch is asserted only when N members share a deterministic key; the test is that disabling embeddings entirely still asserts batches, just fewer",
+     "basis": "commitment"
+    },
+    {
+     "signal": "hard_implementation",
+     "how": "reconstructing cross-repository submission bursts from the public events API inside its rate limits, which is the part that cannot be faked in a demo",
+     "basis": "commitment"
+    }
+   ],
+   "moat": {
+    "mechanism": [
+     "accumulated history",
+     "network effects"
+    ],
+    "why_not_copyable": "The card's useful line is not the batch size but the outcome history of the other members, which only exists once batches have been observed and acted on over time. In the weekend version that history comes from the public event archive, which anyone can read - so the honest statement is that nothing defensible exists on day one, and the mechanism it would build if continued is the shared outcome history across maintainers who opt in. Named as the continuation path, not claimed as present."
+   },
+   "alternatives": [
+    {
+     "alternative": "manual process",
+     "today": "read every submission, which curl measures at 3-4 people for 30 minutes to three hours each",
+     "better": "the shape of the batch is on the page, so triage takes seconds and the reading is reserved for submissions that arrived alone"
+    },
+    {
+     "alternative": "existing saas",
+     "today": "run a per-submission reviewer or slop scorer that judges the item in front of it",
+     "better": "it answers a different question - whether the item arrived alone - which per-item scoring structurally cannot reach"
+    },
+    {
+     "alternative": "in-house tool",
+     "today": "write a policy file, cap open pull requests per contributor, or close the project to outside contributions",
+     "better": "none of those changes the unit of judgement, and the cap leaves nine accounts across forty repositories fully compliant"
+    },
+    {
+     "alternative": "doing nothing",
+     "today": "absorb the reviewing cost until the maintainer quits or stops accepting submissions, both of which are documented",
+     "better": "the campaign is separated from the genuine contributors instead of all of them being shut out together"
+    }
+   ],
+   "why_now": {
+    "kind": "economics",
+    "date": "2025-07-14",
+    "change": "curl published measured figures: about two security submissions a week, '20% of all submissions' machine-generated slop, valid vulnerabilities down to 'about 5% of the submissions in 2025', each report engaging '3-4 persons' for '30 minutes, sometimes up to an hour or three. Each.' - against a bounty that has paid 'over 90,000 USD' since 2019. Then, in April 2026, one actor was documented running six accounts and 500+ pull requests including 'over 475 malicious PRs in 26 hours'.",
+    "threshold": "cost per completed task: a reviewer spends 0.5 to 3 hours across 3-4 people per report while the sender spends close to nothing, which by my arithmetic from curl's own figures is roughly 30-250 volunteer person-hours a year on one 7-person team",
+    "who_couldnt_before": "a volunteer maintainer who sees one queue and has no way to learn that the same batch is hitting forty other projects at the same time",
+    "sentence": "Since 2025-07-14 curl has measured that about 20% of its security submissions are machine-generated slop while valid findings fell to about 5%, and since April 2026 a single actor running six accounts and 500+ pull requests has been publicly documented, so maintainers now face a review-budget problem rather than a quality problem; earlier attempts failed because the unit of judgement was the single report, which a cross-repository batch index removes."
+   },
+   "sponsors": [],
+   "criteria_alignment": [
+    {
+     "criterion": "Execution quality and methodological soundness",
+     "how": "The deterministic gate is the method and it is inspectable: disable the embeddings and batches still assert. The events-API burst reconstruction inside rate limits is the part that cannot be mocked.",
+     "basis": "inference",
+     "gap": "No published rubric exists, so this weighting is assumed. Precision of the batch rule will be measured only against one replayed campaign, which is a sample of one."
+    },
+    {
+     "criterion": "Impact on the investigators' real workflow",
+     "how": "The platform owner has stated the gap in its own words - its cap 'does nothing when someone opens pull requests across hundreds of repositories at once' - and this does the analysis a security vendor performed manually three weeks later, at triage time.",
+     "basis": "inference",
+     "gap": "Maintainers themselves did not ask for this: in GitHub's own discussion, cross-repository detection 'wasn't a common theme'. The impact argument therefore rests on the platform's stated gap, not on expressed user demand."
+    },
+    {
+     "criterion": "Real results on real data",
+     "how": "A documented campaign with six named accounts, a known branch pattern and a known title exists in public event data for a known window, so the reconstruction can be checked against an independent published account.",
+     "basis": "inference",
+     "gap": "About 95% of that campaign's volume came from one account, so the ground truth barely exercises the cross-account join - the honest demo shows a strong single-account burst and a roughly 25-submission multi-account tail. Public archives may also be incomplete for deleted accounts."
+    },
+    {
+     "criterion": "Originality and prior art",
+     "how": "Fourteen open-source projects and four commercial products all judge a submission or an author; none indexes submissions across installations into a persisted batch record. That bucket came back empty.",
+     "basis": "inference",
+     "gap": "Fourteen similarly-named projects appeared in 2026, so the topic is fashionable even though the mechanism is unoccupied - a reader may pattern-match before reading."
+    },
+    {
+     "criterion": "Presentation and clarity",
+     "how": "One card, one sentence, one number. The restraint - it never says who wrote anything - is the most memorable line and also the design argument.",
+     "basis": "inference",
+     "gap": "The distinction between 'is this slop' and 'did this arrive alone' has to land in the first fifteen seconds or the whole thing reads as another slop detector."
+    },
+    {
+     "criterion": "Theme fit",
+     "how": "Reads directly as discovering a coordinated group of automated accounts in the wild - the organizers' first suggestion - with a documented real swarm as the test case.",
+     "basis": "inference",
+     "gap": "Most machine-generated submissions are uncoordinated individuals, so 'swarm' applies to the minority this tool isolates, and saying otherwise would be overclaiming."
+    }
+   ],
+   "demo": {
+    "first_10s": "'We help open-source maintainers tell a campaign from a coincidence, in ten seconds, without accusing anybody.' Then the problem said out loud, in curl's numbers: 20% of submissions are slop, each one costs 3-4 people up to three hours, and sending one costs nothing.",
+    "first_minute": "Replay the real documented window from public event data. The card appears on a submission: one of N, from 6 accounts, inside the window, across many repositories. Then the published vendor write-up of that same campaign beside it - six accounts, one actor - which took three weeks to produce. State the honest split: most of the volume was one account, and the card names the multi-account tail the cap cannot reach.",
+    "wow_moment": "The card never says the words 'AI' or 'slop' and never names an author. It states a shape. A maintainer who could not defend an accusation can act on a shape immediately - and one in five written policies currently tells them to ban the user instead.",
+    "technical_depth": "Disable the embeddings entirely and re-run: batches still assert from deterministic keys alone, with lower recall. Then show the events-API burst reconstruction working inside the rate limit, and the gate refusing to assert a batch on a model-only match.",
+    "story": "GitHub shipped a cap and said in the same post that it 'does nothing when someone opens pull requests across hundreds of repositories at once'. Meanwhile: six accounts, one actor, 500+ pull requests between 11 March and 3 April 2026. A security vendor pieced it together three weeks later from identical branch names and identical titles. Every maintainer who received one saw a single pull request.",
+    "unhappy_path": "Feed it a genuine burst that is not a campaign - a release week where many real contributors file similar reports - and show it correctly declining to assert a batch because no deterministic key is shared. Then show the model proposing a match and the gate refusing it.",
+    "judge_touches": "A public repo with the replay harness and a committed slice of public event data, so the whole reconstruction runs offline in one command with no install, no credentials and no dataset approval, plus a screenshot of the card rendered on a real pull request in a demo organisation.",
+    "moments": [
+     {
+      "criterion": "Execution quality and methodological soundness",
+      "moment": "disable embeddings, re-run, batches still assert from deterministic keys"
+     },
+     {
+      "criterion": "Impact on the investigators' real workflow",
+      "moment": "the vendor write-up beside the card, three weeks versus ten seconds"
+     },
+     {
+      "criterion": "Real results on real data",
+      "moment": "the replayed campaign recovering the named accounts from public event data"
+     },
+     {
+      "criterion": "Originality and prior art",
+      "moment": "the empty bucket: fourteen projects that score items, none that indexes across them"
+     },
+     {
+      "criterion": "Presentation and clarity",
+      "moment": "the card stating a shape and naming nobody"
+     },
+     {
+      "criterion": "Theme fit",
+      "moment": "six accounts resolving into one operator, live, from the replay"
+     }
+    ]
+   },
+   "closest_past_winner": {
+    "name": "Prompt+Question Shield (Apart Research sprint project)",
+    "url": "https://apartresearch.com/sprints/projects/collusion-and-mitigation-in-ai-control-pm60",
+    "difference": "It defends a website's comment section against machine-generated spam with prompt injection and challenge questions - prevention at the door, one visitor at a time, with no informing half and no record. This informs a human reviewer about a group, changes no admission rule, and never blocks anything."
+   },
+   "outsider": "30-second script, to run on one person outside the team, ideally someone who maintains an open-source project: 'You get a plausible-looking bug report. Reading it costs you an hour. Sending it cost nothing. Right now you cannot tell whether it is one person being careless or one operator running nine accounts across forty projects - and those need completely different responses. This puts one line on the pull request: submission 14 of 112, from 9 accounts, in 6 hours. It never says who wrote it. Would you use this?' It lands if they ask about their own repositories, ask to try it, or retell it correctly. Not yet run with a person.",
+   "anti_patterns": {
+    "no_clear_user": {
+     "hit": false,
+     "why": "n/a: one role at one named moment, carried in the fingerprint"
+    },
+    "nonexistent_problem": {
+     "hit": false,
+     "why": "n/a: opened primary accounts from independent organisations, listed in claims"
+    },
+    "technology_first": {
+     "hit": false,
+     "why": "discovery was blind to the event, its hosts and its sponsors, and seeded from user groups' own words; the pain was evidenced before any mechanism was chosen"
+    },
+    "clone": {
+     "hit": false,
+     "why": "the competitor scan found no product sharing user, job and mechanism"
+    },
+    "recycled_generic": {
+     "hit": false,
+     "why": "n/a: not a recycled category; see recycled.category"
+    },
+    "default_match": {
+     "hit": false,
+     "why": "the overlap with the organizers' suggestion list is declared in default_match with a research-backed difference"
+    },
+    "ledger_repeat": {
+     "hit": false,
+     "why": "n/a: first run against this ledger"
+    },
+    "chatgpt_wrapper": {
+     "hit": false,
+     "why": "removing the model leaves the workflow, the records and the checks intact; see wrapper_test.without_model"
+    },
+    "generic_rag": {
+     "hit": false,
+     "why": "n/a: nothing is retrieved and fed to a model to answer questions"
+    },
+    "generic_agent": {
+     "hit": false,
+     "why": "n/a: no autonomous agent; a bounded pipeline with a deterministic gate"
+    },
+    "generic_dashboard": {
+     "hit": false,
+     "why": "the output is a record and an action, not a view of data"
+    },
+    "llm_wrapper": {
+     "hit": false,
+     "why": "the reduction sentence is written out in wrapper_test and is not a fair summary"
+    },
+    "no_product_without_model": {
+     "hit": false,
+     "why": "without_model.survives is substantial"
+    },
+    "prompt_moat": {
+     "hit": false,
+     "why": "no prompt is load-bearing; the moat mechanism is named in moat.mechanism"
+    },
+    "textbox_ui": {
+     "hit": false,
+     "why": "n/a: no textbox, no generated answer as the interface"
+    },
+    "chatgpt_obvious": {
+     "hit": false,
+     "why": "it was generated away from 22 pre-registered defaults that include all eight organizer suggestions, and it does not appear among them"
+    },
+    "sponsor_first": {
+     "hit": false,
+     "why": "n/a: this event offers no sponsor API; nothing was chosen to fit a vendor"
+    },
+    "default_entry": {
+     "hit": false,
+     "why": "the obvious entry in this slot is a machine-text classifier or a swarm-discovery crawler scoring behavioural resemblance; this refuses authorship judgement entirely and asserts only a batch shape from deterministic keys"
+    },
+    "wrong_brief": {
+     "hit": "unknown",
+     "why": "the honest description is agent-GENERATED submissions at scale rather than agents coordinating with each other: the documented campaign is one human operating six accounts with machine-generated payloads, and nothing in it involves agents talking to one another. It does answer the organizers' first suggestion, discovering a coordinated group of automated accounts in the wild, but using the word swarm would be borrowing it in front of the people who wrote the brief. The outsider test settles whether it reads as on-theme; until then the write-up must say 'one operator, many accounts' and never 'swarm'."
+    },
+    "impossible_demo": {
+     "hit": false,
+     "why": "one card on one submission naming the other 111 is the whole before-and-after, and the replay runs offline"
+    },
+    "unrealistic_data": {
+     "hit": false,
+     "why": "replays a publicly documented campaign from public event data for a known window, with the slice committed to the repo"
+    },
+    "forced_blockchain": {
+     "hit": false,
+     "why": "n/a: none used"
+    },
+    "forced_ar_vr": {
+     "hit": false,
+     "why": "n/a: none used"
+    },
+    "forced_iot": {
+     "hit": false,
+     "why": "n/a: none used"
+    },
+    "forced_multi_agent": {
+     "hit": false,
+     "why": "n/a: no agent orchestration; a single pipeline"
+    },
+    "superficial_sponsor": {
+     "hit": false,
+     "why": "n/a: no sponsor technology is used at all, so there is nothing superficial to disclose"
+    },
+    "platformmaxxing": {
+     "hit": false,
+     "why": "n/a: no sponsor features are used for show"
+    },
+    "weekend_clone": {
+     "hit": false,
+     "why": "a model API plus a frontend reproduces none of the deterministic core"
+    },
+    "resume_first": {
+     "hit": false,
+     "why": "the run was GENERAL: the builder's background was not read until after the ideas were final, and did not shape, choose or judge any of them"
+    },
+    "prior_project_variation": {
+     "hit": false,
+     "why": "checked at Stage 9 against the identifiers available in session; no past project of the builder's was found to share the user, mechanism and job"
+    }
+   }
+  }
+ ],
+ "tradeoffs": [
+  {
+   "dimension": "Evidence strength for the underlying problem",
+   "by_idea": {
+    "Canary Maze": "Strong. Five independent organisations with their own numbers, including a UN statistics API, the Wikimedia Foundation and Read the Docs, plus Cloudflare independently demonstrating the specific failure mode.",
+    "Batch Card": "Strong. curl's measured figures from primary source, a security vendor's named-account campaign, two further independent maintainers, and an academic survey of 281 policies."
+   }
+  },
+  {
+   "dimension": "Theme fit for this specific event",
+   "by_idea": {
+    "Canary Maze": "Answers two organizer suggestions at once - information spread within a group, and going beyond transcripts using web forensics - and the second was independently identified as the emptiest slot on their list.",
+    "Batch Card": "Reads directly as discovering a coordinated group of automated accounts in the wild, with a publicly documented real campaign as the test case. The caveat is that most machine-generated submissions are uncoordinated."
+   }
+  },
+  {
+   "dimension": "Can real results on real data be reached inside the window",
+   "by_idea": {
+    "Canary Maze": "Depends on live traffic arriving. A documented new-domain deployment logged crawler traffic within minutes and both ends of a handoff within 12 hours, but it is unreproduced here. This is the one genuine gamble in the set.",
+    "Batch Card": "Yes, with the least uncertainty of the three. A campaign with six named accounts and a known window exists in public event data, and the output can be checked against an independent published account."
+   }
+  },
+  {
+   "dimension": "Mechanism novelty after the competitor scan",
+   "by_idea": {
+    "Canary Maze": "Intact. The do-not-fork bucket came back empty; the nearest prior art shares only the minting step and verifies through model output two months later.",
+    "Batch Card": "Intact at the mechanism, fashionable at the topic. Fourteen similarly-named projects appeared in 2026, all under 5 stars with zero forks, and none indexes across repositories."
+   }
+  },
+  {
+   "dimension": "What is forkable versus what must be written",
+   "by_idea": {
+    "Canary Maze": "Fork Pyison (MIT, 125 stars) for the maze and serving layer, about 60% of the serving work and none of the mechanism. Everything judged is the builder's own.",
+    "Batch Card": "Fork a Probot scaffold and Octokit, saving roughly six hours of App plumbing. The cross-installation index and batch record are entirely the builder's own, and must not be forked from the per-author scorers."
+   }
+  },
+  {
+   "dimension": "The thing most likely to eat the weekend",
+   "by_idea": {
+    "Canary Maze": "Waiting. If no second client fetches a minted secret, the result degrades to 'deployed, nothing yet'. Deploying first thing Saturday is the only mitigation.",
+    "Batch Card": "Reconstructing cross-repository bursts from the public events API inside its rate limits, against archives that may be incomplete for deleted accounts."
+   }
+  },
+  {
+   "dimension": "Honest weakness a judge would raise first",
+   "by_idea": {
+    "Canary Maze": "A prior paper already mints per-visitor canary tokens. Cite it first rather than being caught by it, and show the request-log proof path beside it.",
+    "Batch Card": "GitHub holds all the cross-installation data and has said it is focused on pull-request volume amplified by AI, so absorption is a live risk."
+   }
+  },
+  {
+   "dimension": "What it compounds into if continued",
+   "by_idea": {
+    "Canary Maze": "A propagation ledger that cannot be backfilled, because a sighting only exists if the secret was already being served.",
+    "Batch Card": "A cross-maintainer abuse-signal feed publishing hashes rather than accusations - the expansion path the dependent exchange idea described, whose value is the outcome history, not the batch size."
+   }
+  }
+ ]
+}
