@@ -16,3 +16,7 @@ viewer/data.json
 *.sqlite3
 *.sqlite3-wal
 *.sqlite3-shm
+
+# graphify scratch (the built outputs graph.json / graph.html / GRAPH_REPORT.md are kept)
+graphify-out/.graphify_*
+graphify-out/cost.json
