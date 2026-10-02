@@ -8,7 +8,7 @@ window.CANARY_DATA = {
   "sightings_seeded": 1,
   "sightings_paste": 0,
   "human_requests": 0,
-  "humans_turned_away": 0,
+  "humans_turned_away": 1,
   "requests": 2
  },
  "sightings": [
@@ -20,18 +20,18 @@ window.CANARY_DATA = {
    "issued": {
     "label": "A",
     "ctx_id": "c0e7aead548d",
-    "at": "22:05:45",
+    "at": "22:16:02",
     "ua": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)",
     "net": "20.171.207.0/24",
-    "raw": "20.171.207.0/24 - - [2026-10-02T22:05:45Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\""
+    "raw": "20.171.207.0/24 - - [2026-10-02T22:16:02Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\""
    },
    "requested": {
     "label": "B",
     "ctx_id": "58a7736b46e0",
-    "at": "22:05:45",
+    "at": "22:16:02",
     "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "net": "104.28.52.0/24",
-    "raw": "104.28.52.0/24 - - [2026-10-02T22:05:45Z] \"GET /c/369bf1645c560f02/q3-supplier-review HTTP/1.1\" 200 606 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\""
+    "raw": "104.28.52.0/24 - - [2026-10-02T22:16:02Z] \"GET /c/369bf1645c560f02/q3-supplier-review HTTP/1.1\" 200 606 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\""
    }
   }
  ],
@@ -39,41 +39,41 @@ window.CANARY_DATA = {
 };
 window.CANARY_BUNDLE = {
  "format": "canary-maze-bundle/3",
- "note": "make demo",
+ "note": "",
  "counts": {
   "mints": 1,
   "sightings_organic": 0,
   "sightings_seeded": 1,
   "sightings_paste": 0,
   "human_requests": 0,
-  "humans_turned_away": 0,
+  "humans_turned_away": 1,
   "requests": 2
  },
  "rows": {
   "request": [
    {
     "id": 1,
-    "ts": "2026-10-02T22:05:45Z",
+    "ts": "2026-10-02T22:16:02Z",
     "method": "GET",
     "path": "/m/q3-supplier-review",
     "status": 200,
     "ip_net": "20.171.207.0/24",
     "ua": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)",
     "ctx_id": "c0e7aead548d",
-    "raw_line": "20.171.207.0/24 - - [2026-10-02T22:05:45Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\"",
+    "raw_line": "20.171.207.0/24 - - [2026-10-02T22:16:02Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\"",
     "origin": "seeded",
     "is_automated": 1
    },
    {
     "id": 2,
-    "ts": "2026-10-02T22:05:45Z",
+    "ts": "2026-10-02T22:16:02Z",
     "method": "GET",
     "path": "/c/369bf1645c560f02/q3-supplier-review",
     "status": 200,
     "ip_net": "104.28.52.0/24",
     "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "ctx_id": "58a7736b46e0",
-    "raw_line": "104.28.52.0/24 - - [2026-10-02T22:05:45Z] \"GET /c/369bf1645c560f02/q3-supplier-review HTTP/1.1\" 200 606 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\"",
+    "raw_line": "104.28.52.0/24 - - [2026-10-02T22:16:02Z] \"GET /c/369bf1645c560f02/q3-supplier-review HTTP/1.1\" 200 606 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\"",
     "origin": "seeded",
     "is_automated": 1
    }
@@ -85,7 +85,7 @@ window.CANARY_BUNDLE = {
     "ctx_id": "c0e7aead548d",
     "path": "/m/q3-supplier-review",
     "salt_epoch": "2026-10-02",
-    "ts": "2026-10-02T22:05:45Z",
+    "ts": "2026-10-02T22:16:02Z",
     "request_id": 1
    }
   ],
@@ -99,16 +99,16 @@ window.CANARY_BUNDLE = {
     "seen_request_id": 2,
     "delta_s": 0.0,
     "origin": "seeded",
-    "ts": "2026-10-02T22:05:45Z"
+    "ts": "2026-10-02T22:16:02Z"
    }
   ]
  },
  "leaves": [
-  "b312c72128dd23ada09ba5c0ed1836839fc02c80f1e89db0064fb47427e17bd7",
-  "183a819d1be3914766d6101f771514de16b44c1c214f2a14e256e9720ef2fcd5",
-  "834c7bc202dd04a1199d9e0b471b517e77963ef5565dd21d97e687b9b408267e",
-  "3bde29cc95559a7716bcccc15b7be06d71ee0842b69c952db7d2184ee13aa487",
-  "3e31f0b66f0a01855bf3edf20de9e70355f965ae9a456e8fe06d9649277412b9"
+  "0f00463c45513ba8fd72d821b3779b53dcb8c2164b5ec5bc5a336b656703c580",
+  "8c5696ce60760a95f0f1f75139cff8ad86b490dd3f7ffd61215c643e47753fcb",
+  "d2f2b87474b4ebb6e71f4f25c03fbc18eb2d75e07cdb5aff13a717980a798f60",
+  "ed5ee60ec053f23f495d54c4433f8de97a90b37d5950f55103a0f4f0a22fe098",
+  "fd8b2fd1dc2e47060c84b22319fd139844c4688d59357f31e00b860c2ddc08a7"
  ],
- "root": "d4501104341e22e9ca06af63d26bd878421e28ea658849461f63d8e91eebbb0c"
+ "root": "f3d10c653502f6ef76e068f010e95e3e00321d2bb78aa465769f6dc6637a23b2"
 };

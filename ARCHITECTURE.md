@@ -61,7 +61,7 @@ One deployable, one datastore, no model on the proof path.
 |---|---|
 | Necessity | Every component above maps to an acceptance criterion. |
 | Simplest viable | One process, one file, stdlib + Flask. |
-| Dependency fails | Model: absent by default, proof path unaffected. SQLite locked: retry once, then serve the page *without* minting — never block a crawler, because a blocked crawler is a lost sighting. |
+| Dependency fails | Model: not integrated at all; the proof path could not reach its output if it were. SQLite locked: retry once, then serve the page *without* minting — never block a crawler, because a blocked crawler is a lost sighting. |
 | Data grows | The canary URL space is unbounded by design; rows are small. Bundle export paginates by salt epoch if it ever needs to. |
 | State and secrets | The HMAC salt is the only secret. Env var, never committed, rotated daily, epoch stored per mint so rotation never invalidates history. |
 | Observability | Structured request log with a request id; the ledger *is* the audit trail. |

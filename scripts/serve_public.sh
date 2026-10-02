@@ -35,6 +35,10 @@ if [ -z "${CANARY_SALT:-}" ]; then
   export CANARY_SALT
 fi
 
+# Cloudflare's edge SETS CF-Connecting-IP (it does not merely append), so it is the
+# only proxy header we believe. X-Forwarded-For is never trusted: Cloudflare appends
+# to it, which makes its left-most entry attacker-controlled.
+export CANARY_TRUST_PROXY=cloudflare
 export CANARY_DB="${CANARY_DB:-$PWD/canary.sqlite3}"
 echo "ledger: $CANARY_DB"
 

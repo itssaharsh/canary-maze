@@ -60,11 +60,21 @@ def test_elapsed_time_is_measured_from_the_mint(ledger):
     assert ledger.rows("sighting")[0]["delta_s"] == 275.0   # 4m 35s
 
 
-def test_a_clock_skewed_backwards_does_not_produce_negative_elapsed_time(ledger):
+def test_a_fetch_dated_before_its_mint_is_refused(ledger):
+    """This previously clamped to 0.0 and wrote the row, so a fetch 30 minutes
+    BEFORE the mint was published as 'requested within the same second'. Clock skew
+    is a reason to refuse a record, not to round it."""
     s = mint_one(ledger, ts="2026-10-03T11:04:12Z")
     rid = fetch(ledger, "ctxB", ts="2026-10-03T11:00:00Z")
-    on_canary_request(ledger, secret=s, seen_ctx_id="ctxB", seen_request_id=rid)
-    assert ledger.rows("sighting")[0]["delta_s"] == 0.0
+    assert on_canary_request(ledger, secret=s, seen_ctx_id="ctxB", seen_request_id=rid) is None
+    assert ledger.counts()["sightings_organic"] == 0
+
+
+def test_an_unparseable_timestamp_does_not_crash_the_canary_route(ledger):
+    s = mint_one(ledger, ts="2026-10-03T11:04:12Z")
+    rid = ledger.record_request(method="GET", path="/c/x/y", status=200, ip="9.9.9.9",
+                                ua="Chrome/124", ctx_id="ctxB", ts="not-a-timestamp")
+    assert on_canary_request(ledger, secret=s, seen_ctx_id="ctxB", seen_request_id=rid) is None
 
 
 def test_a_missing_request_row_is_not_a_sighting(ledger):

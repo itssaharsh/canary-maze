@@ -82,7 +82,7 @@ Upstream read: `hackathon-idea/ai-swarm-dynamics/idea-package.md` (gated, 0 FAIL
 - **AC-4** WHEN a canary URL is requested by a different context THE SYSTEM SHALL return 200 and SHALL write exactly one sighting carrying both raw request rows. *Verify:* `pytest tests/test_detect.py -q`. must
 - **AC-5** WHEN any byte of any bundled row is altered THE SYSTEM SHALL fail verification and SHALL name the failing row. *Verify:* `pytest tests/test_bundle.py -q`. must
 - **AC-6** WHEN the verifier runs THE SYSTEM SHALL make no network call and SHALL NOT require the server. *Verify:* `make verify` with the server stopped. must
-- **AC-7** WHEN the model is disabled THE SYSTEM SHALL produce a byte-identical proof graph. *Verify:* `scripts/verify.sh --compare-model-off`. must
+- **AC-7** WHEN rows exist in the `laundered` table THE SYSTEM SHALL produce a byte-identical bundle, because the bundle writer cannot read that table. *Verify:* `make verify` (check 5) and `pytest -q tests/test_bundle.py -k laundered`. must. *(Reworded: the original named a `--compare-model-off` flag that was never implemented, and described disabling a model integration that was never built.)*
 - **AC-8** WHEN the viewer renders THE SYSTEM SHALL display organic and seeded sighting counts separately and the human-requests-in-ledger count. *Verify:* `make demo` then assert on `viewer/data.json`. must
 - **AC-9** WHEN `make demo` is run on a clean checkout with no network THE SYSTEM SHALL produce the viewer and print PASS. *Verify:* `make demo`. must
 

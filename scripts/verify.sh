@@ -33,15 +33,18 @@ else
   note "sightings before -> after" "$BEFORE -> $AFTER  FAILED (expected 0 -> 1)"; FAIL=1
 fi
 
-# ---- 2. no human ever entered the ledger ----------------------------------
-HUMANS=$("$PY" - "$DB" <<'PY'
-import sys; sys.path.insert(0, ".")
-from canarymaze.ledger import Ledger
-led = Ledger(sys.argv[1]); print(led.counts()["human_requests"]); led.close()
-PY
-)
-if [ "$HUMANS" = "0" ]; then note "human requests in ledger" "0  OK"
-else note "human requests in ledger" "$HUMANS  FAILED (the gate is broken)"; FAIL=1; fi
+# ---- 2. the gate actually fires, and no human reaches storage -------------
+# Two numbers, because one alone proves nothing. `human_requests` counts ledger
+# rows marked non-automated and must be 0 - but nothing ever writes such a row, so
+# on its own it is pinned to 0 whether the gate works or not. `humans_turned_away`
+# is the falsifiable half: it only moves when the gate refuses a request. A review
+# caught the original check asserting the vacuous one.
+GATE=$("$PY" scripts/_gate_check.py "$DB")
+set -- $GATE
+if [ "$1" = "0" ] && [ "$2" -ge 1 ]; then
+  note "gate turned a browser away, stored nothing" "turned away $2, in ledger $1  OK"
+else
+  note "gate turned a browser away, stored nothing" "turned away $2, in ledger $1  FAILED"; FAIL=1; fi
 
 # ---- 3. the bundle verifies with no server and no network -----------------
 "$PY" scripts/export_all.py --db "$DB" --bundle bundles/verify.json >/dev/null 2>&1
@@ -62,9 +65,15 @@ PY
 if [ "$TAMPER" = "CAUGHT" ]; then note "an edited row is caught and named" "OK"
 else note "an edited row is caught and named" "FAILED"; FAIL=1; fi
 
-# ---- 5. the model cannot reach the proof graph ----------------------------
-# Populate the laundered table (what a model would produce) and rebuild. The
-# bundle must be byte-identical, which is what "no model on the proof path" means.
+# ---- 5. nothing a model produced can reach the proof graph ----------------
+# NOTE ON WHAT THIS DOES AND DOES NOT PROVE. There is no model integration in this
+# build - laundered-token matching was scoped out and never written. So this is not
+# "the model was disabled and the output did not change"; that phrasing was in an
+# earlier version of this file and it described a feature that does not exist.
+# What is tested is the STRUCTURAL guarantee: rows in the `laundered` table - the
+# only place a model's output would ever land - cannot reach the bundle, because
+# the bundle writer reads a fixed three-table allowlist and Ledger.rows() raises on
+# anything else. That property holds whether or not the feature is ever built.
 SAME=$("$PY" - "$DB" <<'PY'
 import json, sys; sys.path.insert(0, ".")
 from canarymaze import bundle
@@ -79,8 +88,8 @@ led.close()
 print("IDENTICAL" if before == after else "DIFFERENT")
 PY
 )
-if [ "$SAME" = "IDENTICAL" ]; then note "proof graph with the model enabled vs off" "byte-identical  OK"
-else note "proof graph with the model enabled vs off" "DIFFERENT  FAILED"; FAIL=1; fi
+if [ "$SAME" = "IDENTICAL" ]; then note "laundered rows cannot reach the bundle" "byte-identical  OK"
+else note "laundered rows cannot reach the bundle" "DIFFERENT  FAILED"; FAIL=1; fi
 
 rm -f "$DB" "$DB-wal" "$DB-shm" bundles/verify.json
 echo

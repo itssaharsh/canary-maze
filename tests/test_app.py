@@ -109,3 +109,37 @@ def test_the_server_refuses_to_start_on_the_committed_development_salt(monkeypat
 
     monkeypatch.setenv("CANARY_SALT", "a" * 64)
     require_production_salt()        # now it is allowed to serve
+
+
+def test_x_forwarded_for_is_never_trusted(client):
+    """One peer sending two different XFF values used to produce a complete
+    sighting with BOTH networks fabricated and the real peer absent."""
+    r = client.get("/m/q3-supplier-review", headers=dict(CRAWLER, **{"X-Forwarded-For": "20.171.207.14"}),
+                   environ_overrides={"REMOTE_ADDR": "198.51.100.77"})
+    url = canary_url_from(r.get_data(as_text=True))
+    client.get(url, headers=dict(CRAWLER, **{"X-Forwarded-For": "104.28.52.9"}),
+               environ_overrides={"REMOTE_ADDR": "198.51.100.77"})
+    led = Ledger(client.db)
+    assert led.counts()["sightings_organic"] == 0, "a forged XFF must not make a sighting"
+    for row in led.rows("request"):
+        assert row["ip_net"] == "198.51.100.0/24", "the real peer must be what is stored"
+    led.close()
+
+
+def test_dotfiles_are_never_served(client):
+    """GET /.vercel/project.json returned 200 on the live surface."""
+    for path in ("/.vercel/project.json", "/.env", "/.git/config"):
+        assert client.get(path).status_code == 404, path
+
+
+def test_only_allowlisted_viewer_assets_are_served(client):
+    assert client.get("/canary.sqlite3").status_code == 404
+    assert client.get("/schema.sql").status_code == 404
+
+
+def test_an_unknown_trust_mode_refuses_to_start(monkeypatch):
+    import pytest as _pytest
+    from canarymaze.app import create_app as _create
+    monkeypatch.setenv("CANARY_TRUST_PROXY", "please-trust-everything")
+    with _pytest.raises(SystemExit):
+        _create(db_path=":memory:")

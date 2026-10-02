@@ -14,15 +14,56 @@ from .ledger import Ledger
 
 VIEWER = Path(__file__).resolve().parents[1] / "viewer"
 
+#: The only files the surface will serve from viewer/. An allowlist rather than
+#: an existence check, so nothing that lands in that directory becomes public.
+ALLOWED_ASSETS = {"app.css", "render.js", "verify.js", "data.js", "data.json"}
 
-def client_ip(req) -> str:
-    """Behind a proxy the peer address is the proxy. Trust the left-most
-    X-Forwarded-For hop only because the deploy terminates TLS at one we control;
-    a public deployment behind an untrusted proxy would need an allowlist."""
-    fwd = req.headers.get("X-Forwarded-For", "")
-    if fwd:
-        return fwd.split(",")[0].strip()
+
+#: Which proxy header, if any, may be believed. Set by CANARY_TRUST_PROXY.
+#:   "none"       - default. Only the real peer address is used.
+#:   "cloudflare" - trust CF-Connecting-IP, which Cloudflare's edge SETS (it does
+#:                  not merely append), so a client cannot forge it through the
+#:                  tunnel. This is what scripts/serve_public.sh runs under.
+TRUST_MODES = ("none", "cloudflare")
+
+
+def client_ip(req, trust: str = "none") -> str:
+    """Return the address to attribute this request to.
+
+    X-Forwarded-For is NEVER trusted, in any mode. The earlier version took its
+    left-most hop and a review showed the consequence: one peer sending two
+    different XFF values produced a complete sighting with BOTH networks fabricated
+    and the real peer absent from the record. Cloudflare *appends* to XFF, so under
+    the shipped tunnel deploy the left-most entry is entirely attacker-controlled -
+    the comment claiming the deploy made it safe had the direction backwards.
+    """
+    if trust == "cloudflare":
+        cf = (req.headers.get("CF-Connecting-IP") or "").strip()
+        if cf:
+            return cf
     return req.remote_addr or "0.0.0.0"
+
+
+def require_production_salt() -> None:
+    """Refuse to serve publicly on the committed development salt.
+
+    `mint.load_salt()` falls back to a fixed development salt so tests and
+    `make demo` run on a clean checkout with no setup. That fallback is in a
+    PUBLIC repository. Serving with it would mean anyone who read the repo could
+    forge a secret, which destroys the one thing the HMAC genuinely bounds - token
+    provenance - and with it every claim this project makes. The library stays
+    permissive so the offline demo works; the server is strict.
+    """
+    if os.environ.get("CANARY_SALT"):
+        return
+    raise SystemExit(
+        "refusing to start: CANARY_SALT is not set, so minting would use the "
+        "development salt that is committed in this repository, and any reader "
+        "could forge a secret.\n"
+        "  generate one:  python3 -c \"import secrets; print(secrets.token_hex(32))\"\n"
+        "  then:          export CANARY_SALT=<that value>\n"
+        "Set CANARY_ALLOW_DEV_SALT=1 only for local, non-public runs.")
+
 
 
 def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
@@ -31,8 +72,17 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
     origin="seeded" so its rows are labelled at the moment they are written,
     rather than relabelled afterwards - the ledger is append-only, and a record
     you can retroactively relabel is not a record."""
+    if not os.environ.get("CANARY_ALLOW_DEV_SALT") and db_path is None:
+        # Guarding only __main__ meant any WSGI entry point skipped this entirely.
+        # db_path is None exactly when the app is being constructed for real use;
+        # tests and the demo pass an explicit path.
+        require_production_salt()
     app = Flask(__name__)
     app.config["ORIGIN"] = origin
+    trust = os.environ.get("CANARY_TRUST_PROXY", "none").strip().lower()
+    if trust not in TRUST_MODES:
+        raise SystemExit(f"CANARY_TRUST_PROXY must be one of {TRUST_MODES}, got {trust!r}")
+    app.config["TRUST_PROXY"] = trust
     app.config["LEDGER_PATH"] = db_path or os.environ.get("CANARY_DB", "canary.sqlite3")
 
     def ledger() -> Ledger:
@@ -48,7 +98,7 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
         if slug not in maze.slugs():
             return Response("not found", status=404)
         headers = dict(request.headers)
-        ip = client_ip(request)
+        ip = client_ip(request, app.config["TRUST_PROXY"])
         automated = is_automated(headers)
         ctx = derive(headers, ip)
         epoch = mint.salt_epoch()
@@ -88,7 +138,7 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
         """A 404 here for the second context would end the observation before it
         starts, so this route returns 200 for anyone who asks, known secret or not."""
         headers = dict(request.headers)
-        ip = client_ip(request)
+        ip = client_ip(request, app.config["TRUST_PROXY"])
         body = maze.full_text(slug if slug in maze.slugs() else maze.slugs()[0])
 
         if not is_automated(headers):
@@ -136,32 +186,18 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
 
     @app.get("/<path:asset>")
     def viewer_asset(asset: str):
+        # Only the viewer's own files, and never a dotfile: a review found
+        # GET /.vercel/project.json returning 200 on the live canary surface,
+        # handing out the Vercel project and org ids.
+        if any(part.startswith(".") for part in asset.split("/")):
+            return Response("not found", status=404)
+        if asset not in ALLOWED_ASSETS:
+            return Response("not found", status=404)
         if (VIEWER / asset).exists():
             return send_from_directory(VIEWER, asset)
         return Response("not found", status=404)
 
     return app
-
-
-def require_production_salt() -> None:
-    """Refuse to serve publicly on the committed development salt.
-
-    `mint.load_salt()` falls back to a fixed development salt so tests and
-    `make demo` run on a clean checkout with no setup. That fallback is in a
-    PUBLIC repository. Serving with it would mean anyone who read the repo could
-    forge a secret, which destroys the one thing the HMAC genuinely bounds - token
-    provenance - and with it every claim this project makes. The library stays
-    permissive so the offline demo works; the server is strict.
-    """
-    if os.environ.get("CANARY_SALT"):
-        return
-    raise SystemExit(
-        "refusing to start: CANARY_SALT is not set, so minting would use the "
-        "development salt that is committed in this repository, and any reader "
-        "could forge a secret.\n"
-        "  generate one:  python3 -c \"import secrets; print(secrets.token_hex(32))\"\n"
-        "  then:          export CANARY_SALT=<that value>\n"
-        "Set CANARY_ALLOW_DEV_SALT=1 only for local, non-public runs.")
 
 
 if __name__ == "__main__":  # pragma: no cover

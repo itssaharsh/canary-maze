@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Canary Maze</title>
 <meta name="theme-color" content="#FDFCFA">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- No webfont link, deliberately. Four places on this page and in the README say
+     it needs no network, and a Google Fonts request would have made that false. The
+     CSS falls back to the system stack; the mono face still has unambiguous 0/O and
+     1/l/I, which is the property the records actually depend on. -->
 <link rel="stylesheet" href="app.css">
 </head>
 <body>

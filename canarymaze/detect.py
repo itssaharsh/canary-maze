@@ -39,7 +39,18 @@ def on_canary_request(led: Ledger, *, secret: str, seen_ctx_id: str,
     seen = led.request(seen_request_id)
     if seen is None:
         return None
-    delta = max(0.0, (_parse(seen["ts"]) - _parse(m["ts"])).total_seconds())
+    try:
+        delta = (_parse(seen["ts"]) - _parse(m["ts"])).total_seconds()
+    except ValueError:
+        # an unparseable timestamp is not a sighting we can date, and raising here
+        # would 500 the canary route and lose the observation entirely
+        return None
+    if delta < 0:
+        # A fetch cannot precede the mint that issued the secret. The earlier
+        # version clamped this to 0.0 and wrote the row anyway, so a sighting dated
+        # 30 minutes BEFORE its mint was published as "requested within the same
+        # second". Clock skew is a reason to refuse the record, not to round it.
+        return None
 
     try:
         return led.record_sighting(
