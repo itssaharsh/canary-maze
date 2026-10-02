@@ -5,98 +5,298 @@
   "base": "81795d7",
   "created": "2026-10-02",
   "parallel": false,
-  "suite": ["python3 -m pytest -q"],
+  "suite": [
+    "python3 -m pytest -q"
+  ],
   "milestones": [
-    {"id": "M1", "goal": "An automated client is minted for and a different context's fetch is recorded — end to end on seeded input. Deployable.", "tasks": ["T01", "T02", "T03", "T04"]},
-    {"id": "M2", "goal": "The record survives the server: bundle written, verified offline, replay seeded.", "tasks": ["T05", "T06"]},
-    {"id": "M3", "goal": "A judge can read the claim and run it offline in one command.", "tasks": ["T07", "T08"]},
-    {"id": "M4", "goal": "Live, harvested honestly, and gated.", "tasks": ["T09", "T10", "T11"]}
+    {
+      "id": "M1",
+      "goal": "An automated client is minted for and a different context's fetch is recorded — end to end on seeded input. Deployable.",
+      "tasks": [
+        "T01",
+        "T02",
+        "T03",
+        "T04"
+      ]
+    },
+    {
+      "id": "M2",
+      "goal": "The record survives the server: bundle written, verified offline, replay seeded.",
+      "tasks": [
+        "T05",
+        "T06"
+      ]
+    },
+    {
+      "id": "M3",
+      "goal": "A judge can read the claim and run it offline in one command.",
+      "tasks": [
+        "T07",
+        "T08"
+      ]
+    },
+    {
+      "id": "M4",
+      "goal": "Live, harvested honestly, and gated.",
+      "tasks": [
+        "T09",
+        "T10",
+        "T11"
+      ]
+    }
   ],
   "tasks": [
     {
       "id": "T01",
       "title": "Package skeleton, schema and append-only ledger",
       "objective": "SQLite schema and the only module that writes to it, with /24 IP truncation at the boundary",
-      "role": "data-engineer", "size": "M", "deps": [],
-      "writes": ["canarymaze/__init__.py", "canarymaze/schema.sql", "canarymaze/ledger.py", "requirements.txt", "Makefile", "tests/conftest.py"],
-      "produces": ["contract:canarymaze/ledger.py#Ledger"],
-      "runtime": {"ports": [], "db": "file"}, "isolation": "main", "risk": [],
-      "acceptance": ["WHEN a request row is written THE SYSTEM SHALL store the IP truncated to /24 and never the full address"],
-      "verify": ["python3 -m pytest -q tests/test_ledger.py"],
-      "rollback": "git revert the T01 commit; delete the sqlite file", "status": "todo", "notes": ""
+      "role": "data-engineer",
+      "size": "M",
+      "deps": [],
+      "writes": [
+        "canarymaze/__init__.py",
+        "canarymaze/schema.sql",
+        "canarymaze/ledger.py",
+        "requirements.txt",
+        "Makefile",
+        "tests/conftest.py"
+      ],
+      "produces": [
+        "contract:canarymaze/ledger.py#Ledger"
+      ],
+      "runtime": {
+        "ports": [],
+        "db": "file"
+      },
+      "isolation": "main",
+      "risk": [],
+      "acceptance": [
+        "WHEN a request row is written THE SYSTEM SHALL store the IP truncated to /24 and never the full address"
+      ],
+      "verify": [
+        "python3 -m pytest -q tests/test_ledger.py"
+      ],
+      "rollback": "git revert the T01 commit; delete the sqlite file",
+      "status": "done",
+      "notes": "",
+      "base": "34d6c04",
+      "started_after": 0,
+      "evidence": [
+        "E0001",
+        "E0002"
+      ]
     },
     {
       "id": "T02",
       "title": "Human-exclusion gate and request-context derivation",
       "objective": "Classify automated vs human conservatively, and derive a stable ctx_id that is explicitly not an identity",
-      "role": "product-engineer", "size": "M", "deps": ["T01"],
-      "writes": ["canarymaze/gate.py", "canarymaze/context.py", "tests/test_gate.py", "tests/test_context.py"],
-      "produces": ["contract:canarymaze/context.py#derive"],
-      "consumes": ["T01:canarymaze/ledger.py"],
-      "runtime": {"ports": [], "db": "file"}, "isolation": "main", "risk": [],
-      "acceptance": ["AC-1", "WHEN a request carries Accept-Language plus any Sec-Fetch-* header THE SYSTEM SHALL NOT mint and SHALL NOT write any ledger row"],
-      "verify": ["python3 -m pytest -q tests/test_gate.py tests/test_context.py"],
-      "rollback": "git revert the T02 commit", "status": "todo", "notes": ""
+      "role": "product-engineer",
+      "size": "M",
+      "deps": [
+        "T01"
+      ],
+      "writes": [
+        "canarymaze/gate.py",
+        "canarymaze/context.py",
+        "tests/test_gate.py",
+        "tests/test_context.py"
+      ],
+      "produces": [
+        "contract:canarymaze/context.py#derive"
+      ],
+      "consumes": [
+        "T01:canarymaze/ledger.py"
+      ],
+      "runtime": {
+        "ports": [],
+        "db": "file"
+      },
+      "isolation": "main",
+      "risk": [],
+      "acceptance": [
+        "AC-1",
+        "WHEN a request carries Accept-Language plus any Sec-Fetch-* header THE SYSTEM SHALL NOT mint and SHALL NOT write any ledger row"
+      ],
+      "verify": [
+        "python3 -m pytest -q tests/test_gate.py tests/test_context.py"
+      ],
+      "rollback": "git revert the T02 commit",
+      "status": "todo",
+      "notes": ""
     },
     {
       "id": "T03",
       "title": "Mint, maze surface and an always-200 canary route",
       "objective": "HMAC mint with salt epochs, a minimal maze that embeds the per-context canary URL, and a canary route that returns 200 for every context",
-      "role": "product-engineer", "size": "L", "deps": ["T02"],
-      "writes": ["canarymaze/mint.py", "canarymaze/maze.py", "canarymaze/app.py", "tests/test_mint.py", "tests/test_app.py"],
-      "produces": ["contract:canarymaze/mint.py#secret_for"],
-      "consumes": ["T02:canarymaze/context.py"],
-      "runtime": {"ports": [8000], "db": "file"}, "isolation": "main", "risk": [],
-      "acceptance": ["AC-2", "WHEN a canary URL is requested by any context THE SYSTEM SHALL return 200, because a 404 for the second context makes a sighting impossible"],
-      "verify": ["python3 -m pytest -q tests/test_mint.py tests/test_app.py"],
-      "rollback": "git revert the T03 commit", "status": "todo", "notes": ""
+      "role": "product-engineer",
+      "size": "L",
+      "deps": [
+        "T02"
+      ],
+      "writes": [
+        "canarymaze/mint.py",
+        "canarymaze/maze.py",
+        "canarymaze/app.py",
+        "tests/test_mint.py",
+        "tests/test_app.py"
+      ],
+      "produces": [
+        "contract:canarymaze/mint.py#secret_for"
+      ],
+      "consumes": [
+        "T02:canarymaze/context.py"
+      ],
+      "runtime": {
+        "ports": [
+          8000
+        ],
+        "db": "file"
+      },
+      "isolation": "main",
+      "risk": [],
+      "acceptance": [
+        "AC-2",
+        "WHEN a canary URL is requested by any context THE SYSTEM SHALL return 200, because a 404 for the second context makes a sighting impossible"
+      ],
+      "verify": [
+        "python3 -m pytest -q tests/test_mint.py tests/test_app.py"
+      ],
+      "rollback": "git revert the T03 commit",
+      "status": "todo",
+      "notes": ""
     },
     {
       "id": "T04",
       "title": "Sighting detection",
       "objective": "A fetch of secret S by a context other than S's mint context writes exactly one sighting carrying both raw request rows",
-      "role": "product-engineer", "size": "M", "deps": ["T03"],
-      "writes": ["canarymaze/detect.py", "tests/test_detect.py"],
-      "consumes": ["T03:canarymaze/mint.py"],
-      "runtime": {"ports": [], "db": "file"}, "isolation": "main", "risk": [],
-      "acceptance": ["AC-3", "AC-4", "WHEN the minting context re-fetches its own canary THE SYSTEM SHALL NOT write a sighting"],
-      "verify": ["python3 -m pytest -q tests/test_detect.py"],
-      "rollback": "git revert the T04 commit", "status": "todo", "notes": ""
+      "role": "product-engineer",
+      "size": "M",
+      "deps": [
+        "T03"
+      ],
+      "writes": [
+        "canarymaze/detect.py",
+        "tests/test_detect.py"
+      ],
+      "consumes": [
+        "T03:canarymaze/mint.py"
+      ],
+      "runtime": {
+        "ports": [],
+        "db": "file"
+      },
+      "isolation": "main",
+      "risk": [],
+      "acceptance": [
+        "AC-3",
+        "AC-4",
+        "WHEN the minting context re-fetches its own canary THE SYSTEM SHALL NOT write a sighting"
+      ],
+      "verify": [
+        "python3 -m pytest -q tests/test_detect.py"
+      ],
+      "rollback": "git revert the T04 commit",
+      "status": "todo",
+      "notes": ""
     },
     {
       "id": "T05",
       "title": "Evidence bundle writer and offline verifier",
       "objective": "Canonicalized rows, SHA-256 leaves, a Merkle root, and a verifier that needs no server and no network and names the failing row",
-      "role": "product-engineer", "size": "L", "deps": ["T04"],
-      "writes": ["canarymaze/bundle.py", "tests/test_bundle.py"],
-      "produces": ["contract:canarymaze/bundle.py#verify"],
-      "consumes": ["T04:canarymaze/detect.py"],
-      "runtime": {"ports": [], "db": "file"}, "isolation": "main", "risk": [],
-      "acceptance": ["AC-5", "AC-6", "WHEN any byte of any bundled row is altered THE SYSTEM SHALL fail and name the failing row"],
-      "verify": ["python3 -m pytest -q tests/test_bundle.py"],
-      "rollback": "git revert the T05 commit", "status": "todo", "notes": ""
+      "role": "product-engineer",
+      "size": "L",
+      "deps": [
+        "T04"
+      ],
+      "writes": [
+        "canarymaze/bundle.py",
+        "tests/test_bundle.py"
+      ],
+      "produces": [
+        "contract:canarymaze/bundle.py#verify"
+      ],
+      "consumes": [
+        "T04:canarymaze/detect.py"
+      ],
+      "runtime": {
+        "ports": [],
+        "db": "file"
+      },
+      "isolation": "main",
+      "risk": [],
+      "acceptance": [
+        "AC-5",
+        "AC-6",
+        "WHEN any byte of any bundled row is altered THE SYSTEM SHALL fail and name the failing row"
+      ],
+      "verify": [
+        "python3 -m pytest -q tests/test_bundle.py"
+      ],
+      "rollback": "git revert the T05 commit",
+      "status": "todo",
+      "notes": ""
     },
     {
       "id": "T06",
       "title": "Seeded two-client replay and viewer export",
       "objective": "The primary deliverable: two controlled clients produce a real mint and a real sighting through the real code path, labelled seeded, plus the JSON the viewer reads",
-      "role": "product-engineer", "size": "M", "deps": ["T05"],
-      "writes": ["scripts/seed_replay.py", "canarymaze/export.py", "tests/test_export.py"],
-      "produces": ["contract:canarymaze/export.py#export"],
-      "consumes": ["T05:canarymaze/bundle.py"],
-      "runtime": {"ports": [], "db": "file"}, "isolation": "main", "risk": [],
-      "acceptance": ["AC-8", "WHEN the replay runs THE SYSTEM SHALL mark every row it creates origin=seeded and SHALL leave the organic count untouched"],
-      "verify": ["python3 -m pytest -q tests/test_export.py"],
-      "rollback": "git revert the T06 commit", "status": "todo", "notes": ""
+      "role": "product-engineer",
+      "size": "M",
+      "deps": [
+        "T05"
+      ],
+      "writes": [
+        "scripts/seed_replay.py",
+        "canarymaze/export.py",
+        "tests/test_export.py"
+      ],
+      "produces": [
+        "contract:canarymaze/export.py#export"
+      ],
+      "consumes": [
+        "T05:canarymaze/bundle.py"
+      ],
+      "runtime": {
+        "ports": [],
+        "db": "file"
+      },
+      "isolation": "main",
+      "risk": [],
+      "acceptance": [
+        "AC-8",
+        "WHEN the replay runs THE SYSTEM SHALL mark every row it creates origin=seeded and SHALL leave the organic count untouched"
+      ],
+      "verify": [
+        "python3 -m pytest -q tests/test_export.py"
+      ],
+      "rollback": "git revert the T06 commit",
+      "status": "todo",
+      "notes": ""
     },
     {
       "id": "T07",
       "title": "Viewer: port the prototype with the skeptical-evaluator fixes",
       "objective": "Render every line of copy FROM export.json so no state can contradict itself; replace the figure with a context diff; promote offline verification to the payoff; give the log records a scroll affordance",
-      "role": "frontend-engineer", "size": "L", "deps": ["T06"],
-      "writes": ["viewer/index.html", "viewer/render.js", "viewer/app.css", "tests/test_viewer_data.py"],
-      "consumes": ["T06:canarymaze/export.py"],
-      "runtime": {"ports": [], "db": "none"}, "isolation": "main", "risk": [],
+      "role": "frontend-engineer",
+      "size": "L",
+      "deps": [
+        "T06"
+      ],
+      "writes": [
+        "viewer/index.html",
+        "viewer/render.js",
+        "viewer/app.css",
+        "tests/test_viewer_data.py"
+      ],
+      "consumes": [
+        "T06:canarymaze/export.py"
+      ],
+      "runtime": {
+        "ports": [],
+        "db": "none"
+      },
+      "isolation": "main",
+      "risk": [],
       "acceptance": [
         "AC-8",
         "WHEN the partial state renders THE SYSTEM SHALL NOT display a second context's details, because none has been observed",
@@ -104,64 +304,144 @@
         "WHEN any state renders THE SYSTEM SHALL derive the claim sentence and the scope line from the data rather than from a hardcoded string",
         "observe: at 390px no log record begins mid-token and every scrollable record shows an edge affordance"
       ],
-      "verify": ["python3 -m pytest -q tests/test_viewer_data.py"],
-      "rollback": "git revert the T07 commit; ui-prototype/index.html still renders", "status": "todo", "notes": "Evaluator findings in docs/memory/feedback/U-0001."
+      "verify": [
+        "python3 -m pytest -q tests/test_viewer_data.py"
+      ],
+      "rollback": "git revert the T07 commit; ui-prototype/index.html still renders",
+      "status": "todo",
+      "notes": "Evaluator findings in docs/memory/feedback/U-0001."
     },
     {
       "id": "T08",
       "title": "make demo and make verify, offline and deterministic",
       "objective": "One command on a clean checkout with no network produces the viewer and prints PASS, and proves the proof graph is byte-identical with the model disabled",
-      "role": "test-engineer", "size": "M", "deps": ["T07"],
-      "writes": ["Makefile", "scripts/verify.sh", "scripts/demo.sh", "README.md"],
-      "consumes": ["T07:viewer/index.html"],
-      "runtime": {"ports": [], "db": "file"}, "isolation": "main", "risk": [],
-      "acceptance": ["AC-7", "AC-9", "WHEN make verify runs with the server stopped THE SYSTEM SHALL print PASS and make no network call"],
-      "verify": ["make verify", "make demo"],
-      "rollback": "git revert the T08 commit", "status": "todo", "notes": ""
+      "role": "test-engineer",
+      "size": "M",
+      "deps": [
+        "T07"
+      ],
+      "writes": [
+        "Makefile",
+        "scripts/verify.sh",
+        "scripts/demo.sh",
+        "README.md"
+      ],
+      "consumes": [
+        "T07:viewer/index.html"
+      ],
+      "runtime": {
+        "ports": [],
+        "db": "file"
+      },
+      "isolation": "main",
+      "risk": [],
+      "acceptance": [
+        "AC-7",
+        "AC-9",
+        "WHEN make verify runs with the server stopped THE SYSTEM SHALL print PASS and make no network call"
+      ],
+      "verify": [
+        "make verify",
+        "make demo"
+      ],
+      "rollback": "git revert the T08 commit",
+      "status": "todo",
+      "notes": ""
     },
     {
       "id": "T09",
       "title": "[SAHARSH, Sat 10:00] Domain, DNS, TLS, sitemap, first deploy",
       "objective": "Get the canary surface publicly reachable as early as possible, because the organic-sighting clock starts when DNS resolves",
-      "role": "deploy-reliability-reviewer", "kind": "deploy", "size": "L", "deps": [],
+      "role": "deploy-reliability-reviewer",
+      "kind": "deploy",
+      "size": "L",
+      "deps": [],
       "writes": [],
-      "runtime": {"ports": [443], "db": "file"}, "isolation": "main", "risk": ["external-side-effect"],
+      "runtime": {
+        "ports": [
+          443
+        ],
+        "db": "file"
+      },
+      "isolation": "main",
+      "risk": [
+        "external-side-effect"
+      ],
       "acceptance": [
         "observe: the canary surface answers 200 over HTTPS on a stable public hostname",
         "observe: /sitemap.xml lists the maze pages and no proof-of-work gate sits in front of them"
       ],
-      "verify": ["observe: deployed URL returns 200 and sitemap.xml lists maze pages"],
-      "rollback": "point DNS back; the ledger and bundle are files and survive", "status": "todo",
+      "verify": [
+        "observe: deployed URL returns 200 and sitemap.xml lists maze pages"
+      ],
+      "rollback": "point DNS back; the ledger and bundle are files and survive",
+      "status": "todo",
       "notes": "NO CODE DEPS — start this at 10:00 Saturday, before anything else. It is the long pole and it is mostly waiting."
     },
     {
       "id": "T10",
       "title": "[SAHARSH, Sun] Chat-paste trigger and honest organic harvest",
       "objective": "Paste minted URLs into public model products, record which fetchers return, and report the organic count exactly as it stands",
-      "role": "product-engineer", "size": "S", "deps": ["T09"],
-      "writes": ["scripts/trigger_paste.py", "docs/RESULTS.md"],
-      "runtime": {"ports": [], "db": "file"}, "isolation": "main", "risk": ["external-side-effect"],
+      "role": "product-engineer",
+      "size": "S",
+      "deps": [
+        "T09"
+      ],
+      "writes": [
+        "scripts/trigger_paste.py",
+        "docs/RESULTS.md"
+      ],
+      "runtime": {
+        "ports": [],
+        "db": "file"
+      },
+      "isolation": "main",
+      "risk": [
+        "external-side-effect"
+      ],
       "acceptance": [
         "WHEN results are reported THE SYSTEM SHALL separate organic from seeded and from paste-triggered",
         "observe: docs/RESULTS.md states the organic count even if it is zero"
       ],
-      "verify": ["python3 -m pytest -q tests/test_export.py", "observe: RESULTS.md separates organic, seeded and paste-triggered"],
-      "rollback": "none; reporting only", "status": "todo", "notes": "A paste-triggered fetch shows a fetcher following a human's paste, NOT two agents sharing. Must be labelled as its own category."
+      "verify": [
+        "python3 -m pytest -q tests/test_export.py",
+        "observe: RESULTS.md separates organic, seeded and paste-triggered"
+      ],
+      "rollback": "none; reporting only",
+      "status": "todo",
+      "notes": "A paste-triggered fetch shows a fetcher following a human's paste, NOT two agents sharing. Must be labelled as its own category."
     },
     {
       "id": "T11",
       "title": "Merged gate: fresh review, security checklist, QA",
       "objective": "One fresh reviewer on the final branch running the security checklist, plus the demo flow three times and the prod-ui A8 gates",
-      "role": "code-reviewer", "kind": "review", "size": "M", "deps": ["T08"],
-      "writes": [".prod-build/reports/"],
-      "runtime": {"ports": [], "db": "file"}, "isolation": "main", "risk": [],
+      "role": "code-reviewer",
+      "kind": "review",
+      "size": "M",
+      "deps": [
+        "T08"
+      ],
+      "writes": [
+        ".prod-build/reports/"
+      ],
+      "runtime": {
+        "ports": [],
+        "db": "file"
+      },
+      "isolation": "main",
+      "risk": [],
       "acceptance": [
         "observe: a fresh reviewer's findings are recorded and each blocking one is reproduced before it is fixed",
         "observe: secrets scan clean and the HMAC salt is not committed",
         "observe: make demo run three times in a row with a reset between"
       ],
-      "verify": ["python3 -m pytest -q", "observe: fresh review recorded, secrets scan clean, demo run three times"],
-      "rollback": "n/a", "status": "todo", "notes": ""
+      "verify": [
+        "python3 -m pytest -q",
+        "observe: fresh review recorded, secrets scan clean, demo run three times"
+      ],
+      "rollback": "n/a",
+      "status": "todo",
+      "notes": ""
     }
   ]
 }
