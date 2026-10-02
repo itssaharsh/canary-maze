@@ -2,6 +2,8 @@
 
 **Prove two automated clients shared information, instead of guessing from how alike they look.**
 
+**[Live site](https://site-nine-hazel-35.vercel.app)** · **[Live evidence](https://site-nine-hazel-35.vercel.app/viewer/)**
+
 A website that issues every automated visitor its own secret, then records who else comes
 asking for it. The output is not a dashboard. It is an evidence bundle that verifies with
 the server switched off, for a reader who does not trust the operator.

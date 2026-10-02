@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Canary Maze</title>
+<meta name="theme-color" content="#FDFCFA">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="bar">
+    <h1>Canary Maze</h1>
+    <span class="ledgerline" id="ledgerline"></span>
+  </header>
+
+  <main>
+    <p class="claim" id="claim"></p>
+    <p class="scope" id="scope" hidden></p>
+
+    <table class="diff" id="diff" hidden></table>
+
+    <section class="records" id="records" aria-labelledby="rh" hidden>
+      <div class="rechead">
+        <h2 id="rh">Records</h2>
+        <span class="origin" id="origin"></span>
+      </div>
+
+      <div class="rec" id="rec-a">
+        <div class="role" id="role-a"></div>
+        <div class="scroller">
+          <pre id="pre-a" tabindex="0" role="region" aria-labelledby="role-a"></pre>
+        </div>
+        <p class="scrollnote">Scrolls sideways; the full record is present and unedited.</p>
+      </div>
+
+      <div class="rec" id="rec-b">
+        <div class="role" id="role-b"></div>
+        <div class="scroller">
+          <pre id="pre-b" tabindex="0" role="region" aria-labelledby="role-b"></pre>
+        </div>
+        <p class="scrollnote">Scrolls sideways; the full record is present and unedited.</p>
+      </div>
+    </section>
+
+    <section class="verify" id="verify" hidden>
+      <h2>Check this without trusting us</h2>
+      <p class="lede">The records above are hashed into a bundle with a Merkle root.
+        This button recomputes every hash here, in your browser, from the bundle file
+        alone. It makes no request to our server, and it would still work with our
+        server switched off permanently.</p>
+      <button class="btn" type="button" id="verify-btn">Recompute the hashes locally</button>
+      <div class="result" id="verify-result" hidden></div>
+    </section>
+
+    <p class="sr" role="status" aria-live="polite" id="status"></p>
+  </main>
+
+  <footer class="foot" id="foot"></footer>
+</div>
+<script src="data.js"></script>
+<script src="render.js"></script>
+</body>
+</html>

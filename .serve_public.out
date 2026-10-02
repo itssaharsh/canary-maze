@@ -1,0 +1,17 @@
+ledger: /home/saharsh/contri/ai_swarm/canary.sqlite3
+surface up on :8000
+waiting for the tunnel hostname......
+
+  PUBLIC SURFACE:  https://penny-sufficiently-intermediate-parallel.trycloudflare.com
+
+  sitemap:  https://penny-sufficiently-intermediate-parallel.trycloudflare.com/sitemap.xml
+  robots:   https://penny-sufficiently-intermediate-parallel.trycloudflare.com/robots.txt   (Disallow nothing - we are measuring what clients
+                               do when they are NOT blocked)
+
+  Next, to give crawlers a reason to arrive:
+    1. paste https://penny-sufficiently-intermediate-parallel.trycloudflare.com/sitemap.xml into a public model product and ask it to read a page
+    2. run:  python3 scripts/trigger_paste.py https://penny-sufficiently-intermediate-parallel.trycloudflare.com
+
+  Leave this running. Ctrl-C stops the surface and the tunnel; the ledger and any
+  bundle you have already exported survive, because they are files.
+

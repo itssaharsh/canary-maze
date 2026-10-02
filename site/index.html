@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Canary Maze</title>
+<meta name="description" content="Prove two automated clients shared information, instead of guessing from how alike they look.">
+<meta name="theme-color" content="#FDFCFA">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --ff-body:"Public Sans",system-ui,sans-serif; --ff-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --canvas:#FDFCFA; --surface-1:#F4F2ED; --surface-sunken:#EFEDE7; --surface-2:#E6E3DC;
+  --line:#D4D0C7; --line-input:#8A857A;
+  --ink:#16140F; --ink-muted:#5C574C;
+  --accent:#C8361B; --accent-ink:#FFFFFF; --accent-text:#BE3118;
+  --accent-hover:#B22F17; --accent-press:#9C2914;
+  --focus:var(--accent); --success:#1F6A3D; --danger:#8E1F14;
+  --r-sm:2px; --r-md:3px; --r-lg:5px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--canvas);color:var(--ink);font:400 16px/1.6 var(--ff-body);
+  -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+a{color:var(--ink)}
+:is(a,button):focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:var(--r-sm)}
+img{max-width:100%;height:auto;display:block}
+
+nav{display:flex;align-items:center;justify-content:space-between;height:64px;
+  border-bottom:1px solid var(--line)}
+nav .name{font:600 16px/1 var(--ff-body);letter-spacing:-.01em;text-decoration:none}
+nav .links{display:flex;gap:20px;font-size:14px}
+nav .links a{color:var(--ink-muted);text-decoration:none}
+@media (hover:hover){nav .links a:hover{color:var(--ink)}}
+
+/* hero: text left, the REAL product right */
+.hero{display:grid;grid-template-columns:6fr 6fr;gap:52px;align-items:center;
+  padding:80px 0 72px}
+h1{margin:0 0 18px;font:800 clamp(2.4rem, 1.5rem + 3.4vw, 4rem)/1.03 var(--ff-body);
+  letter-spacing:-.035em;text-wrap:balance}
+.sub{margin:0 0 30px;font-size:18px;line-height:1.55;color:var(--ink-muted);max-width:42ch;text-wrap:pretty}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;min-height:46px;padding:0 18px;border-radius:var(--r-md);
+  font:600 15px/1 var(--ff-body);text-decoration:none;border:1px solid transparent;transition:background 150ms}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+@media (hover:hover){.btn.primary:hover{background:var(--accent-hover)}}
+.btn.ghost{border-color:var(--line-input);color:var(--ink-muted)}
+@media (hover:hover){.btn.ghost:hover{color:var(--ink);border-color:var(--ink-muted)}}
+figure{margin:0}
+figcaption{margin-top:10px;font-size:13px;color:var(--ink-muted)}
+.shot{border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--canvas)}
+
+section{padding:64px 0;border-top:1px solid var(--line)}
+h2{margin:0 0 10px;font:600 24px/1.25 var(--ff-body);letter-spacing:-.02em}
+.lede{margin:0 0 32px;color:var(--ink-muted);max-width:66ch;font-size:16.5px}
+
+blockquote{margin:0 0 28px;padding:0 0 0 18px;border-left:2px solid var(--accent);
+  font-size:17px;max-width:62ch}
+blockquote cite{display:block;margin-top:8px;font:400 13.5px/1.5 var(--ff-body);
+  color:var(--ink-muted);font-style:normal}
+
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.three h3{margin:0 0 6px;font:600 15px/1.3 var(--ff-body)}
+.three p{margin:0;font-size:14.5px;color:var(--ink-muted)}
+.step{font:500 12px/1 var(--ff-mono);color:var(--accent-text);margin-bottom:10px;display:block}
+
+.tablewrap{overflow-x:auto;max-width:100%}
+.tablewrap:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+table{border-collapse:collapse;width:100%;min-width:0;font-size:14.5px}
+th,td{text-align:left;padding:11px 14px 11px 0;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-weight:600}
+@media (min-width:560px){th{white-space:nowrap}}
+td.num{font-family:var(--ff-mono);white-space:nowrap}
+.ok{color:var(--success);font-weight:500}
+.zero{color:var(--success);font-weight:500}
+
+pre.term{margin:0;background:var(--surface-sunken);border-radius:var(--r-md);padding:16px 18px;
+  font:400 13px/1.75 var(--ff-mono);overflow-x:auto;min-width:0;max-width:100%}
+pre.term:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+pre.term .g{color:var(--success);font-weight:500}
+pre.term .m{color:var(--ink-muted)}
+
+.limits li{margin-bottom:12px;max-width:72ch;color:var(--ink-muted)}
+.limits strong{color:var(--ink);font-weight:500}
+
+footer{border-top:1px solid var(--line);padding:36px 0 64px;color:var(--ink-muted);font-size:14px}
+footer .flinks{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px}
+footer a{color:var(--ink)}
+
+@media (max-width:880px){
+  .hero{grid-template-columns:1fr;gap:32px;padding:48px 0}
+  .three{grid-template-columns:1fr;gap:28px}
+}
+@media (prefers-reduced-motion:reduce){*{transition-duration:1ms !important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <a class="name" href="/">Canary Maze</a>
+    <span class="links">
+      <a href="/viewer/">Live evidence</a>
+      <a href="#how">How it works</a>
+      <a href="#limits">Limits</a>
+    </span>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <h1>Prove two AI clients shared information.</h1>
+      <p class="sub">Every automated visitor gets its own secret. When a different client
+        comes asking for it, that is a record — not a resemblance.</p>
+      <div class="cta">
+        <a class="btn primary" href="/viewer/">See the live evidence</a>
+        <a class="btn ghost" href="#verify">Check it without trusting us</a>
+      </div>
+    </div>
+    <figure>
+      <div class="shot"><img src="img/records.png" alt="Two access-log records. The same 16-character secret is marked in both: issued to context A, then requested by context B." width="1120" height="330"></div>
+      <figcaption>The actual product. One secret, marked in both records — issued to one context,
+        fetched by another. Seeded replay data, labelled as seeded on its own face.</figcaption>
+    </figure>
+  </header>
+
+  <section>
+    <h2>Detection asks whether two clients look alike. That is failing.</h2>
+    <blockquote>
+      “did get rate-limited (‘please stop rinsing my site’) and continued rinsing the API
+      with requests regardless” … he cannot tell “whether it’s the same swarm, let alone
+      the same agents”.
+      <cite>Operator of the UNCTADstat API, September 2026</cite>
+    </blockquote>
+    <p class="lede">Cloudflare documented an undeclared crawler reaching robots.txt-blocked,
+      newly purchased, unindexed domains at <strong>3–6m requests a day</strong> — while presenting a
+      desktop Chrome user-agent and rotating ASNs. Every identifier a client shows you is
+      one the client chose. So stop reading identifiers, and plant something instead.</p>
+  </section>
+
+  <section id="how">
+    <h2>How it works</h2>
+    <p class="lede">Three steps. The middle one is the only interesting one.</p>
+    <div class="three">
+      <div>
+        <span class="step">01 — MINT</span>
+        <h3>Each visitor gets its own secret</h3>
+        <p>An automated request is issued a canary URL derived as
+          HMAC(salt, path | request-context). A human is never minted for and never
+          enters the ledger.</p>
+      </div>
+      <div>
+        <span class="step">02 — SIGHT</span>
+        <h3>Someone else asks for it</h3>
+        <p>The canary returns 200 for <em>anyone</em> — a 404 would tell the second client
+          it was a trap. A fetch by a context other than the one it was issued to is
+          written as a sighting, with both raw log records.</p>
+      </div>
+      <div>
+        <span class="step">03 — PROVE</span>
+        <h3>The record outlives the server</h3>
+        <p>Rows are hashed into a Merkle-rooted bundle. A reader recomputes it offline.
+          No server, no network, no trust in us.</p>
+      </div>
+    </div>
+    <figure style="margin-top:36px">
+      <div class="shot"><img src="img/diff.png" alt="A table titled ‘What separates the two request contexts’, with user-agent and network marked ‘differs’ and first-seen shown as matching." width="1120" height="300"></div>
+      <figcaption>The claim is that these two contexts differ, so the interface shows the
+        difference rather than asking you to compare two identical-looking cards.</figcaption>
+    </figure>
+  </section>
+
+  <section id="verify">
+    <h2>Check this without trusting us</h2>
+    <p class="lede">This is the part that makes it evidence rather than a dashboard. The
+      verifier is stdlib Python. It makes no network call and does not need the server
+      running — it would still work if this site were taken down permanently.</p>
+    <pre class="term" tabindex="0" role="region" aria-label="make verify output">$ make verify
+
+  sightings before -&gt; after                            0 -&gt; 1  <span class="g">OK</span>
+  human requests in ledger                             0  <span class="g">OK</span>
+  bundle verifies offline                              <span class="g">OK</span>
+  an edited row is caught and named                    <span class="g">OK</span>
+  proof graph with the model enabled vs off            byte-identical  <span class="g">OK</span>
+
+<span class="g">PASS</span></pre>
+    <figure style="margin-top:28px">
+      <div class="shot"><img src="img/verified.png" alt="‘Verified. The server was not contacted.’ — 4 rows checked, the Merkle root, recomputed in the page from the bundle file alone." width="1120" height="420"></div>
+      <figcaption>Recomputed in the browser, from the bundle file alone.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2 id="real-h">What is real here</h2>
+    <p class="lede">Every number below comes from the ledger, not from a slide.</p>
+    <div class="tablewrap" role="region" aria-labelledby="real-h" tabindex="0">
+    <table>
+      <tr><th>Mints</th><td class="num">1</td><td>secrets issued to an automated context</td></tr>
+      <tr><th>Seeded sightings</th><td class="num">1</td><td>two clients we control, driven through the real gate, mint and detector</td></tr>
+      <tr><th>Organic sightings</th><td class="num">0</td><td>reported exactly as it stands — this is the honest number, not a rounding</td></tr>
+      <tr><th>Paste-triggered</th><td class="num">0</td><td>counted separately: a fetcher following a human’s paste is <em>not</em> two agents sharing</td></tr>
+      <tr><th>Human requests in ledger</th><td class="num zero">0</td><td>the gate holds — without this it would be a visitor-tracking tool</td></tr>
+      <tr><th>Tests</th><td class="num">89</td><td><code>make verify</code> PASS</td></tr>
+    </table>
+    </div>
+  </section>
+
+  <section id="limits">
+    <h2>What a sighting does not establish</h2>
+    <p class="lede">The most important section, and it is on the product’s own face too.</p>
+    <ul class="limits">
+      <li><strong>It is not two operators.</strong> One operator can rotate addresses — in
+        the AI Village dump, a single actor label spans <strong>741</strong> of them. The schema has
+        no <code>actor</code> table and no join that would produce one.</li>
+      <li><strong>The HMAC bounds provenance, not distinctness.</strong> A secret that verifies
+        was issued by us and cannot be forged. That says nothing about how many actors
+        touched it. An earlier draft of this project claimed otherwise; that claim was
+        false and is recorded as false so it cannot return.</li>
+      <li><strong>Two clients can touch one secret without having talked</strong> — one may have
+        followed the other through the same link graph. The bundle records a shared
+        artifact, not intent.</li>
+      <li><strong>Tokens can be stripped.</strong> A public tool detects canary tokens without
+        triggering them. A motivated client defeats this.</li>
+      <li><strong>The prior art is close.</strong> arXiv:2605.13706 already mints per visitor and
+        keeps the ledger. What is new here is the sighting channel and the offline bundle,
+        not the minting.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <div class="flinks">
+      <a href="/viewer/">Live evidence</a>
+      <a href="https://arxiv.org/abs/2605.13706">The prior art we build on</a>
+      <a href="https://metr.org/hugging-face-incident-report-aug-2026.pdf">METR incident report</a>
+    </div>
+    <p>Built for the AI Swarm Dynamics Hackathon, AI Village × Grove Research.
+      Seeded data is labelled as seeded everywhere it appears.</p>
+  </footer>
+
+</div>
+</body>
+</html>
