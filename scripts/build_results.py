@@ -25,6 +25,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from canarymaze.ledger import SQL_COUNT_ORGANIC, SQL_COUNT_PASTE  # noqa: E402
 from canarymaze.paths import ledger_path          # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,12 +42,20 @@ def counts(db: Path) -> dict[str, int] | None:
     con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
     try:
         one = lambda q: int(con.execute(q).fetchone()[0])
+        # A ledger written before the `published` table existed has no disclosures
+        # to apply, so its organic count is simply what was recorded.
+        has_published = one("SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
+                            "AND name='published'") == 1
+        organic = SQL_COUNT_ORGANIC if has_published else \
+            "SELECT COUNT(*) FROM sighting WHERE origin='organic'"
+        paste = SQL_COUNT_PASTE if has_published else \
+            "SELECT COUNT(*) FROM sighting WHERE origin='paste'"
         return {
             "mints": one("SELECT COUNT(*) FROM mint"),
             "requests": one("SELECT COUNT(*) FROM request"),
-            "organic": one("SELECT COUNT(*) FROM sighting WHERE origin='organic'"),
+            "organic": one(organic),
             "seeded": one("SELECT COUNT(*) FROM sighting WHERE origin='seeded'"),
-            "paste": one("SELECT COUNT(*) FROM sighting WHERE origin='paste'"),
+            "paste": one(paste),
             "selftest": one("SELECT COUNT(*) FROM sighting WHERE origin='selftest'"),
             "humans_turned_away": one("SELECT COALESCE(MAX(n),0) FROM gate_rejection"),
             "human_requests": one("SELECT COUNT(*) FROM request WHERE is_automated=0"),

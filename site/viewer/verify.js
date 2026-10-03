@@ -20,7 +20,9 @@
   "use strict";
 
   var LEAF_TAG = 0x00, NODE_TAG = 0x01;
-  var PROOF_TABLES = ["request", "mint", "sighting"];
+  /* Same tables, same ORDER, as bundle.py::PROOF_TABLES - the leaves are listed in
+   * this order, so a difference here misaligns every hash after the first table. */
+  var PROOF_TABLES = ["request", "mint", "sighting", "published"];
 
   function norm(v) {
     if (v === null || v === undefined) return "n:";
@@ -30,7 +32,13 @@
         ? "i:" + String(v)
         : "f:" + v.toFixed(6);
     }
-    if (typeof v === "object") return "j:" + stableStringify(v);
+    /* A nested value is serialised to JSON *before* it is hashed, and Python does
+     * that with ensure_ascii=True - so the nested text already holds \uXXXX escapes
+     * when the outer serialisation runs, and the outer one then escapes their
+     * backslashes. Escaping here, inside, reproduces that. Leaving it to the outer
+     * pass alone produced a single backslash where Python has two, and the header
+     * leaf of any bundle with a non-ASCII note disagreed between the two sides. */
+    if (typeof v === "object") return "j:" + escapeNonAscii(stableStringify(v));
     return "s:" + String(v);
   }
 
@@ -184,6 +192,13 @@
       if (mintTs[s.secret] && s.ts && s.ts < mintTs[s.secret]) {
         problems.push("sighting id=" + s.id + " is dated before its mint; a secret " +
                       "cannot be fetched before it exists");
+      }
+    });
+
+    (rows.published || []).forEach(function (p) {
+      if (!minted[p.secret]) {
+        problems.push("published id=" + p.id + " names a secret with no mint row in this " +
+                      "bundle; a secret that was never issued cannot be published");
       }
     });
 

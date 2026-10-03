@@ -21,6 +21,23 @@ ORIGINS = ("organic", "seeded", "paste", "selftest")
 from .netaddr import truncate_ip  # re-exported: callers imported it from here
 
 
+#: Every table that may be read out as part of the proof graph.
+PROOF_TABLES = ("request", "mint", "sighting", "published")
+
+#: A sighting the server recorded as organic, on a secret the operator had already
+#: published by hand when the fetch happened. One definition, in SQL, shared with
+#: scripts/build_results.py - two spellings of this rule would eventually disagree
+#: about the one number the project asks to be believed on. The comparison is on
+#: ISO-8601 UTC strings, which order correctly as text.
+SQL_PASTE_TRIGGERED = (
+    "sighting.origin = 'organic' AND EXISTS (SELECT 1 FROM published p "
+    "WHERE p.secret = sighting.secret AND p.ts <= sighting.ts)")
+SQL_COUNT_ORGANIC = (
+    f"SELECT COUNT(*) FROM sighting WHERE origin = 'organic' AND NOT ({SQL_PASTE_TRIGGERED})")
+SQL_COUNT_PASTE = (
+    f"SELECT COUNT(*) FROM sighting WHERE origin = 'paste' OR ({SQL_PASTE_TRIGGERED})")
+
+
 def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -125,6 +142,22 @@ class Ledger:
             self.db.commit()
             return int(cur.lastrowid)
 
+    def record_published(self, *, secret: str, method: str, ts: str | None = None) -> int:
+        """Record that the operator handed this secret to someone by hand.
+
+        From this moment a fetch of it shows a fetcher following a published link,
+        not two clients sharing, and is reported as paste-triggered. A secret that
+        was never issued cannot be published: there would be nothing to follow.
+        """
+        if self.mint_for_secret(secret) is None:
+            raise ValueError("cannot publish a secret that was never issued")
+        with self._lock:
+            cur = self.db.execute(
+                "INSERT INTO published (secret, ts, method) VALUES (?,?,?)",
+                (secret, ts or now_iso(), method))
+            self.db.commit()
+            return int(cur.lastrowid)
+
     # -- reads -----------------------------------------------------------------
     def mint_for_secret(self, secret: str) -> sqlite3.Row | None:
         with self._lock:
@@ -140,8 +173,14 @@ class Ledger:
         with self._lock:
             return self.db.execute("SELECT * FROM request WHERE id = ?", (request_id,)).fetchone()
 
+    def paste_triggered_ids(self) -> set[int]:
+        """Ids of sightings recorded as organic that the paste rule reclassifies."""
+        with self._lock:
+            return {int(r[0]) for r in self.db.execute(
+                f"SELECT sighting.id FROM sighting WHERE {SQL_PASTE_TRIGGERED}")}
+
     def rows(self, table: str) -> list[dict[str, Any]]:
-        if table not in ("request", "mint", "sighting"):
+        if table not in PROOF_TABLES:
             raise ValueError(f"{table!r} is not part of the proof graph")
         with self._lock:
             return [dict(r) for r in self.db.execute(f"SELECT * FROM {table} ORDER BY id")]
@@ -179,15 +218,18 @@ class Ledger:
             one = lambda q, *a: int(self.db.execute(q, a).fetchone()[0])
             return {
                 "mints": one("SELECT COUNT(*) FROM mint"),
-                "sightings_organic": one("SELECT COUNT(*) FROM sighting WHERE origin='organic'"),
+                # Organic excludes anything fetched after the operator published
+                # the secret by hand; those are counted as paste-triggered below.
+                "sightings_organic": one(SQL_COUNT_ORGANIC),
                 "sightings_seeded": one("SELECT COUNT(*) FROM sighting WHERE origin='seeded'"),
-                "sightings_paste": one("SELECT COUNT(*) FROM sighting WHERE origin='paste'"),
+                "sightings_paste": one(SQL_COUNT_PASTE),
                 # The operator's own probes. Counted, never folded into organic:
                 # a verification curl is not third-party evidence, and publishing
                 # it as such is the overclaim this whole product exists to avoid.
                 "sightings_selftest": one("SELECT COUNT(*) FROM sighting WHERE origin='selftest'"),
                 "human_requests": one("SELECT COUNT(*) FROM request WHERE is_automated=0"),
                 "humans_turned_away": one("SELECT COALESCE(MAX(n), 0) FROM gate_rejection"),
+                "published": one("SELECT COUNT(DISTINCT secret) FROM published"),
                 "requests": one("SELECT COUNT(*) FROM request"),
                 # Rows this process saw itself, vs rows an edge reported to it.
                 # A reader weighing the evidence is entitled to the split.

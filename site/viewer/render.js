@@ -64,17 +64,25 @@
   }
 
   function renderDiff(s) {
+    /* Who saw the request. "direct" means the ledger's own process held the
+     * connection; anything else is a REPORT from a named edge, and a reader is
+     * entitled to weigh the two differently. */
+    function seenBy(v) {
+      return !v || v === "direct" ? "seen directly by the ledger"
+                                  : "reported by the " + v + " edge";
+    }
     var rows = [
       ["user-agent", s.issued.ua, s.requested.ua],
       ["network", s.issued.net, s.requested.net],
-      ["first seen", s.issued.at, s.requested.at]
+      ["first seen", s.issued.at, s.requested.at],
+      ["observed", seenBy(s.issued.via), seenBy(s.requested.via)]
     ];
     var html = '<caption>What separates the two request contexts</caption>' +
       '<thead><tr><th scope="col"></th>' +
       '<th scope="col">context ' + esc(s.issued.label) + '</th>' +
       '<th scope="col">context ' + esc(s.requested.label) + '</th></tr></thead><tbody>';
     rows.forEach(function (r) {
-      var differs = String(r[1]) !== String(r[2]);
+      var differs = String(r[1]) !== String(r[2]) && r[0] !== "observed";
       html += '<tr class="' + (differs ? "differs" : "same") + '">' +
         '<th scope="row">' + esc(r[0]) + '</th>' +
         '<td>' + esc(r[1] || "not recorded") + '</td>' +
@@ -118,7 +126,7 @@
        * says it is unknown rather than claiming the strongest reading. */
       var ORIGINS = {
         seeded: "seeded replay · not organic traffic",
-        paste: "paste-triggered · a fetcher followed a human's paste",
+        paste: "paste-triggered · a fetcher followed a link the operator published",
         selftest: "the operator's own probe · not third-party traffic",
         organic: "organic traffic"
       };

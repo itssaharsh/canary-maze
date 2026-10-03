@@ -14,7 +14,7 @@
   "sfx": true,
   "viewport": [
    1280,
-   720
+   1100
   ],
   "dsf": 1,
   "fps": 30,
@@ -154,8 +154,9 @@
      "spotlight": true
     },
     {
-     "do": "pause",
-     "ms": 1500
+     "do": "wait",
+     "for": "#verify-result",
+     "timeout": 20000
     },
     {
      "do": "mark",

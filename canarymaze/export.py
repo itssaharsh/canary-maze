@@ -25,8 +25,15 @@ from .ledger import Ledger
 SCOPE_LINE = (
     "A sighting establishes that the secret moved between two request contexts. "
     "It does not establish that they are two different operators - one operator "
-    "can rotate addresses. In the AI Village dump, one actor label spans 741 of them."
+    "can rotate addresses. In the organizers' collusion.wiki dump, one actor label "
+    "spans 741 of them."
 )
+
+#: Which sighting leads the page when there are several: the strongest class of
+#: evidence present. Never the other way round - an operator's own probe must not
+#: headline a page that also holds a third party's fetch, and a page with no
+#: organic sighting must not be made to read as if it had one.
+CLASS_RANK = {"organic": 0, "paste": 1, "seeded": 2, "selftest": 3}
 
 
 def _hhmmss(ts: str) -> str:
@@ -54,6 +61,7 @@ def export(led: Ledger) -> dict[str, Any]:
     sightings = led.rows("sighting")
     requests = {r["id"]: r for r in led.rows("request")}
 
+    paste_ids = led.paste_triggered_ids()
     seen_ctx: list[str] = []
     out_sightings = []
     for s in sightings:
@@ -62,8 +70,12 @@ def export(led: Ledger) -> dict[str, Any]:
         a = label(s["mint_ctx_id"], seen_ctx)
         b = label(s["seen_ctx_id"], seen_ctx)
         out_sightings.append({
+            "id": s["id"],
             "secret": s["secret"],
-            "origin": s["origin"],
+            # What the page reports, after the paste rule. `recorded_origin` is
+            # what the server wrote at the time and what the bundle row still says.
+            "origin": "paste" if s["id"] in paste_ids else s["origin"],
+            "recorded_origin": s["origin"],
             "elapsed": human_delta(s["delta_s"]),
             "elapsed_s": s["delta_s"],
             "issued": {
@@ -71,14 +83,18 @@ def export(led: Ledger) -> dict[str, Any]:
                 "at": _hhmmss(mint_req.get("ts", "")),
                 "ua": mint_req.get("ua", ""), "net": mint_req.get("ip_net", ""),
                 "raw": mint_req.get("raw_line", ""),
+                "via": mint_req.get("via", "direct"),
             },
             "requested": {
                 "label": b, "ctx_id": s["seen_ctx_id"],
                 "at": _hhmmss(seen_req.get("ts", "")),
                 "ua": seen_req.get("ua", ""), "net": seen_req.get("ip_net", ""),
                 "raw": seen_req.get("raw_line", ""),
+                "via": seen_req.get("via", "direct"),
             },
         })
+
+    out_sightings.sort(key=lambda x: (CLASS_RANK.get(x["origin"], 9), x["id"]))
 
     # The state, decided here so the viewer cannot choose a different one.
     if out_sightings:
@@ -107,15 +123,30 @@ def _claim(state: str, sightings: list[dict], mints: list[dict]) -> str:
         # "on a different network" is DERIVED, never asserted: it is only said when
         # the two truncated networks actually differ. Asserting it unconditionally
         # is the mistake U-0001 was written about.
-        where = ("" if s["issued"]["net"] == s["requested"]["net"]
-                 else ", on a different network")
+        same_net = s["issued"]["net"] == s["requested"]["net"]
+        where = "" if same_net else ", on a different network"
         claim = (f"A URL that only context {s['issued']['label']} was ever shown was "
                  f"requested {when} by context {s['requested']['label']}{where}.")
+        if same_net and s["origin"] in ("organic", "paste"):
+            # One machine changing its user-agent produces exactly this record. The
+            # tool cannot tell that apart from two clients behind one address, so
+            # it says which kind of sighting this is instead of leaving it to be
+            # read as the strong kind.
+            claim += (" Both requests came from the same network, so this is weak "
+                      "evidence: one client changing its headers would look the same.")
         if s["origin"] == "selftest":
             # The operator fetched their own canary. Mechanically a sighting, and
             # worth nothing as evidence. Saying so in the headline is cheaper than
             # letting a reader discover it in the raw rows.
             claim += " This was the operator's own probe, not third-party traffic."
+        elif s["origin"] == "paste":
+            # A real third party fetched it - after the operator handed the URL
+            # out. That is a fetcher following a published link, and the headline
+            # says so rather than letting it read as two clients sharing.
+            claim += (" The operator had published this URL by hand beforehand, so this "
+                      "shows a fetcher following a published link, not two clients sharing.")
+        elif s["origin"] == "seeded":
+            claim += " This is a seeded replay, not observed traffic."
         return claim
     if state == "awaiting":
         n = len(mints)

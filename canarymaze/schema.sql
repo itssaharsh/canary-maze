@@ -3,7 +3,7 @@
 -- Two things are deliberate here and a reviewer should check both:
 --
 --  1. There is NO `actor` table, and no join anywhere produces one. The unit is a
---     REQUEST CONTEXT. One operator can present as many contexts: in the AI Village
+--     REQUEST CONTEXT. One operator can present as many contexts: in the organizers'
 --     collusion.wiki dump, a single actor label carries 899 revisions across 741
 --     distinct addresses. A sighting therefore establishes that a secret moved
 --     between two request contexts, and nothing more. See docs/memory/decisions/ADR-0002.
@@ -58,6 +58,20 @@ CREATE TABLE IF NOT EXISTS sighting (
     UNIQUE (secret, seen_ctx_id)
 );
 
+-- Secrets the OPERATOR handed to someone by hand: pasted into a chat product, given
+-- to a fetch service, or printed in a published bundle. The server cannot tell a
+-- crawler that found a canary URL on its own from a fetcher that was given it -
+-- both are real third-party requests - so the operator's act of publishing is
+-- recorded HERE, and a fetch that comes after it is reported as paste-triggered,
+-- never as organic. The reclassification only runs in that direction.
+CREATE TABLE IF NOT EXISTS published (
+    id     INTEGER PRIMARY KEY,
+    secret TEXT    NOT NULL REFERENCES mint (secret),
+    ts     TEXT    NOT NULL,
+    method TEXT    NOT NULL          -- where it went, in the operator's own words
+);
+CREATE INDEX IF NOT EXISTS published_secret ON published (secret);
+
 -- Laundered (paraphrased) token candidates. Shipped DISABLED. This table is never
 -- joined into the proof graph and never reaches the bundle: see canarymaze/bundle.py.
 CREATE TABLE IF NOT EXISTS laundered (
@@ -90,3 +104,7 @@ CREATE TRIGGER IF NOT EXISTS sighting_no_update BEFORE UPDATE ON sighting
 BEGIN SELECT RAISE(ABORT, 'sighting is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS sighting_no_delete BEFORE DELETE ON sighting
 BEGIN SELECT RAISE(ABORT, 'sighting is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS published_no_update BEFORE UPDATE ON published
+BEGIN SELECT RAISE(ABORT, 'published is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS published_no_delete BEFORE DELETE ON published
+BEGIN SELECT RAISE(ABORT, 'published is append-only'); END;

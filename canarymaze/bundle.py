@@ -7,7 +7,8 @@ controls at the moment of checking.
 
 Structure:
 
-    rows    - the proof graph: request, mint, sighting. Nothing else.
+    rows    - the proof graph: request, mint, sighting, and the operator's
+              record of which secrets they published by hand. Nothing else.
     leaves  - one SHA-256 per row, over a canonical serialization.
     root    - a Merkle root over the leaves, in order.
 
@@ -27,10 +28,12 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Any
 
-#: The only tables that may enter a bundle.
-PROOF_TABLES = ("request", "mint", "sighting")
+#: The only tables that may enter a bundle. `published` is the operator's own
+#: disclosure of which secrets they handed out by hand; it travels with the records
+#: so a reader can see why a sighting is reported as paste-triggered and not organic.
+PROOF_TABLES = ("request", "mint", "sighting", "published")
 
-FORMAT = "canary-maze-bundle/3"
+FORMAT = "canary-maze-bundle/4"
 
 
 def _norm(v: Any) -> str:
@@ -191,6 +194,12 @@ def verify(bundle: dict[str, Any]) -> tuple[bool, list[str]]:
         if mt and s.get("ts") and s["ts"] < mt:
             problems.append(f"sighting id={sid} is dated {s['ts']}, before its mint "
                             f"at {mt}; a secret cannot be fetched before it exists")
+
+    for pub in rows.get("published", []):
+        if pub.get("secret") not in minted:
+            problems.append(f"published id={pub.get('id')} names secret "
+                            f"{str(pub.get('secret'))[:8]}… with no mint row in this "
+                            "bundle; a secret that was never issued cannot be published")
 
     return (not problems), problems
 
