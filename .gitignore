@@ -30,3 +30,9 @@ graphify-out/cost.json
 docs/paste_log.json
 viewer/.vercel
 site/.vercel
+
+# Ledgers are evidence, not source. The written reason a ledger was retired IS
+# source, so the archive README is kept and the databases beside it are not.
+ledgers/**/*.sqlite3
+ledgers/**/*.sqlite3-wal
+ledgers/**/*.sqlite3-shm

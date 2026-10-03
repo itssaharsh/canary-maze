@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 import urllib.request
@@ -59,9 +60,25 @@ def save_log(entries: list[dict]) -> None:
 
 
 def mint_one(base: str) -> tuple[str, str]:
-    """Fetch a maze page so a secret is issued to THIS context, and return it."""
+    """Fetch a maze page so a secret is issued to THIS context, and return it.
+
+    This request is the OPERATOR's, so it carries the self-test token and is
+    recorded as `origin='selftest'`. Only the fetcher that later follows the
+    paste is third-party traffic, and it has no token, so it stays organic. The
+    distinction matters: before it existed, the operator's own setup request was
+    written to the ledger as organic and inflated the one number this project
+    asks to be believed on.
+    """
     url = base.rstrip("/") + f"/m/{SLUG}"
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html"})
+    headers = {"User-Agent": UA, "Accept": "text/html"}
+    token = os.environ.get("CANARY_SELFTEST_TOKEN", "").strip()
+    if token:
+        headers["X-Canary-Selftest"] = token
+    else:
+        print("warning: CANARY_SELFTEST_TOKEN is not set, so this setup request "
+              "will be recorded as organic traffic alongside real fetchers.",
+              file=sys.stderr)
+    req = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(req, timeout=20) as r:
         html = r.read().decode("utf-8", "replace")
     m = re.search(r'href="(/c/([a-f0-9]+)/[^"]+)"', html)

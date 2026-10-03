@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS request (
     ua           TEXT    NOT NULL,
     ctx_id       TEXT    NOT NULL,
     raw_line     TEXT    NOT NULL,              -- combined-log rendering, for the record pair
-    origin       TEXT    NOT NULL CHECK (origin IN ('organic', 'seeded', 'paste')),
+    origin       TEXT    NOT NULL CHECK (origin IN ('organic', 'seeded', 'paste', 'selftest')),
     is_automated INTEGER NOT NULL CHECK (is_automated IN (0, 1))
 );
 CREATE INDEX IF NOT EXISTS request_ctx ON request (ctx_id);
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS sighting (
     mint_request_id INTEGER NOT NULL REFERENCES request (id),
     seen_request_id INTEGER NOT NULL REFERENCES request (id),
     delta_s         REAL    NOT NULL,
-    origin          TEXT    NOT NULL CHECK (origin IN ('organic', 'seeded', 'paste')),
+    origin          TEXT    NOT NULL CHECK (origin IN ('organic', 'seeded', 'paste', 'selftest')),
     ts              TEXT    NOT NULL,
     -- a context that fetches the same secret twice produces one sighting, not two
     UNIQUE (secret, seen_ctx_id)

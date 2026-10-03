@@ -1,6 +1,7 @@
 """Routing only. All decisions live in gate, context, mint and detect."""
 from __future__ import annotations
 
+import hmac
 import os
 import sqlite3
 from pathlib import Path
@@ -66,6 +67,32 @@ def require_production_salt() -> None:
 
 
 
+SELFTEST_HEADER = "X-Canary-Selftest"
+
+
+def request_origin(req, default: str) -> str:
+    """Resolve the origin of ONE request, rather than stamping the whole process.
+
+    The operator needs to probe their own surface - a smoke test, an uptime check,
+    `scripts/verify.sh`. Before this existed, `origin` was a single process-wide
+    config value, so every one of those probes was written to the ledger as
+    'organic' and published to a reader as third-party traffic. A verification
+    curl is not evidence that anyone else fetched the secret, and counting it as
+    such is exactly the overclaim this product exists to refuse.
+
+    The token is a SECRET, and absence fails closed to `default`. If the header
+    alone were enough, any fetcher could label itself a self-test and stay out of
+    the organic count - letting the observed party opt out of being observed.
+    """
+    token = os.environ.get("CANARY_SELFTEST_TOKEN", "").strip()
+    if not token:
+        return default
+    sent = (req.headers.get(SELFTEST_HEADER) or "").strip()
+    if sent and hmac.compare_digest(sent, token):
+        return "selftest"
+    return default
+
+
 def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
     """`origin` marks every row this instance writes. Production serves real
     traffic and leaves it "organic"; the seeded replay constructs the app with
@@ -114,6 +141,7 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
 
         secret = mint.secret_for(path, ctx, epoch=epoch)
         body = maze.page(slug, mint.canary_path(secret, slug))
+        req_origin = request_origin(request, app.config["ORIGIN"])
         # ARCHITECTURE.md and the contract promise: on a ledger failure, serve the
         # page anyway and never block a crawler. That promise had no implementation
         # until a review looked for it. A blocked crawler is a lost sighting, which
@@ -121,7 +149,7 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
         try:
             rid = ledger().record_request(method="GET", path=path, status=200, ip=ip,
                                           ua=headers.get("User-Agent", ""), ctx_id=ctx,
-                                          origin=app.config["ORIGIN"], size=len(body))
+                                          origin=req_origin, size=len(body))
             if ledger().mint_for_secret(secret) is None:
                 try:
                     ledger().record_mint(secret=secret, ctx_id=ctx, path=path,
@@ -146,13 +174,14 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
             return Response(body, mimetype="text/html")
 
         ctx = derive(headers, ip)
+        req_origin = request_origin(request, app.config["ORIGIN"])
         try:
             rid = ledger().record_request(method="GET", path=f"/c/{secret}/{slug}",
                                           status=200, ip=ip,
                                           ua=headers.get("User-Agent", ""), ctx_id=ctx,
-                                          origin=app.config["ORIGIN"], size=len(body))
+                                          origin=req_origin, size=len(body))
             detect.on_canary_request(ledger(), secret=secret, seen_ctx_id=ctx,
-                                     seen_request_id=rid, origin=app.config["ORIGIN"])
+                                     seen_request_id=rid, origin=req_origin)
         except sqlite3.Error:
             # Losing a sighting here is the worst failure in the product, so it is
             # logged loudly rather than swallowed silently.

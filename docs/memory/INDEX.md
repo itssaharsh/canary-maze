@@ -13,4 +13,5 @@ Active: 9 | archived/superseded: 0 | search: `python3 .prod-build/pb.py mem find
 | F-0001 | failure | canarymaze/mint.py, canarymaze/app.py | Committed development salt would have made every secret forgeable in production | failures/F-0001-committed-development-salt-would-have-made-every.md |
 | F-0002 | failure | Makefile, canarymaze/ledger.py | make clean deleted the live production ledger during a demo gate | failures/F-0002-make-clean-deleted-the-live-production-ledger-du.md |
 | F-0003 | failure | viewer/render.js, viewer/verify.js, scripts/export_all.py | The viewer's verification button computed nothing while claiming it did | failures/F-0003-the-viewer-s-verification-button-computed-nothin.md |
+| F-0004 | failure | canarymaze/app.py, canarymaze/ledger.py, canarymaze/export.py, viewer/render.js | Process-wide origin labelled the operator's own probes as third-party evidence | failures/F-0004-process-wide-origin-labelled-the-operator-s-own.md |
 | U-0001 | feedback | viewer/index.html, ui-prototype/index.html | Skeptical evaluator could not name the differentiator from the UI stills | feedback/U-0001-skeptical-evaluator-could-not-name-the-different.md |

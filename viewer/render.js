@@ -98,6 +98,7 @@
       "<span>Organic sightings <b>" + (c.sightings_organic || 0) + "</b></span>" +
       "<span>Seeded <b>" + (c.sightings_seeded || 0) + "</b></span>" +
       "<span>Paste-triggered <b>" + (c.sightings_paste || 0) + "</b></span>" +
+      "<span>Operator self-test <b>" + (c.sightings_selftest || 0) + "</b></span>" +
       "<span>Human requests in ledger <b class=\"" +
         ((c.human_requests || 0) === 0 ? "zero" : "") + "\">" +
         (c.human_requests || 0) + "</b></span>";
@@ -111,10 +112,17 @@
       var s = D.sightings[0];
       $("diff").innerHTML = renderDiff(s);
       $("diff").hidden = false;
-      $("origin").textContent = s.origin === "seeded"
-        ? "seeded replay · not organic traffic"
-        : (s.origin === "paste" ? "paste-triggered · a fetcher followed a human's paste"
-                                : "organic traffic");
+      /* Every origin is named explicitly. The earlier version fell through to
+       * "organic traffic" for anything it did not recognise, so a self-test row
+       * was published to a reader as third-party evidence. An unknown origin now
+       * says it is unknown rather than claiming the strongest reading. */
+      var ORIGINS = {
+        seeded: "seeded replay · not organic traffic",
+        paste: "paste-triggered · a fetcher followed a human's paste",
+        selftest: "the operator's own probe · not third-party traffic",
+        organic: "organic traffic"
+      };
+      $("origin").textContent = ORIGINS[s.origin] || ("origin: " + s.origin + " · unrecognised");
       $("role-a").textContent = "Issued to context " + s.issued.label;
       $("role-b").textContent = "Requested by context " + s.requested.label;
       $("pre-a").innerHTML = markSecret(s.issued.raw, s.secret);

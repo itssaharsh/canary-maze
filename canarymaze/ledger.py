@@ -16,7 +16,7 @@ from typing import Any, Iterable
 
 SCHEMA = Path(__file__).with_name("schema.sql")
 
-ORIGINS = ("organic", "seeded", "paste")
+ORIGINS = ("organic", "seeded", "paste", "selftest")
 
 
 def now_iso() -> str:
@@ -169,6 +169,8 @@ class Ledger:
         `humans_turned_away` is the falsifiable one: it rises when the gate fires.
         `human_requests` is retained and must stay 0 - it counts ledger rows marked
         non-automated, so a non-zero value means a human reached storage.
+        `sightings_selftest` is the operator's own traffic, kept out of the organic
+        number on purpose; see request_origin() in app.py.
         """
         with self._lock:
             one = lambda q, *a: int(self.db.execute(q, a).fetchone()[0])
@@ -177,6 +179,10 @@ class Ledger:
                 "sightings_organic": one("SELECT COUNT(*) FROM sighting WHERE origin='organic'"),
                 "sightings_seeded": one("SELECT COUNT(*) FROM sighting WHERE origin='seeded'"),
                 "sightings_paste": one("SELECT COUNT(*) FROM sighting WHERE origin='paste'"),
+                # The operator's own probes. Counted, never folded into organic:
+                # a verification curl is not third-party evidence, and publishing
+                # it as such is the overclaim this whole product exists to avoid.
+                "sightings_selftest": one("SELECT COUNT(*) FROM sighting WHERE origin='selftest'"),
                 "human_requests": one("SELECT COUNT(*) FROM request WHERE is_automated=0"),
                 "humans_turned_away": one("SELECT COALESCE(MAX(n), 0) FROM gate_rejection"),
                 "requests": one("SELECT COUNT(*) FROM request"),

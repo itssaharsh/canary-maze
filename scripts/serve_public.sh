@@ -39,8 +39,23 @@ fi
 # only proxy header we believe. X-Forwarded-For is never trusted: Cloudflare appends
 # to it, which makes its left-most entry attacker-controlled.
 export CANARY_TRUST_PROXY=cloudflare
-export CANARY_DB="${CANARY_DB:-$PWD/canary.sqlite3}"
+export CANARY_DB="${CANARY_DB:-$PWD/ledgers/canary-public.sqlite3}"
+mkdir -p "$(dirname "$CANARY_DB")"
 echo "ledger: $CANARY_DB"
+
+# --- telling our own traffic apart from everyone else's ----------------------
+# Without this, the operator's own smoke tests and uptime probes are written to
+# the ledger as 'organic' and published to a reader as third-party traffic. One
+# verification curl against the live surface produced exactly that, which is why
+# ledgers/archive holds a retired ledger. The token is secret on purpose: if the
+# header alone were enough, a fetcher could label itself a self-test and stay out
+# of the organic count, letting the observed party opt out of being observed.
+if [ -z "${CANARY_SELFTEST_TOKEN:-}" ]; then
+  CANARY_SELFTEST_TOKEN="$("$PY" -c 'import secrets;print(secrets.token_hex(16))')"
+  echo "CANARY_SELFTEST_TOKEN=$CANARY_SELFTEST_TOKEN" >> .env
+  echo "generated a CANARY_SELFTEST_TOKEN and appended it to .env (gitignored)."
+fi
+export CANARY_SELFTEST_TOKEN
 
 cleanup() { kill "${APP_PID:-}" "${TUN_PID:-}" 2>/dev/null; }
 trap cleanup EXIT INT TERM
@@ -51,7 +66,8 @@ sleep 2
 if ! kill -0 "$APP_PID" 2>/dev/null; then
   echo "the surface failed to start:"; tail -20 .serve.log; exit 1
 fi
-curl -fsS "http://127.0.0.1:$PORT/robots.txt" >/dev/null || { echo "surface not answering on :$PORT"; tail -20 .serve.log; exit 1; }
+curl -fsS -H "X-Canary-Selftest: $CANARY_SELFTEST_TOKEN" \
+     "http://127.0.0.1:$PORT/robots.txt" >/dev/null || { echo "surface not answering on :$PORT"; tail -20 .serve.log; exit 1; }
 echo "surface up on :$PORT"
 
 "$CF" tunnel --url "http://127.0.0.1:$PORT" --no-autoupdate > .tunnel.log 2>&1 &
@@ -78,6 +94,11 @@ cat <<EOF
   Next, to give crawlers a reason to arrive:
     1. paste $URL/sitemap.xml into a public model product and ask it to read a page
     2. run:  python3 scripts/trigger_paste.py $URL
+
+  To probe your own surface WITHOUT it counting as third-party evidence, send
+  your self-test token (it is in .env):
+
+    curl -H "X-Canary-Selftest: \$CANARY_SELFTEST_TOKEN" $URL/m/q3-supplier-review
 
   Leave this running. Ctrl-C stops the surface and the tunnel; the ledger and any
   bundle you have already exported survive, because they are files.

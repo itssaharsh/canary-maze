@@ -109,8 +109,14 @@ def _claim(state: str, sightings: list[dict], mints: list[dict]) -> str:
         # is the mistake U-0001 was written about.
         where = ("" if s["issued"]["net"] == s["requested"]["net"]
                  else ", on a different network")
-        return (f"A URL that only context {s['issued']['label']} was ever shown was "
-                f"requested {when} by context {s['requested']['label']}{where}.")
+        claim = (f"A URL that only context {s['issued']['label']} was ever shown was "
+                 f"requested {when} by context {s['requested']['label']}{where}.")
+        if s["origin"] == "selftest":
+            # The operator fetched their own canary. Mechanically a sighting, and
+            # worth nothing as evidence. Saying so in the headline is cheaper than
+            # letting a reader discover it in the raw rows.
+            claim += " This was the operator's own probe, not third-party traffic."
+        return claim
     if state == "awaiting":
         n = len(mints)
         return (f"{n} secret{'s' if n != 1 else ''} issued. No other context has "
