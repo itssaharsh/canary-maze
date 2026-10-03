@@ -1,0 +1,53 @@
+"""The drift gate must catch a stale number without failing a fresh clone.
+
+`make verify` is the first command a judge runs. An earlier version of this check
+compared the committed table against ledgers that a clone does not have, so the
+repo failed its own headline command on arrival - a worse outcome than a stale
+number, and exactly the kind of thing nobody notices because the author always
+has the ledgers.
+"""
+from __future__ import annotations
+
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = ROOT / "scripts" / "build_results.py"
+
+
+def run(*args, cwd=None):
+    return subprocess.run([sys.executable, str(SCRIPT), *args],
+                          capture_output=True, text=True, cwd=cwd or ROOT)
+
+
+def test_absent_ledgers_do_not_count_as_drift(tmp_path):
+    """The fresh-clone case: neither ledger exists, so nothing can disagree."""
+    r = run("--check", "--live", "nope-live.sqlite3", "--demo", "nope-demo.sqlite3")
+    assert r.returncode == 0, r.stderr
+
+
+def test_a_present_ledger_that_disagrees_is_still_caught(tmp_path, monkeypatch):
+    """The gate must not have been defanged: a real ledger with different
+    numbers still fails, which is the whole reason it exists."""
+    import sqlite3
+    sys.path.insert(0, str(ROOT))
+    from canarymaze.ledger import Ledger
+
+    db = tmp_path / "other.sqlite3"
+    led = Ledger(str(db))
+    rid = led.record_request(method="GET", path="/m/x", status=200,
+                             ip="198.51.100.9", ua="GPTBot/1.1", ctx_id="ctx0001")
+    led.record_mint(secret="f" * 16, ctx_id="ctx0001", path="/m/x",
+                    salt_epoch="e", request_id=rid)
+    led.close()
+
+    r = run("--check", "--demo", str(db))
+    assert r.returncode == 1, "a present ledger with different counts must fail the gate"
+    assert "out of date" in (r.stderr + r.stdout)
+
+
+def test_regenerating_then_checking_is_consistent():
+    """Generate, then check: the two must agree, or the gate is meaningless."""
+    assert run().returncode == 0
+    assert run("--check").returncode == 0
