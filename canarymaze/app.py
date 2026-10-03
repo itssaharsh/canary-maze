@@ -12,7 +12,7 @@ from . import detect, maze, mint
 from .context import derive
 from .gate import is_automated
 from .paths import ledger_path
-from .ledger import Ledger
+from .ledger import Ledger, truncate_ip
 
 VIEWER = Path(__file__).resolve().parents[1] / "viewer"
 
@@ -71,20 +71,47 @@ def require_production_salt() -> None:
 SELFTEST_HEADER = "X-Canary-Selftest"
 
 
-def request_origin(req, default: str) -> str:
+def operator_nets() -> tuple[str, ...]:
+    """Networks whose traffic is the operator's own, from CANARY_OPERATOR_NETS.
+
+    Given as truncated networks, exactly as the ledger stores them, comma
+    separated: "103.81.39.0/24,2001:db8::/48".
+    """
+    raw = os.environ.get("CANARY_OPERATOR_NETS", "")
+    return tuple(n.strip() for n in raw.split(",") if n.strip())
+
+
+def request_origin(req, default: str, *, ip: str | None = None) -> str:
     """Resolve the origin of ONE request, rather than stamping the whole process.
 
-    The operator needs to probe their own surface - a smoke test, an uptime check,
-    `scripts/verify.sh`. Before this existed, `origin` was a single process-wide
-    config value, so every one of those probes was written to the ledger as
-    'organic' and published to a reader as third-party traffic. A verification
-    curl is not evidence that anyone else fetched the secret, and counting it as
-    such is exactly the overclaim this product exists to refuse.
+    The operator constantly probes their own surface - smoke tests, uptime checks,
+    a curl to see whether the tunnel is up. Before this existed, `origin` was a
+    single process-wide config value, so every one of those was written to the
+    ledger as 'organic' and published to a reader as third-party traffic. A
+    verification curl is not evidence that anyone else fetched the secret.
 
-    The token is a SECRET, and absence fails closed to `default`. If the header
-    alone were enough, any fetcher could label itself a self-test and stay out of
-    the organic count - letting the observed party opt out of being observed.
+    Two independent ways to be recognised, because one was not enough:
+
+    1. **The operator's own network.** Checked first and needing nothing of the
+       client, because the header is opt-in and opt-in controls get forgotten.
+       They were forgotten three times here, the third time while diagnosing the
+       second, which is how a counter that exists to be trusted acquired four
+       sightings that were all the operator's own curl. Traffic from the
+       operator's own network is not third-party evidence, whatever it sends.
+    2. **A secret token**, for probing from somewhere else. It is a SECRET and
+       absence fails closed: if the header alone sufficed, any fetcher could
+       label itself a self-test and stay out of the organic count, letting the
+       observed party opt out of being observed.
+
+    This is deliberately asymmetric. Mislabelling our own traffic as organic
+    manufactures evidence; mislabelling a stranger's as self-test only loses
+    some. Only the first is a lie, so the doubt goes that way.
     """
+    nets = operator_nets()
+    if nets and ip:
+        if truncate_ip(ip) in nets:
+            return "selftest"
+
     token = os.environ.get("CANARY_SELFTEST_TOKEN", "").strip()
     if not token:
         return default
@@ -143,7 +170,7 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
 
         secret = mint.secret_for(path, ctx, epoch=epoch)
         body = maze.page(slug, mint.canary_path(secret, slug))
-        req_origin = request_origin(request, app.config["ORIGIN"])
+        req_origin = request_origin(request, app.config["ORIGIN"], ip=ip)
         # ARCHITECTURE.md and the contract promise: on a ledger failure, serve the
         # page anyway and never block a crawler. That promise had no implementation
         # until a review looked for it. A blocked crawler is a lost sighting, which
@@ -176,7 +203,7 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
             return Response(body, mimetype="text/html")
 
         ctx = derive(headers, ip)
-        req_origin = request_origin(request, app.config["ORIGIN"])
+        req_origin = request_origin(request, app.config["ORIGIN"], ip=ip)
         try:
             rid = ledger().record_request(method="GET", path=f"/c/{secret}/{slug}",
                                           status=200, ip=ip,

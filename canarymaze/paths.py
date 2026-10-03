@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 #: Where a running surface writes. Override with CANARY_DB.
-DEFAULT_LEDGER = "ledgers/canary-public.sqlite3"
+DEFAULT_LEDGER = "ledgers/canary-public-2.sqlite3"
 
 #: Ledgers that must never be opened as the live one again, and why. A retired
 #: ledger is kept (it is evidence of the bug that retired it) but reading one by
@@ -25,6 +25,12 @@ RETIRED: dict[str, str] = {
     "canary.sqlite3":
         "retired 2026-10-03: its one sighting is the operator's own curl, recorded "
         "as 'organic' before origin was resolved per request (F-0004). "
+        "See ledgers/archive/README.md.",
+    "canary-public.sqlite3":
+        "retired 2026-10-03: four 'organic' sightings in it are the operator's own "
+        "diagnostic curls, sent without the self-test token while investigating why "
+        "a crawler got 403. The token was opt-in and was forgotten a third time, "
+        "which is why operator networks are now recognised without it (F-0004). "
         "See ledgers/archive/README.md.",
 }
 

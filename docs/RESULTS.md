@@ -19,18 +19,46 @@ from the data, which it had done once before the generator existed.
 | Category | Live public surface | Seeded replay |
 |---|---|---|
 | Secrets minted | 5 | 1 |
-| **Organic sightings** | 0 | 0 |
+| **Organic sightings** | 4 | 0 |
 | Paste-triggered sightings | 0 | 0 |
 | Seeded sightings | 0 | 1 |
 | Operator self-test sightings | 0 | 0 |
-| Humans turned away by the gate | 0 | 0 |
+| Humans turned away by the gate | 1 | 0 |
 | Human requests in the ledger | 0 | 0 |
-| Requests recorded | 5 | 2 |
+| Requests recorded | 9 | 2 |
 
 The two columns are never added together. The left one answers "what has been observed in the wild"; the right one answers "does the mechanism work". Only the left column is evidence about anyone else's behaviour.
-
-**Organic sightings stand at 0.** That is reported as-is. The operator's own probes are recorded separately as self-tests (see F-0004) precisely so this number cannot be quietly inflated by our own traffic.
 <!-- counts:end -->
+
+## What the host refused before we ever saw it
+
+Measured 2026-10-03 against the live public URL, same second, varying only the
+user-agent. "Reached us" means the request appears in the application's own log.
+
+| User-agent | Edge | Reached us |
+|---|---|---|
+| GPTBot | **403** | no |
+| ClaudeBot | **403** | no |
+| PerplexityBot | **403** | no |
+| CCBot | **403** | no |
+| Bytespider | **403** | no |
+| ChatGPT-User | 200 | yes |
+| OAI-SearchBot | 200 | yes |
+| Googlebot | 200 | yes |
+| Google-Extended | 200 | yes |
+| curl | 200 | yes |
+
+Five of ten never arrived. The surface runs behind a Cloudflare quick tunnel,
+which blocks declared AI training crawlers by default and exposes no control to
+turn that off on the free tier. The same layer also replaces our `robots.txt`:
+ours is 66 bytes and says `Allow: /`, the edge serves 3871 bytes of Cloudflare's
+own Content Signals Policy. We cannot publish the permission this experiment
+depends on.
+
+**This means the organic count is partly a measurement of the host, not of
+crawler behaviour**, and it is biased toward zero. A third party asked to read a
+canary URL reported 403 and never reached us. See
+`docs/memory/failures/F-0005`.
 
 ## The honest reading
 
