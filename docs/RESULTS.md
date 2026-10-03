@@ -23,10 +23,10 @@ from the data, which it had done once before the generator existed.
 | Operator self-test sightings | 5 | 0 |
 | Seeded-replay sightings | 0 | 1 |
 | Requests recorded from third parties | 9 | 0 |
-| Requests recorded from the operator's own probes | 57 | 0 |
+| Requests recorded from the operator's own probes | 58 | 0 |
 | Requests recorded in the seeded replay | 0 | 2 |
 | Secrets issued to third parties | 0 | 0 |
-| Secrets issued to the operator's own probes | 19 | 0 |
+| Secrets issued to the operator's own probes | 20 | 0 |
 | Secrets issued in the seeded replay | 0 | 1 |
 | Secrets the operator published by hand | 13 | 0 |
 | Browser-shaped requests turned away, nothing stored | 15 | 0 |
@@ -38,7 +38,7 @@ The two columns are never added together. The left one is what the public surfac
 
 **3 sightings are paste-triggered**: a third-party fetcher followed a link the operator had published first (the census below). They show the surface and the ledger recording real third-party infrastructure. They are not evidence that anyone shares anything with anyone, and they are never counted as organic.
 
-9 requests from third parties and 57 requests from the operator's own probes are recorded. The operator's are labelled as self-tests at the moment they are written (F-0004), so they cannot inflate any third-party number.
+9 requests from third parties and 58 requests from the operator's own probes are recorded. The operator's are labelled as self-tests at the moment they are written (F-0004), so they cannot inflate any third-party number.
 
 15 browser-shaped requests were turned away and nothing about them was stored. That counter moves for anything that arrives with a browser's header set - people, the operator's own browser, and headless-browser fetch services alike. It counts the gate firing, not humans.
 <!-- counts:end -->
