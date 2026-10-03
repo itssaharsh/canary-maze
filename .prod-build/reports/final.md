@@ -62,6 +62,14 @@ process-wide value. Fixed by resolving origin per request behind a secret token
 recorded as F-0004. The polluted ledger was retired to `ledgers/archive/` rather
 than edited, because it is append-only and that is the integrity claim. [E0049]
 
+That fix was correct and incomplete, which the next live run exposed: moving the
+ledger was done in `make serve` only, so four other defaults still pointed at the
+old path and `trigger_paste.py --report` printed `sightings_organic 1` by reading
+the retired row itself, while the live ledger sat at 0. `canarymaze/paths.py` is
+now the only place that resolves a ledger, and a retired one raises rather than
+resolving. `.env` loads inside the scripts that need the self-test token, because
+a warning the operator can scroll past is not a control. [E0063]
+
 Earlier, self-inflicted: `make clean` deleted the live ledger during a demo gate
 (F-0002), and the committed development salt would have let any reader forge a
 secret (F-0001). [E0046]

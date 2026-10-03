@@ -93,7 +93,7 @@ that would look like evidence without being any.
 
 | Item | Owner | Why |
 |---|---|---|
-| Paste a canary URL into a public model product | **Saharsh** | only a human can do it; `scripts/trigger_paste.py <url>` then `--report` |
+| Paste a canary URL into a public model product | **Saharsh** | only a human can do it; `scripts/trigger_paste.py <url>` then `--report`. The script now loads `.env` itself and reports which ledger it read. |
 | Write-up and demo video | `product-demo-video`, after this | the product is finished first |
 | Keep the surface up | the machine must stay awake | the tunnel dies with it; the ledger is a file and survives |
 
