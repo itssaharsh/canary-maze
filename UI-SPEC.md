@@ -22,6 +22,10 @@ deviations:
   - "No card anywhere on the page. Nothing passes B5's card test: the records are a homogeneous pair, not a browsable set, and not movable. They get a sunken well instead."
   - "No texture, no grain, no grid. The records are the texture."
   - "accent is fill-only. --accent-text #BE3118 exists for the rare accent-coloured text case because #C8361B measured 4.485 on the sunken well, which fails 4.5 with no rounding."
+  - "BUILD-TIME: the sequence figure (SVG lanes + arc) was replaced by a context diff table. A skeptical evaluator given stills could not name the differentiator from the figure - lanes and an arc show that something moved, not what separates the two contexts. The table states it in words and types the differences. The arc was the prettier object and the worse instrument. See docs/memory/feedback/U-0001."
+  - "BUILD-TIME: no webfonts. Public Sans and IBM Plex Mono are still requested by name with system fallbacks, but nothing is fetched. The page claims it contacts no network, and a Google Fonts link made that claim false - the claim outranks the typeface."
+  - "BUILD-TIME: S2 /ledger was not built. The full rows ship in the bundle and in /export.json, both of which a reader can open, and the judged path is `make verify` plus the offline viewer. A second screen listing rows nobody asked to browse would have cost the hours that went into the corpus measurement."
+  - "BUILD-TIME: the verify button reads 'Recomputing…' rather than counting 'Verifying… 3/12'. The real recompute of five rows finishes faster than a counter can be read, so the counter would have been an animation of work already done. On a page whose entire subject is not faking things, invented progress was the wrong 200ms."
 ---
 
 ## 0. Brief + context profile
