@@ -23,6 +23,10 @@ import sqlite3
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from canarymaze.paths import ledger_path          # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "docs" / "RESULTS.md"
 
@@ -109,13 +113,18 @@ def table(live: dict[str, int] | None, demo: dict[str, int] | None,
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--live", default="ledgers/canary-public.sqlite3")
+    # Resolved through canarymaze.paths so a RETIRED ledger raises instead of
+    # being read. This file hardcoded the old path and silently reported four
+    # "organic" sightings out of a quarantined ledger - the third time a stale
+    # default published numbers nobody had collected. A guard only guards the
+    # callers that consult it.
+    ap.add_argument("--live", default=None)
     ap.add_argument("--demo", default="demo.sqlite3")
     ap.add_argument("--check", action="store_true",
                     help="exit non-zero if RESULTS.md is out of date, writing nothing")
     args = ap.parse_args()
 
-    live, demo = counts(ROOT / args.live), counts(ROOT / args.demo)
+    live, demo = counts(ROOT / ledger_path(args.live)), counts(ROOT / args.demo)
     if live is None and demo is None:
         # A clone with neither ledger cannot contradict the committed numbers.
         print("no ledger present; leaving docs/RESULTS.md as committed")

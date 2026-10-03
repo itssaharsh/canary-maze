@@ -51,3 +51,21 @@ def test_regenerating_then_checking_is_consistent():
     """Generate, then check: the two must agree, or the gate is meaningless."""
     assert run().returncode == 0
     assert run("--check").returncode == 0
+
+
+def test_the_generator_refuses_a_retired_ledger():
+    """It hardcoded the retired path once and published four 'organic' sightings
+    out of a quarantined ledger. A guard only guards the callers that consult it,
+    so this asserts that this caller does."""
+    r = run("--live", "canary.sqlite3")
+    assert r.returncode != 0
+    assert "retired" in (r.stderr + r.stdout).lower()
+
+
+def test_the_generator_defaults_to_the_live_ledger():
+    from canarymaze.paths import DEFAULT_LEDGER
+    src = SCRIPT.read_text(encoding="utf-8")
+    assert 'default="ledgers/canary-public.sqlite3"' not in src, \
+        "a hardcoded ledger path here bypasses the retirement registry"
+    assert "ledger_path(" in src, "the path must be resolved through the guard"
+    assert DEFAULT_LEDGER

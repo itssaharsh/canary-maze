@@ -97,3 +97,28 @@ control, because the failure it predicts lands silently in the data.
 CHEAPEST EARLY CHECK: after moving any file that code opens by default,
 `grep -rn '<old-name>'` across the whole repo before claiming the move is done,
 and make the old name raise.
+
+---
+
+## Third recurrence: a guard only guards the callers that consult it (2026-10-03)
+
+`canarymaze/paths.py` was written precisely so a retired ledger would raise
+instead of being read, and the scripts were routed through it. `build_results.py`
+was not - it had its own `--live` default pointing at the generation-1 ledger and
+opened it directly with `sqlite3`. So `docs/RESULTS.md`, the file whose entire
+claim is that its numbers are generated rather than typed, was regenerated from a
+QUARANTINED ledger and published **four "organic" sightings** that were the
+operator's own curls, retired hours earlier for exactly that reason.
+
+Caught only because the number changed between two audit runs and looked wrong.
+
+FIX: `build_results.py` resolves `--live` through `ledger_path()` like everything
+else, and two tests now assert that it refuses a retired ledger and that no
+hardcoded ledger path reappears in the file.
+
+LESSON: adding a guard does not retire a path - routing every caller through it
+does. The dangerous caller is always the one written *before* the guard existed
+and never revisited, because it still works, and because its wrongness shows up
+as a plausible number rather than an error. When introducing a chokepoint, the
+commit that adds it must also be the commit that greps for everyone who should be
+going through it.

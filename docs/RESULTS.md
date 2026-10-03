@@ -18,16 +18,18 @@ from the data, which it had done once before the generator existed.
 <!-- counts:start -->
 | Category | Live public surface | Seeded replay |
 |---|---|---|
-| Secrets minted | 5 | 1 |
-| **Organic sightings** | 4 | 0 |
+| Secrets minted | 10 | 1 |
+| **Organic sightings** | 0 | 0 |
 | Paste-triggered sightings | 0 | 0 |
 | Seeded sightings | 0 | 1 |
-| Operator self-test sightings | 0 | 0 |
+| Operator self-test sightings | 2 | 0 |
 | Humans turned away by the gate | 1 | 0 |
 | Human requests in the ledger | 0 | 0 |
-| Requests recorded | 9 | 2 |
+| Requests recorded | 12 | 2 |
 
 The two columns are never added together. The left one answers "what has been observed in the wild"; the right one answers "does the mechanism work". Only the left column is evidence about anyone else's behaviour.
+
+**Organic sightings stand at 0.** That is reported as-is. The operator's own probes are recorded separately as self-tests (see F-0004) precisely so this number cannot be quietly inflated by our own traffic.
 <!-- counts:end -->
 
 ## Real results on the organizers' own corpus
