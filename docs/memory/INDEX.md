@@ -10,6 +10,7 @@ Active: 9 | archived/superseded: 0 | search: `python3 .prod-build/pb.py mem find
 | ADR-0003 | decision | canarymaze/maze.py | Write the maze; do not fork Pyison | decisions/ADR-0003-write-the-maze-do-not-fork-pyison.md |
 | ADR-0004 | decision | canarymaze/ledger.py, canarymaze/app.py | Viewer on Vercel; canary surface on a host with a persistent disk | decisions/ADR-0004-viewer-on-vercel-canary-surface-on-a-host-with-a.md |
 | ADR-0005 | decision | canarymaze/ledger.py, canarymaze/schema.sql | Database/host choice: keep SQLite, tunnel the surface; Postgres only if the host changes | decisions/ADR-0005-database-host-choice-keep-sqlite-tunnel-the-surf.md |
+| ADR-0006 | decision | site/api/surface.py, canarymaze/ingest.py, canarymaze/app.py | Public surface on Vercel, ledger stays local, joined by a signed hand-off | decisions/ADR-0006-public-surface-on-vercel-ledger-stays-local.md |
 | F-0001 | failure | canarymaze/mint.py, canarymaze/app.py | Committed development salt would have made every secret forgeable in production | failures/F-0001-committed-development-salt-would-have-made-every.md |
 | F-0002 | failure | Makefile, canarymaze/ledger.py | make clean deleted the live production ledger during a demo gate | failures/F-0002-make-clean-deleted-the-live-production-ledger-du.md |
 | F-0003 | failure | viewer/render.js, viewer/verify.js, scripts/export_all.py | The viewer's verification button computed nothing while claiming it did | failures/F-0003-the-viewer-s-verification-button-computed-nothin.md |

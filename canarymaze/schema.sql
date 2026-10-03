@@ -25,6 +25,10 @@ CREATE TABLE IF NOT EXISTS request (
     ctx_id       TEXT    NOT NULL,
     raw_line     TEXT    NOT NULL,              -- combined-log rendering, for the record pair
     origin       TEXT    NOT NULL CHECK (origin IN ('organic', 'seeded', 'paste', 'selftest')),
+    -- Which edge reported this request. 'direct' means this process saw the
+    -- connection itself; anything else is a REPORT from a named edge, and a
+    -- reader is entitled to weigh it differently. See ADR-0006.
+    via          TEXT    NOT NULL DEFAULT 'direct',
     is_automated INTEGER NOT NULL CHECK (is_automated IN (0, 1))
 );
 CREATE INDEX IF NOT EXISTS request_ctx ON request (ctx_id);

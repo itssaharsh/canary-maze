@@ -11,6 +11,8 @@ from flask import Flask, Response, jsonify, request, send_from_directory
 from . import detect, maze, mint
 from .context import derive
 from .gate import is_automated
+from .ingest import SIG_HEADER, TS_HEADER, ingest_key
+from .ingest import verify as ingest_verify
 from .paths import ledger_path
 from .ledger import Ledger, truncate_ip
 
@@ -107,15 +109,25 @@ def request_origin(req, default: str, *, ip: str | None = None) -> str:
     manufactures evidence; mislabelling a stranger's as self-test only loses
     some. Only the first is a lie, so the doubt goes that way.
     """
+    return request_origin_from(req.headers, default, ip=ip)
+
+
+def request_origin_from(headers, default: str, *, ip: str | None = None) -> str:
+    """The same decision over a plain headers mapping.
+
+    Both the directly served routes and the signed edge hand-off go through this,
+    so a request forwarded by an edge cannot end up classified by different rules
+    than one this process saw itself.
+    """
     nets = operator_nets()
-    if nets and ip:
-        if truncate_ip(ip) in nets:
-            return "selftest"
+    if nets and ip and truncate_ip(ip) in nets:
+        return "selftest"
 
     token = os.environ.get("CANARY_SELFTEST_TOKEN", "").strip()
     if not token:
         return default
-    sent = (req.headers.get(SELFTEST_HEADER) or "").strip()
+    lower = {str(k).lower(): str(v) for k, v in dict(headers).items()}
+    sent = (lower.get(SELFTEST_HEADER.lower()) or "").strip()
     if sent and hmac.compare_digest(sent, token):
         return "selftest"
     return default
@@ -217,6 +229,70 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
             app.logger.error("LEDGER FAILURE on the canary route; a sighting may "
                              "have been lost", exc_info=True)
         return Response(body, mimetype="text/html")
+
+    # ---- signed hand-off from a public edge --------------------------------
+    @app.post("/ingest")
+    def ingest():
+        """Record a request a public edge observed on our behalf.
+
+        This exists because the host that can reach the clients we want to observe
+        is not the host that holds the ledger (F-0005, ADR-0006). It is the only
+        write path in the product that is not driven by a real connection, so it
+        is the one most worth attacking: an unauthenticated version would let
+        anyone post invented rows into an append-only ledger, where they could
+        never be removed. Hence a shared key, a timestamp, and `via` on every row
+        so a reader can tell a reported request from an observed one.
+        """
+        key = ingest_key()
+        if not key:
+            return jsonify({"ok": False, "error": "ingest disabled"}), 404
+
+        body = request.get_json(silent=True)
+        if not isinstance(body, dict):
+            return jsonify({"ok": False, "error": "body must be a JSON object"}), 400
+
+        ok, why = ingest_verify(body, request.headers.get(TS_HEADER, ""),
+                                request.headers.get(SIG_HEADER, ""), key)
+        if not ok:
+            app.logger.warning("ingest refused: %s", why)
+            return jsonify({"ok": False, "error": why}), 403
+
+        edge = str(body.get("via") or "edge")[:32]
+        headers = {str(k): str(v) for k, v in (body.get("headers") or {}).items()}
+        ip = str(body.get("ip") or "0.0.0.0")
+        path = str(body.get("path") or "/")
+        ua = headers.get("User-Agent") or headers.get("user-agent") or ""
+
+        # The gate runs HERE, on the forwarded headers, not at the edge. The edge
+        # reports what it saw; this process decides what it means. Moving the
+        # human-exclusion decision outward would put the privacy guarantee on a
+        # machine we do not control.
+        if not is_automated(headers):
+            ledger().note_gate_rejection()
+            return jsonify({"ok": True, "recorded": False, "reason": "human"}), 200
+
+        ctx = derive(headers, ip)
+        req_origin = request_origin_from(headers, app.config["ORIGIN"], ip=ip)
+        try:
+            rid = ledger().record_request(
+                method=str(body.get("method") or "GET"), path=path, status=200,
+                ip=ip, ua=ua, ctx_id=ctx, origin=req_origin,
+                size=int(body.get("size") or 0), via=edge)
+            secret = body.get("secret")
+            if body.get("kind") == "mint" and secret:
+                if ledger().mint_for_secret(secret) is None:
+                    try:
+                        ledger().record_mint(secret=secret, ctx_id=ctx, path=path,
+                                             salt_epoch=mint.salt_epoch(), request_id=rid)
+                    except sqlite3.IntegrityError:
+                        pass
+            elif body.get("kind") == "canary" and secret:
+                detect.on_canary_request(ledger(), secret=secret, seen_ctx_id=ctx,
+                                         seen_request_id=rid, origin=req_origin)
+        except sqlite3.Error:
+            app.logger.error("LEDGER FAILURE on ingest", exc_info=True)
+            return jsonify({"ok": False, "error": "ledger unavailable"}), 503
+        return jsonify({"ok": True, "recorded": True, "ctx": ctx}), 200
 
     # ---- what the viewer reads -------------------------------------------
     @app.get("/export.json")

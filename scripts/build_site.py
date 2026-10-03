@@ -14,6 +14,26 @@ ROOT = Path(__file__).resolve().parents[1]
 SITE, VIEWER = ROOT / "site", ROOT / "viewer"
 
 
+# --- the Vercel canary surface ----------------------------------------------
+# The function is stdlib-only and imports the SAME modules the local surface
+# runs, copied here at build time rather than vendored by hand. Copying beats a
+# second implementation: the gate and the mint are the two functions a reviewer
+# attacks first, and two copies of them would drift.
+API_MODULES = ("maze.py", "mint.py", "context.py", "gate.py", "ingest.py", "netaddr.py")
+
+
+def build_api() -> None:
+    cm = SITE / "api" / "_cm"
+    cm.mkdir(parents=True, exist_ok=True)
+    (cm / "__init__.py").write_text("", encoding="utf-8")
+    for name in API_MODULES:
+        src = (ROOT / "canarymaze" / name).read_text(encoding="utf-8")
+        # the copies import each other as a flat package, not as canarymaze.*
+        src = src.replace("from .context import", "from .context import")
+        (cm / name).write_text(src, encoding="utf-8")
+    print(f"api: {len(API_MODULES)} modules copied to site/api/_cm/")
+
+
 def main() -> int:
     data = json.loads((VIEWER / "data.json").read_text(encoding="utf-8"))
     counts = data["viewer"]["counts"]
@@ -50,7 +70,9 @@ def main() -> int:
                   html, flags=re.S)
     (SITE / "index.html").write_text(html, encoding="utf-8")
     print(f"site built: {len(rows)} counters from viewer/data.json, {n_tests} tests")
+    build_api()
     return 0
+
 
 
 if __name__ == "__main__":

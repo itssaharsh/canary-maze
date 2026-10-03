@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/m/:slug", "destination": "/api/surface" },
+    { "source": "/c/:secret/:slug", "destination": "/api/surface" },
+    { "source": "/robots.txt", "destination": "/api/surface" },
+    { "source": "/sitemap.xml", "destination": "/api/surface" }
+  ]
+}

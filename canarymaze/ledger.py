@@ -6,7 +6,6 @@ address is never passed further in, so no later mistake can store one.
 """
 from __future__ import annotations
 
-import ipaddress
 import sqlite3
 import threading
 from dataclasses import dataclass
@@ -19,24 +18,11 @@ SCHEMA = Path(__file__).with_name("schema.sql")
 ORIGINS = ("organic", "seeded", "paste", "selftest")
 
 
+from .netaddr import truncate_ip  # re-exported: callers imported it from here
+
+
 def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
-def truncate_ip(addr: str) -> str:
-    """Reduce an address to the network we are allowed to keep.
-
-    IPv4 -> /24, IPv6 -> /48. An unparseable address becomes 'unknown' rather than
-    being stored verbatim, because the failure mode we refuse is storing a full
-    address by accident.
-    """
-    try:
-        ip = ipaddress.ip_address(addr.strip())
-    except ValueError:
-        return "unknown"
-    prefix = 24 if ip.version == 4 else 48
-    net = ipaddress.ip_network(f"{ip}/{prefix}", strict=False)
-    return str(net)
 
 
 def combined_log_line(ip_net: str, ts: str, method: str, path: str,
@@ -79,13 +65,29 @@ class Ledger:
         self._lock = threading.Lock()
         with self._lock:
             self.db.executescript(SCHEMA.read_text(encoding="utf-8"))
+            self._migrate()
             self.db.commit()
+
+    def _migrate(self) -> None:
+        """Additive-only migrations for ledgers created by an earlier schema.
+
+        ADD COLUMN is the only shape allowed here. The append-only guarantee is
+        about rows, not columns, but a migration that could rewrite or drop one
+        would quietly hand back the ability this product refuses to have.
+        """
+        have = {r[1] for r in self.db.execute("PRAGMA table_info(request)")}
+        if "via" not in have:
+            self.db.execute(
+                "ALTER TABLE request ADD COLUMN via TEXT NOT NULL DEFAULT 'direct'")
 
     # -- writes ----------------------------------------------------------------
     def record_request(self, *, method: str, path: str, status: int, ip: str,
                        ua: str, ctx_id: str, origin: str = "organic",
                        is_automated: bool = True, size: int = 0,
-                       ts: str | None = None) -> int:
+                       ts: str | None = None, via: str = "direct") -> int:
+        """`via` names the edge that reported this request. 'direct' means this
+        process saw the connection; anything else is a report, and the viewer
+        says so, because a reader should be able to weigh the two differently."""
         if origin not in ORIGINS:
             raise ValueError(f"origin must be one of {ORIGINS}, got {origin!r}")
         ts = ts or now_iso()
@@ -94,9 +96,10 @@ class Ledger:
         with self._lock:
             cur = self.db.execute(
                 "INSERT INTO request (ts, method, path, status, ip_net, ua, ctx_id,"
-                " raw_line, origin, is_automated) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                " raw_line, origin, is_automated, via)"
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?)",
                 (ts, method, path, status, ip_net, ua, ctx_id, raw, origin,
-                 1 if is_automated else 0))
+                 1 if is_automated else 0, via))
             self.db.commit()
             return int(cur.lastrowid)
 
@@ -186,6 +189,10 @@ class Ledger:
                 "human_requests": one("SELECT COUNT(*) FROM request WHERE is_automated=0"),
                 "humans_turned_away": one("SELECT COALESCE(MAX(n), 0) FROM gate_rejection"),
                 "requests": one("SELECT COUNT(*) FROM request"),
+                # Rows this process saw itself, vs rows an edge reported to it.
+                # A reader weighing the evidence is entitled to the split.
+                "requests_direct": one("SELECT COUNT(*) FROM request WHERE via='direct'"),
+                "requests_reported": one("SELECT COUNT(*) FROM request WHERE via<>'direct'"),
             }
 
     def close(self) -> None:
