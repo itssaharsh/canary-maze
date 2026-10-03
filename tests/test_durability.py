@@ -110,17 +110,29 @@ def test_another_process_can_still_write_after_a_refused_write(tmp_path):
 
 # --- append-only has to mean append-only -------------------------------------
 
-@pytest.mark.parametrize("table", ["request", "mint", "sighting", "published"])
-@pytest.mark.parametrize("stmt", ["UPDATE {t} SET {col} = 'rewritten'",
-                                  "DELETE FROM {t}"])
-def test_no_table_can_be_updated_or_deleted(tmp_path, table, stmt):
-    """Only `request` was covered. Deleting the mint and sighting triggers from
-    the schema left every test green, and `UPDATE sighting SET origin='organic'`
-    would then have rewritten evidence in place."""
+#: (table, column, a value the column's CHECK constraint ACCEPTS). The value
+#: matters: updating sighting.origin to 'rewritten' raises IntegrityError from the
+#: CHECK, not from the trigger, so the test passed with the trigger deleted. It has
+#: to be a change the schema would otherwise welcome - 'selftest' -> 'organic' is
+#: precisely the rewrite this table exists to prevent.
+REWRITES = [("request", "ua", "Rewritten/9.9"),
+            ("mint", "path", "/m/somewhere-else"),
+            ("sighting", "origin", "organic"),
+            ("published", "method", "never happened")]
+
+
+@pytest.mark.parametrize("table,col,value", REWRITES)
+@pytest.mark.parametrize("verb", ["UPDATE", "DELETE"])
+def test_no_table_can_be_updated_or_deleted(tmp_path, table, col, value, verb):
+    """Only `request` was covered. Deleting the mint and sighting triggers from the
+    schema left every test green, and `UPDATE sighting SET origin='organic'` -
+    turning the operator's own probe into third-party evidence - would then have
+    rewritten the record in place."""
     led = _populated(tmp_path)
-    col = {"request": "ua", "mint": "path", "sighting": "origin", "published": "method"}[table]
-    with pytest.raises(sqlite3.IntegrityError):
-        led.db.execute(stmt.format(t=table, col=col))
+    sql = (f"UPDATE {table} SET {col} = ?" if verb == "UPDATE" else f"DELETE FROM {table}")
+    with pytest.raises(sqlite3.IntegrityError) as e:
+        led.db.execute(sql, (value,) if verb == "UPDATE" else ())
+    assert "append-only" in str(e.value), f"refused by {e.value}, not by the trigger"
     led.db.rollback()
     led.close()
 
