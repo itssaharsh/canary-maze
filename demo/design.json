@@ -1,0 +1,111 @@
+{
+ "source": {
+  "url": "https://site-nine-hazel-35.vercel.app/viewer/",
+  "title": "Canary Maze",
+  "h1": "Canary Maze",
+  "tokens_found": 24,
+  "fonts_loaded": []
+ },
+ "theme": "light",
+ "personality": "enterprise",
+ "palette": {
+  "site_bg": "#fdfcfa",
+  "surface": "#efede7",
+  "text": "#16140f",
+  "muted": "rgba(114,112,109,.72)",
+  "accent": "#c8361b",
+  "accent2": "#a81b3d",
+  "bg": [
+   "#f3e9e8",
+   "#e9cac4",
+   "#deb19c"
+  ],
+  "canvas": "#f8f8f8",
+  "field": "#c8361b",
+  "field_text": "#ffffff",
+  "chrome": "light",
+  "font": "Public Sans",
+  "display_font": "Instrument Serif"
+ },
+ "look": "editorial",
+ "shape": {
+  "radius": 5,
+  "window_radius": 8,
+  "pill": false,
+  "shadow": "flat",
+  "hairline": "rgba(0,0,0,.10)"
+ },
+ "card": {
+  "chrome": "none",
+  "inset_pct": 8.0,
+  "backdrop": "flat",
+  "shadow_css": "0 8px 40px rgba(0,0,0,.10),0 2px 8px rgba(0,0,0,.06)"
+ },
+ "type": {
+  "body_px": 14,
+  "scale": "compact"
+ },
+ "motion": {
+  "transition": "fade",
+  "zoom_style": "calm",
+  "spotlight_dim": 0.35
+ },
+ "sound": {
+  "music": "auto",
+  "bpm": 72,
+  "brief": "restrained cinematic, low percussion, confident and unhurried",
+  "sfx": "soft",
+  "loudness": "loud"
+ },
+ "grade": {
+  "saturation": 1.0,
+  "contrast": 1.0,
+  "vignette": 0.06
+ },
+ "evidence": {
+  "accents": [
+   [
+    "rgb(200, 54, 27)",
+    11888
+   ]
+  ],
+  "radii": [
+   [
+    "5",
+    250141.5
+   ],
+   [
+    "3",
+    101125.0625
+   ]
+  ],
+  "shadows": [],
+  "screen_colours": [
+   {
+    "hex": "#fdfcfa",
+    "share": 0.9651
+   },
+   {
+    "hex": "#5c574c",
+    "share": 0.0086
+   },
+   {
+    "hex": "#16140f",
+    "share": 0.0083
+   },
+   {
+    "hex": "#d4d0c7",
+    "share": 0.0067
+   },
+   {
+    "hex": "#c8361b",
+    "share": 0.0051
+   },
+   {
+    "hex": "#8b8986",
+    "share": 0.0047
+   }
+  ],
+  "named_tokens": {}
+ }
+}

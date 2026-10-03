@@ -1,0 +1,219 @@
+{
+ "project": {
+  "name": "Canary Maze",
+  "url": "https://site-nine-hazel-35.vercel.app/viewer/",
+  "target_seconds": 112,
+  "max_seconds": 180
+ },
+ "style": {
+  "design": "design.json",
+  "voice": "af_heart",
+  "speed": 0.89,
+  "captions": true,
+  "music": "auto",
+  "sfx": true,
+  "viewport": [
+   1280,
+   720
+  ],
+  "dsf": 1,
+  "fps": 30,
+  "mode": "window",
+  "transition": "wipe",
+  "loudness": "loud"
+ },
+ "pronounce": {
+  "crypto.subtle": "crypto dot subtle",
+  "Canary Maze": "Canary Maze",
+  "78,362": "seventy-eight thousand, three hundred and sixty-two",
+  "7,465": "seven thousand four hundred and sixty-five"
+ },
+ "scenes": [
+  {
+   "id": "hook",
+   "type": "clip",
+   "from": "aha",
+   "offset": -0.6,
+   "say": "This was just checked, with our server switched off. Nothing was contacted.",
+   "card": {
+    "layout": "title",
+    "scale": "hero",
+    "kicker": "Canary Maze",
+    "title": "Proof that doesn't need you to trust us.",
+    "reveal": "write"
+   }
+  },
+  {
+   "id": "problem",
+   "type": "card",
+   "say": "When an automated client reads your site, and hands what it found to another one, the strongest thing you can usually say is that the two of them look similar.",
+   "card": {
+    "layout": "stat",
+    "value": "\u201cthey look similar\u201d",
+    "label": "the strongest thing a site operator can say today",
+    "reveal": "mask"
+   },
+   "speed": 0.78
+  },
+  {
+   "id": "claim",
+   "type": "live",
+   "mode": "window",
+   "say": "Canary Maze gives every automated visitor its own secret URL, then records who else comes asking for it. Every sentence on this page is computed from the records.",
+   "actions": [
+    {
+     "do": "pause",
+     "ms": 500
+    },
+    {
+     "do": "camera",
+     "focus": ".claim",
+     "zoom": "fit",
+     "at": "secret",
+     "move": "push"
+    },
+    {
+     "do": "pause",
+     "ms": 2200
+    }
+   ]
+  },
+  {
+   "id": "diff",
+   "type": "live",
+   "mode": "window",
+   "say": "A URL only context A was ever shown was requested by context B. Different user agent, different network. This one is a seeded replay, and the page says so on its own face.",
+   "actions": [
+    {
+     "do": "camera",
+     "focus": "#diff",
+     "zoom": "fit",
+     "at": "requested",
+     "move": "push"
+    },
+    {
+     "do": "pause",
+     "ms": 2600
+    },
+    {
+     "do": "camera",
+     "focus": "#records",
+     "zoom": "fit",
+     "at": "seeded",
+     "move": "pull"
+    },
+    {
+     "do": "pause",
+     "ms": 1600
+    }
+   ]
+  },
+  {
+   "id": "records",
+   "type": "live",
+   "mode": "window",
+   "say": "The secret is that marked string, there, in context B's request. Context A was only ever shown it.",
+   "actions": [
+    {
+     "do": "camera",
+     "focus": "#pre-b",
+     "zoom": 1.9,
+     "at": "marked",
+     "move": "push",
+     "spotlight": true,
+     "callout": {
+      "text": "issued to A \u00b7 fetched by B"
+     }
+    },
+    {
+     "do": "pause",
+     "ms": 2400
+    }
+   ],
+   "speed": 0.84
+  },
+  {
+   "id": "verify",
+   "type": "live",
+   "mode": "window",
+   "say": "Now the part that matters. This recomputes every hash in your own browser, from the bundle alone. Verified. Five hashes, with crypto.subtle, and no request to our server at all.",
+   "actions": [
+    {
+     "do": "camera",
+     "focus": "#verify",
+     "zoom": "fit",
+     "at": "recomputes",
+     "move": "push"
+    },
+    {
+     "do": "click",
+     "sel": "#verify-btn",
+     "at": "browser",
+     "zoom": 1.5,
+     "focus": "#verify-btn",
+     "spotlight": true
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "mark",
+     "name": "aha"
+    },
+    {
+     "do": "camera",
+     "focus": "#verify-result",
+     "zoom": "fit",
+     "at": "Verified",
+     "move": "pull"
+    },
+    {
+     "do": "pause",
+     "ms": 2800
+    }
+   ]
+  },
+  {
+   "id": "corpus",
+   "type": "card",
+   "say": "A sighting shows a secret moved between two contexts. Not that there are two operators. We measured that on the AI Village corpus, and every single agent in it presents more than one context.",
+   "card": {
+    "layout": "stat",
+    "value": "46 of 46",
+    "label": "agents present more than one session context \u00b7 78,362 sessions analysed \u00b7 busiest agent: 7,465",
+    "reveal": "rise"
+   }
+  },
+  {
+   "id": "honesty",
+   "type": "live",
+   "mode": "window",
+   "say": "Organic sightings: zero, and reported as zero. Humans are turned away by the gate, so they never enter the ledger at all.",
+   "actions": [
+    {
+     "do": "camera",
+     "focus": "#foot",
+     "zoom": "fit",
+     "at": "zero",
+     "move": "push"
+    },
+    {
+     "do": "pause",
+     "ms": 2600
+    }
+   ]
+  },
+  {
+   "id": "end",
+   "type": "card",
+   "say": "Canary Maze. The record checks out without trusting the recorder.",
+   "card": {
+    "layout": "end",
+    "title": "Canary Maze",
+    "subtitle": "github.com/itssaharsh/canary-maze",
+    "url": "site-nine-hazel-35.vercel.app"
+   }
+  }
+ ]
+}

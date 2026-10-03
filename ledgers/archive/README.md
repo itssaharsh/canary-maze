@@ -34,3 +34,20 @@ the token remains only for probing from somewhere else.
 
 Contents: 5 mints, 9 requests, 4 sightings - every row the operator's own. No
 third-party traffic. The live ledger is now `ledgers/canary-public-2.sqlite3`.
+
+## canary-public-2-*-unstable-context.sqlite3 (retired 2026-10-03, the third)
+
+Retired because its context ids cannot be trusted. The fingerprint that produced
+them hashed the name of every request header it saw - including the ones the
+hosting platform injects, which are a different set on different routes. So one
+client that fetched a maze page and then followed its own canary link came out as
+two contexts, and the ledger recorded a sighting for the commonest harmless event
+there is.
+
+It was found by testing for it directly, from the operator's own network, so the
+false sighting it produced is labelled `selftest` and never touched the organic
+count. No third-party traffic had been recorded under the broken derivation.
+
+The context is now derived from an allowlist of client headers only, with order
+ignored, and the edge forwards nothing else (F-0006). The live ledger is
+`ledgers/canary-public-3.sqlite3`.

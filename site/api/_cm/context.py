@@ -13,11 +13,21 @@ itself carries no address and no user-agent string:
   - the user-agent verbatim
   - the network, already truncated to /24 or /48
   - Accept and Accept-Encoding
-  - the ORDER of the header names, which is a property of the HTTP stack rather
-    than of anything the caller typed
+  - WHICH of the standard request headers the client sends at all, which is a
+    property of its HTTP stack rather than of anything the caller typed
 
 Deliberately NOT included: the full address (we never hold one), cookies, and any
 value that would let a context be reversed back to a person.
+
+Also deliberately not included, and this one was learned the hard way (F-0006):
+any header that is not on the CLIENT_HEADERS allowlist, and the ORDER of the ones
+that are. An earlier version fingerprinted the order of every header name it saw.
+Behind a hosting platform that injects its own headers - a different set on
+different routes - one client fetching a page and then following its own link came
+out as two contexts, and the commonest harmless event there is was recorded as a
+sighting. A context that is too easy to split manufactures evidence; one that is
+too coarse only loses some. The gate chooses to lose sightings rather than ledger
+a human, and this module makes the same choice in the same direction.
 """
 from __future__ import annotations
 
@@ -26,17 +36,29 @@ from typing import Mapping
 
 from .netaddr import truncate_ip
 
-#: Headers that vary per request rather than per client, so they would make the
-#: identifier unstable without telling us anything about the client.
-_VOLATILE = {"cookie", "authorization", "referer", "if-none-match",
-             "if-modified-since", "range", "content-length", "host",
-             "connection", "date", "x-request-id"}
+#: Request headers that a CLIENT's HTTP stack chooses to send. Only these take part
+#: in the fingerprint. It is an allowlist on purpose: a denylist of "volatile"
+#: headers has to anticipate every header every proxy, CDN and platform will ever
+#: inject, and the one it misses splits a client in two. Anything not named here -
+#: x-forwarded-*, x-vercel-*, cf-*, cookies, a made-up X-Trace - is invisible.
+CLIENT_HEADERS: frozenset[str] = frozenset({
+    "user-agent", "accept", "accept-encoding", "accept-language", "accept-charset",
+    "cache-control", "pragma", "upgrade-insecure-requests", "dnt", "te", "priority",
+    "from", "purpose", "sec-purpose", "sec-gpc",
+    "sec-ch-ua", "sec-ch-ua-mobile", "sec-ch-ua-platform",
+    "sec-fetch-site", "sec-fetch-mode", "sec-fetch-dest", "sec-fetch-user",
+})
 
 
 def header_order_fingerprint(headers: Mapping[str, str]) -> str:
-    """The sequence of header names, which differs between HTTP stacks."""
-    names = [str(k).lower() for k in headers.keys() if str(k).lower() not in _VOLATILE]
-    return ",".join(names)
+    """Which standard client headers are present - sorted, so order is ignored.
+
+    The name is historical: it used to be the order. It is kept because the
+    Vercel function imports a copy of this module and a rename would have to land
+    in both places at once.
+    """
+    present = {str(k).lower() for k in headers.keys()} & CLIENT_HEADERS
+    return ",".join(sorted(present))
 
 
 def derive(headers: Mapping[str, str], ip: str) -> str:

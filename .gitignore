@@ -36,3 +36,18 @@ site/.vercel
 ledgers/**/*.sqlite3
 ledgers/**/*.sqlite3-wal
 ledgers/**/*.sqlite3-shm
+
+# keep_alive.sh runtime state
+.ingest_url
+.flask.pid
+.tunnel.pid
+.keepalive.log
+.keepalive.pid
+
+# Video working files: frames, stills and renders are large and regenerable.
+# The storyboard, brief and shot list are the source and are kept.
+demo/*
+!demo/storyboard.json
+!demo/brief.md
+!demo/shots.md
+!demo/design.json
