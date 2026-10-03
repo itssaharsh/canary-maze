@@ -122,3 +122,31 @@ and never revisited, because it still works, and because its wrongness shows up
 as a plausible number rather than an error. When introducing a chokepoint, the
 commit that adds it must also be the commit that greps for everyone who should be
 going through it.
+
+---
+
+## Fourth and last: making it structural instead of remembered (2026-10-03)
+
+An independent correctness review found the rule still had a hole, and it was the
+same shape as the first three. A sighting counted as ORGANIC whenever the FETCHING
+request was third-party and no `published` row predated it. The ISSUING side was
+never consulted. Every secret in the live ledger had been issued to the operator's
+own probes - so for any of them, a stranger could only have the URL because the
+operator passed it on, and it would still have been reported as organic unless
+somebody had remembered to record the disclosure first.
+
+That is the same bet that failed three times: the correctness of the one number
+this project asks to be believed on, resting on an operator remembering a step.
+
+FIX: organic now requires a third party on BOTH sides. `SQL_PASTE_TRIGGERED`
+additionally matches any sighting whose mint request carries `origin='selftest'`,
+so a secret issued to the operator can never produce organic evidence, disclosure
+or no disclosure. Two tests pin it, including the mirror - a stranger's secret
+fetched by a stranger must still be organic, or the rule would have made the
+headline number unreachable rather than honest.
+
+LESSON, now four times over: a control that depends on a person doing something
+at the right moment is not a control, it is a reminder. Each round of this bug was
+fixed with a better reminder - label your probes, use the token, record the
+disclosure - and each time the reminder was forgotten under load. The version that
+held is the one where the system can work it out from data it already has.
