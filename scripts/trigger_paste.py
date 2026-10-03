@@ -36,6 +36,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from canarymaze.paths import ledger_path, load_env  # noqa: E402
 from canarymaze.ledger import Ledger            # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -131,9 +132,10 @@ def cmd_report(db: str) -> int:
         print(f"    secret {s['secret'][:12]}… after {s['delta_s']:.0f}s")
     print(f"sightings on secrets we did NOT paste : {len(other)}")
     print()
+    print(f"reading ledger: {db}")
     print("ledger totals (organic / seeded / paste columns are independent):")
     for k in ("sightings_organic", "sightings_seeded", "sightings_paste",
-              "mints", "human_requests"):
+              "sightings_selftest", "mints", "human_requests"):
         print(f"  {k:<20} {counts[k]}")
     print()
     print("Reporting rule: a paste-triggered fetch shows a fetcher following a")
@@ -142,13 +144,18 @@ def cmd_report(db: str) -> int:
     return 0
 
 
+load_env()
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("base", nargs="?", help="public base URL of the surface")
     ap.add_argument("--report", action="store_true")
-    ap.add_argument("--db", default="canary.sqlite3")
+    ap.add_argument("--db", default=None,
+                    help="ledger to use (default: $CANARY_DB, else the live one)")
     args = ap.parse_args()
+    args.db = ledger_path(args.db)
 
     if args.report:
         return cmd_report(args.db)

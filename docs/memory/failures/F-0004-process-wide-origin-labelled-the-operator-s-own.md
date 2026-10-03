@@ -62,3 +62,38 @@ CHEAPEST EARLY CHECK: before trusting any count that distinguishes your traffic
 from a third party's, grep your own verification commands for requests to the
 surface, then ask which row each one wrote and under what label. If the answer is
 "the same label as a stranger", the counter is not evidence.
+
+---
+
+## Recurrence, same day, two new routes (2026-10-03, hours later)
+
+The fix above was correct and incomplete. Moving the live ledger to
+`ledgers/canary-public.sqlite3` was done by hand in `make serve` only;
+`seed_replay.py`, `export_all.py`, `trigger_paste.py` and the app's own fallback
+still defaulted to the old path, which by then held the RETIRED ledger. So
+`trigger_paste.py --report` printed `sightings_organic 1` - reading the very row
+that had been retired for being the operator's own curl - while the live ledger
+sat at 0. The number was wrong, plausible, and about to be reported.
+
+At the same moment the second half failed too: the script was run in a shell that
+had not sourced `.env`, so `CANARY_SELFTEST_TOKEN` was unset, the warning was
+printed and ignored, and the operator's own setup request was recorded as
+`origin='organic'` exactly as before.
+
+FIX: `canarymaze/paths.py` is now the only place that decides which ledger to
+open. `ledger_path()` resolves explicit argument -> `CANARY_DB` -> default, and
+RAISES on a ledger listed in `RETIRED` (matched on file name, so every spelling
+is caught) unless deliberately overridden. `load_env()` loads `.env` inside the
+scripts that need the token, so the operator cannot forget to source it; exported
+values still win. `--report` now prints which ledger it read. 9 tests.
+
+LESSON: retiring a file is not finished when the new path is written down
+somewhere - it is finished when the OLD path is made to fail loudly. A default
+that still resolves to retired data will be found by some code path, and it will
+return a plausible number rather than an error. The same applies to a required
+environment variable: a warning that the operator can scroll past is not a
+control, because the failure it predicts lands silently in the data.
+
+CHEAPEST EARLY CHECK: after moving any file that code opens by default,
+`grep -rn '<old-name>'` across the whole repo before claiming the move is done,
+and make the old name raise.

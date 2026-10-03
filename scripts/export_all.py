@@ -18,17 +18,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from canarymaze import bundle                     # noqa: E402
 from canarymaze.export import export              # noqa: E402
+from canarymaze.paths import ledger_path, load_env  # noqa: E402
 from canarymaze.ledger import Ledger              # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
+load_env()
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--db", default="canary.sqlite3")
+    ap.add_argument("--db", default=None,
+                    help="ledger to use (default: $CANARY_DB, else the live one)")
     ap.add_argument("--bundle", default="bundles/bundle.json")
     ap.add_argument("--note", default="")
     args = ap.parse_args()
+    args.db = ledger_path(args.db)
 
     led = Ledger(args.db)
     payload = export(led)

@@ -18,14 +18,14 @@ from the data, which it had done once before the generator existed.
 <!-- counts:start -->
 | Category | Live public surface | Seeded replay |
 |---|---|---|
-| Secrets minted | 3 | 1 |
+| Secrets minted | 5 | 1 |
 | **Organic sightings** | 0 | 0 |
 | Paste-triggered sightings | 0 | 0 |
 | Seeded sightings | 0 | 1 |
 | Operator self-test sightings | 0 | 0 |
 | Humans turned away by the gate | 0 | 0 |
 | Human requests in the ledger | 0 | 0 |
-| Requests recorded | 3 | 2 |
+| Requests recorded | 5 | 2 |
 
 The two columns are never added together. The left one answers "what has been observed in the wild"; the right one answers "does the mechanism work". Only the left column is evidence about anyone else's behaviour.
 

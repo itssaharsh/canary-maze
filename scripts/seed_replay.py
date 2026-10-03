@@ -28,6 +28,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from canarymaze.app import create_app            # noqa: E402
+from canarymaze.paths import ledger_path, load_env  # noqa: E402
 from canarymaze.ledger import Ledger             # noqa: E402
 
 # Two clients that differ in every way the detector looks at: declared purpose,
@@ -81,10 +82,15 @@ def run(db_path: str) -> int:
     return counts
 
 
+load_env()
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--db", default="canary.sqlite3")
+    ap.add_argument("--db", default=None,
+                    help="ledger to use (default: $CANARY_DB, else the live one)")
     args = ap.parse_args()
+    args.db = ledger_path(args.db)
 
     counts = run(args.db)
     print(f"seeded replay complete against {args.db}")

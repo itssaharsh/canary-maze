@@ -11,6 +11,7 @@ from flask import Flask, Response, jsonify, request, send_from_directory
 from . import detect, maze, mint
 from .context import derive
 from .gate import is_automated
+from .paths import ledger_path
 from .ledger import Ledger
 
 VIEWER = Path(__file__).resolve().parents[1] / "viewer"
@@ -110,7 +111,8 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
     if trust not in TRUST_MODES:
         raise SystemExit(f"CANARY_TRUST_PROXY must be one of {TRUST_MODES}, got {trust!r}")
     app.config["TRUST_PROXY"] = trust
-    app.config["LEDGER_PATH"] = db_path or os.environ.get("CANARY_DB", "canary.sqlite3")
+    # A retired ledger must never be served again; paths.ledger_path refuses one.
+    app.config["LEDGER_PATH"] = db_path or ledger_path()
 
     def ledger() -> Ledger:
         if "ledger" not in app.extensions:
