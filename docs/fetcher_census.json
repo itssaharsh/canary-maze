@@ -1,0 +1,153 @@
+{
+ "generated_at": "2026-10-03T18:32:58Z",
+ "note": "every URL was handed to the service by the operator; all sightings are paste-triggered, none organic",
+ "services": [
+  {
+   "key": "jina-reader",
+   "service": "Jina Reader (page-to-text for LLMs)",
+   "published_at": "2026-10-03T18:17:07Z",
+   "service_answered": "200",
+   "gate_turned_away": 1,
+   "contexts": 0,
+   "networks": [],
+   "fetches": []
+  },
+  {
+   "key": "wayback-save",
+   "service": "Internet Archive, Save Page Now",
+   "published_at": "2026-10-03T18:17:21Z",
+   "service_answered": "520",
+   "gate_turned_away": 1,
+   "contexts": 0,
+   "networks": [],
+   "fetches": []
+  },
+  {
+   "key": "w3c-nu",
+   "service": "W3C Nu HTML checker",
+   "published_at": "2026-10-03T18:17:54Z",
+   "service_answered": "200",
+   "gate_turned_away": 0,
+   "contexts": 1,
+   "networks": [
+    "52.22.66.0/24"
+   ],
+   "fetches": [
+    {
+     "ua": "Validator.nu/LV https://validator.w3.org/services",
+     "net": "52.22.66.0/24",
+     "after_s": 1.0,
+     "declares_itself": false
+    }
+   ]
+  },
+  {
+   "key": "w3c-checklink",
+   "service": "W3C Link Checker",
+   "published_at": "2026-10-03T18:18:07Z",
+   "service_answered": "200",
+   "gate_turned_away": 0,
+   "contexts": 1,
+   "networks": [
+    "52.22.66.0/24"
+   ],
+   "fetches": [
+    {
+     "ua": "W3C-checklink/5.0.0",
+     "net": "52.22.66.0/24",
+     "after_s": 2.0,
+     "declares_itself": false
+    }
+   ]
+  },
+  {
+   "key": "microlink",
+   "service": "Microlink (link previews)",
+   "published_at": "2026-10-03T18:18:22Z",
+   "service_answered": "200",
+   "gate_turned_away": 2,
+   "contexts": 0,
+   "networks": [],
+   "fetches": []
+  },
+  {
+   "key": "allorigins",
+   "service": "AllOrigins (CORS proxy)",
+   "published_at": "2026-10-03T18:18:36Z",
+   "service_answered": "500",
+   "gate_turned_away": 0,
+   "contexts": 0,
+   "networks": [],
+   "fetches": []
+  },
+  {
+   "key": "codetabs",
+   "service": "CodeTabs (CORS proxy)",
+   "published_at": "2026-10-03T18:19:09Z",
+   "service_answered": "522",
+   "gate_turned_away": 0,
+   "contexts": 0,
+   "networks": [],
+   "fetches": []
+  },
+  {
+   "key": "corsproxy",
+   "service": "corsproxy.io (CORS proxy)",
+   "published_at": "2026-10-03T18:19:41Z",
+   "service_answered": "401",
+   "gate_turned_away": 0,
+   "contexts": 0,
+   "networks": [],
+   "fetches": []
+  },
+  {
+   "key": "mshots",
+   "service": "WordPress mShots (page screenshots)",
+   "published_at": "2026-10-03T18:19:54Z",
+   "service_answered": "200",
+   "gate_turned_away": 1,
+   "contexts": 0,
+   "networks": [],
+   "fetches": []
+  },
+  {
+   "key": "thumio",
+   "service": "thum.io (page screenshots)",
+   "published_at": "2026-10-03T18:20:07Z",
+   "service_answered": "200",
+   "gate_turned_away": 1,
+   "contexts": 0,
+   "networks": [],
+   "fetches": []
+  },
+  {
+   "key": "pagespeed",
+   "service": "Google PageSpeed Insights",
+   "published_at": "2026-10-03T18:20:20Z",
+   "service_answered": "429",
+   "gate_turned_away": 0,
+   "contexts": 0,
+   "networks": [],
+   "fetches": []
+  },
+  {
+   "key": "gtranslate",
+   "service": "Google Translate (page proxy)",
+   "published_at": "2026-10-03T18:20:34Z",
+   "service_answered": "200",
+   "gate_turned_away": 0,
+   "contexts": 1,
+   "networks": [
+    "64.233.173.0/24"
+   ],
+   "fetches": [
+    {
+     "ua": "canary-maze-census/1.0 (+https://github.com/itssaharsh/canary-maze),gzip(gfe)",
+     "net": "64.233.173.0/24",
+     "after_s": 2.0,
+     "declares_itself": false
+    }
+   ]
+  }
+ ]
+}

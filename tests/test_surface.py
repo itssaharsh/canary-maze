@@ -102,14 +102,41 @@ def test_only_client_headers_are_forwarded(surface, monkeypatch):
     assert not any(k.startswith("x-") for k in sent)
 
 
-def test_a_human_is_served_and_nothing_is_reported(surface, monkeypatch):
+def test_a_human_is_served_and_nothing_about_them_leaves_the_edge(surface, monkeypatch):
+    """The edge tells the ledger THAT a browser was turned away, and nothing else:
+    no address, no user-agent, no header, no path."""
     monkeypatch.setenv("CANARY_ALLOW_DEV_SALT", "1")
     status, _, body, payload = surface.respond("/m/q3-supplier-review", BROWSER, IP, "https://h")
-    assert status == 200 and payload is None
+    assert status == 200
     assert "/c/" not in body, "a human must not be issued a canary link"
+    assert payload == {"kind": "gate", "via": "vercel"}
     status, _, _, payload = surface.respond("/c/deadbeefdeadbeef/q3-supplier-review",
                                             BROWSER, IP, "https://h")
-    assert status == 200 and payload is None
+    assert status == 200 and payload == {"kind": "gate", "via": "vercel"}
+
+
+def test_a_human_through_the_edge_moves_the_counter_and_stores_nothing(surface, ledger_app,
+                                                                       monkeypatch):
+    """The falsifiable privacy number has to work on the PUBLIC surface.
+
+    When the surface moved to the edge, a browser was served there and the ledger
+    was told nothing, so `humans_turned_away` stayed at 0 however many humans
+    arrived - the counter a review had made falsifiable was vacuous again on the
+    only surface the public can reach. A census of headless-browser services
+    showed it: every one of them 'never arrived'."""
+    monkeypatch.setenv("CANARY_ALLOW_DEV_SALT", "1")
+    client, db = ledger_app
+    from canarymaze.ledger import Ledger
+
+    _, _, _, payload = surface.respond("/m/q3-supplier-review", BROWSER, IP, "https://h")
+    r = deliver(client, payload)
+    assert r.status_code == 200 and r.get_json()["recorded"] is False
+
+    led = Ledger(db)
+    c = led.counts()
+    led.close()
+    assert c["humans_turned_away"] == 1
+    assert c["requests"] == 0 and c["human_requests"] == 0 and c["mints"] == 0
 
 
 def test_the_canary_route_is_200_for_an_unknown_secret_and_an_unknown_slug(surface, monkeypatch):

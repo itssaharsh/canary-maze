@@ -257,6 +257,12 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
             app.logger.warning("ingest refused: %s", why)
             return jsonify({"ok": False, "error": why}), 403
 
+        if body.get("kind") == "gate":
+            # The edge turned a browser away and says so. It sends nothing about
+            # the visitor and nothing is stored: one counter goes up by one.
+            ledger().note_gate_rejection()
+            return jsonify({"ok": True, "recorded": False, "reason": "human"}), 200
+
         edge = str(body.get("via") or "edge")[:32]
         headers = {str(k): str(v) for k, v in (body.get("headers") or {}).items()}
         ip = str(body.get("ip") or "0.0.0.0")

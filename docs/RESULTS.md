@@ -18,14 +18,14 @@ from the data, which it had done once before the generator existed.
 <!-- counts:start -->
 | Category | Live public surface | Seeded replay |
 |---|---|---|
-| Secrets minted | 4 | 1 |
+| Secrets minted | 16 | 1 |
 | **Organic sightings** | 0 | 0 |
-| Paste-triggered sightings | 0 | 0 |
+| Paste-triggered sightings | 3 | 0 |
 | Seeded sightings | 0 | 1 |
 | Operator self-test sightings | 2 | 0 |
 | Humans turned away by the gate | 0 | 0 |
 | Human requests in the ledger | 0 | 0 |
-| Requests recorded | 9 | 2 |
+| Requests recorded | 24 | 2 |
 
 The two columns are never added together. The left one answers "what has been observed in the wild"; the right one answers "does the mechanism work". Only the left column is evidence about anyone else's behaviour.
 
@@ -66,6 +66,34 @@ Data: AI Village / AI Digest. Used for research and analysis only, with no
 attempt to re-identify anyone; no identifier, goal or message content is read,
 printed or stored by the script, only counts and the model names the dataset
 itself publishes.
+
+## Real third-party fetchers, paste-triggered
+
+<!-- census:start -->
+Each of 12 public fetch services was handed one canary URL of its own. The operator's act of handing it over is a row in the ledger's `published` table, written first, so **every sighting below is paste-triggered and none is organic**.
+
+| Service | Outcome | Contexts | Network(s) it came from | User-agent it presented |
+|---|---|---|---|---|
+| Jina Reader (page-to-text for LLMs) | arrived browser-shaped; gate stored nothing | - | - | - |
+| Internet Archive, Save Page Now | arrived browser-shaped; gate stored nothing | - | - | - |
+| W3C Nu HTML checker | recorded | 1 | 52.22.66.0/24 | `Validator.nu/LV https://validator.w3.org/services` |
+| W3C Link Checker | recorded | 1 | 52.22.66.0/24 | `W3C-checklink/5.0.0` |
+| Microlink (link previews) | arrived browser-shaped; gate stored nothing | - | - | - |
+| AllOrigins (CORS proxy) | never arrived | - | - | - |
+| CodeTabs (CORS proxy) | never arrived | - | - | - |
+| corsproxy.io (CORS proxy) | never arrived | - | - | - |
+| WordPress mShots (page screenshots) | arrived browser-shaped; gate stored nothing | - | - | - |
+| thum.io (page screenshots) | arrived browser-shaped; gate stored nothing | - | - | - |
+| Google PageSpeed Insights | never arrived | - | - | - |
+| Google Translate (page proxy) | recorded | 1 | 64.233.173.0/24 | `canary-maze-census/1.0 (+https://github.com/itssaharsh/can…` |
+
+- **3 of 12** reached the surface and were recorded, through the real public function and the signed hand-off into the ledger.
+- **0** of those used **more than one request context for a single URL** - one service, one link, several contexts. That is the reason this tool says "context" and never "actor", observed on live third-party traffic.
+- **5** arrived with a full browser header set, so the human-exclusion gate declined to record them and stored nothing; the only trace is the bare counter moving in that service's window. That is the gate's stated cost - it would rather lose a sighting than ledger a human - shown rather than described. (Attribution of a gate event to a service is by time window, so it is approximate: the gate keeps no record that could make it exact.)
+- **4** never arrived: the service answered its caller without fetching the page, refused the request, or was rate-limited.
+
+What this is not: evidence that any of these services shares anything with any other. Each fetched a link it was given. Reproduce with `python3 scripts/fetcher_census.py`; raw output in `docs/fetcher_census.json`.
+<!-- census:end -->
 
 ## What the host refused before we ever saw it
 

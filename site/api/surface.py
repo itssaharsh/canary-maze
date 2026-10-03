@@ -44,6 +44,14 @@ INGEST_TIMEOUT_S = 3.0
 FORWARD = CLIENT_HEADERS | {"x-canary-selftest"}
 
 
+#: What the ledger is told when a browser is turned away: that it happened. No
+#: address, no user-agent, no header, no path - the gate exists so that nothing
+#: about a human is kept, and that has to hold for what leaves the edge too. The
+#: one thing that must still move is the counter, or "humans are excluded" stops
+#: being a claim anyone could check on the only surface the public can reach.
+GATE_REPORT = {"kind": "gate", "via": EDGE_NAME}
+
+
 def forwardable(headers: dict) -> dict:
     """The client's own headers, lower-cased, and only the ones the ledger uses."""
     out = {}
@@ -93,8 +101,8 @@ def respond(path: str, headers: dict, ip: str, base: str):
     """Decide the response for one GET. Pure: no network, no socket.
 
     Returns (status, content_type, body, report) where `report` is the payload to
-    hand to the ledger, or None when nothing may be reported - a human, a 404, or
-    a static file. Keeping this separate from the handler is what lets the tests
+    hand to the ledger, or None when there is nothing to report - a 404 or a
+    static file. A human produces GATE_REPORT, which carries nothing about them. Keeping this separate from the handler is what lets the tests
     drive the real decision instead of a mock of it.
     """
     path = path.split("?", 1)[0]
@@ -117,7 +125,7 @@ def respond(path: str, headers: dict, ip: str, base: str):
         # The gate is run AGAIN at the ledger, which is what actually protects the
         # privacy claim; this copy only avoids minting for a browser.
         if not is_automated(client):
-            return 200, "text/html", maze.page(slug, page_path), None
+            return 200, "text/html", maze.page(slug, page_path), GATE_REPORT
         ctx = derive(client, ip)
         secret = mint.secret_for(page_path, ctx, epoch=mint.salt_epoch())
         body = maze.page(slug, mint.canary_path(secret, slug))
@@ -131,7 +139,7 @@ def respond(path: str, headers: dict, ip: str, base: str):
         secret, slug = parts[1], parts[2]
         body = maze.full_text(slug if slug in maze.slugs() else maze.slugs()[0])
         if not is_automated(client):
-            return 200, "text/html", body, None
+            return 200, "text/html", body, GATE_REPORT
         return 200, "text/html", body, {
             "kind": "canary", "method": "GET", "path": f"/c/{secret}/{slug}",
             "ip": ip, "headers": client, "via": EDGE_NAME, "secret": secret,
