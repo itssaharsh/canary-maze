@@ -19,10 +19,47 @@ and the headline no longer says otherwise - an earlier one did, two screens abov
 limitation that contradicts it.
 
 ```
+# illustrative shape of one sighting - not a capture, see docs/RESULTS.md for live numbers
 Secret 7f3a9c…  issued to context A at 11:04:12   (GPTBot/1.2, AS8075)
                 requested by context B at 11:08:47 (Chrome/124, AS13335)
                 4m 35s later, on a different network
 ```
+
+## Result on the organizers' own corpus
+
+The claim this tool refuses to overstate is that a sighting shows a secret moved
+between two *contexts*, not that there are two *actors*. We measured whether one
+actor really does present as many contexts, in the AI Village agent logs:
+
+| | |
+|---|---|
+| Computer-use sessions analysed | **78,362** |
+| Agents presenting more than one session context | **46 of 46** |
+| Most contexts for a single agent | **7,465** (Gemini 2.5 Pro) |
+| Median | 1,080 |
+
+Every agent in the corpus presents more than one. An identity-per-context
+assumption would have been wrong by three orders of magnitude on the hosts' own
+data - which is why the schema has no `actor` table and the viewer says
+"context A", never a name. A second, unrelated corpus agrees: in the
+collusion.wiki dump one actor label spans **741** addresses.
+
+*Data: AI Village / AI Digest, research use only. The script reads no identifier,
+goal or message content - only counts and the model names the dataset publishes.*
+
+## Check it yourself in three commands
+
+No credentials, no dataset access, no network.
+
+```
+git clone https://github.com/itssaharsh/canary-maze && cd canary-maze
+make verify     # five properties, each able to fail, with the server stopped
+make demo       # builds the offline viewer
+```
+
+Then open `viewer/index.html` **from disk** and press *Recompute the hashes
+locally*. Edit any record in `viewer/data.js` first and it names the row that no
+longer matches.
 
 ---
 
