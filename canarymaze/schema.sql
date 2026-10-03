@@ -13,6 +13,10 @@
 --     because the bundle's whole value is that nobody edited the rows after the fact.
 
 PRAGMA journal_mode = WAL;
+-- Without this, a trigger's own statements fire no triggers. It is per-connection
+-- and every Ledger runs this script, but the BEFORE INSERT guards below do not
+-- depend on it: they hold for any client, including sqlite3 on the command line.
+PRAGMA recursive_triggers = ON;
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS request (
@@ -93,6 +97,26 @@ CREATE TABLE IF NOT EXISTS gate_rejection (
 );
 
 -- Append-only, enforced.
+--
+-- UPDATE and DELETE abort. That was not enough: INSERT OR REPLACE (and REPLACE
+-- INTO, and ON CONFLICT REPLACE) DELETE the conflicting row and insert a new one
+-- WITHOUT firing either trigger, so every row could be rewritten under its own id
+-- - and the rebuilt bundle verified clean, because it was consistent with the
+-- rewritten rows. A review demonstrated it in one statement. So each table also
+-- refuses an insert that collides with a row already present.
+CREATE TRIGGER IF NOT EXISTS request_no_replace BEFORE INSERT ON request
+WHEN EXISTS (SELECT 1 FROM request WHERE id = NEW.id)
+BEGIN SELECT RAISE(ABORT, 'request is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS mint_no_replace BEFORE INSERT ON mint
+WHEN EXISTS (SELECT 1 FROM mint WHERE id = NEW.id OR secret = NEW.secret)
+BEGIN SELECT RAISE(ABORT, 'mint is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS sighting_no_replace BEFORE INSERT ON sighting
+WHEN EXISTS (SELECT 1 FROM sighting WHERE id = NEW.id
+             OR (secret = NEW.secret AND seen_ctx_id = NEW.seen_ctx_id))
+BEGIN SELECT RAISE(ABORT, 'sighting is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS published_no_replace BEFORE INSERT ON published
+WHEN EXISTS (SELECT 1 FROM published WHERE id = NEW.id)
+BEGIN SELECT RAISE(ABORT, 'published is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS request_no_update BEFORE UPDATE ON request
 BEGIN SELECT RAISE(ABORT, 'request is append-only'); END;
 CREATE TRIGGER IF NOT EXISTS request_no_delete BEFORE DELETE ON request

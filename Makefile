@@ -4,7 +4,13 @@ PY ?= python3
 # into this file named a RETIRED ledger as "the live ledger" for two generations,
 # and `make clean-ledger` would have deleted the only copy of the evidence behind
 # F-0004 while leaving the real live ledger untouched.
-LEDGER ?= $(shell $(PY) -c "from canarymaze.paths import ledger_path; print(ledger_path())")
+LEDGER ?= $(shell $(PY) -c "from canarymaze.paths import ledger_path; print(ledger_path())" 2>/dev/null)
+# If that printed nothing - CANARY_DB names a retired ledger, so ledger_path exits,
+# or python is not importable - every $(LEDGER) below is empty, and `rm -f $(LEDGER)*`
+# in clean-ledger becomes `rm -f *` in the repository root.
+ifeq ($(strip $(LEDGER)),)
+$(error could not resolve the live ledger: run $(PY) -c "from canarymaze.paths import ledger_path; print(ledger_path())" to see why)
+endif
 
 install:
 	$(PY) -m pip install -r requirements.txt -r requirements-dev.txt
@@ -27,7 +33,7 @@ results:
 # For the public surface use scripts/keep_alive.sh, which also runs the tunnel and
 # keeps Vercel pointed at it.
 serve:
-	CANARY_DB=$(PWD)/$(LEDGER) $(PY) -m canarymaze.app
+	CANARY_DB=$(abspath $(LEDGER)) $(PY) -m canarymaze.app
 
 # NEVER delete a ledger here. `make clean` gets run reflexively between demo runs - including while the public
 # surface is live, which silently unlinks the file the server is still writing to
@@ -45,4 +51,5 @@ clean-ledger:
 	@echo "Nothing in ledgers/archive/ is touched; retired ledgers are kept on purpose."
 	@echo "Export a bundle first if you want to keep the evidence:"
 	@echo "    python3 scripts/export_all.py --db $(LEDGER) --bundle bundles/keep.json"
-	@read -p "type DELETE to confirm: " ok; [ "$$ok" = "DELETE" ] && rm -f $(LEDGER)* || echo "aborted"
+	@read -p "type DELETE to confirm: " ok; [ "$$ok" = "DELETE" ] \
+	  && rm -f -- "$(LEDGER)" "$(LEDGER)-wal" "$(LEDGER)-shm" || echo "aborted"

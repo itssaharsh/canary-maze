@@ -11,6 +11,7 @@ crash, so opening a retired ledger is now an error rather than a default.
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -63,10 +64,39 @@ def load_env(path: str | os.PathLike[str] | None = None) -> None:
             os.environ[key] = value
 
 
+#: Retired ledgers are copied here. Anything in this directory is evidence, never a
+#: ledger to write to or report from.
+ARCHIVE_DIR = "archive"
+
+#: How scripts/retire_ledger.py names an archive.
+ARCHIVE_RE = re.compile(r"^.+-\d{8}T\d{6}Z-[a-z0-9-]+\.sqlite3$")
+
+
 def is_retired(path: str | os.PathLike[str]) -> str | None:
-    """Return why `path` is retired, or None. Matched on the file name, so it
-    holds however the caller spelled the path."""
-    return RETIRED.get(Path(path).name)
+    """Return why `path` is retired, or None.
+
+    Three ways a path is retired, because two of them were found the hard way:
+      - its file name is in RETIRED;
+      - it starts with a retired stem (scripts/retire_ledger.py writes archives as
+        `<stem>-<stamp>-<label>.sqlite3`, and none of those names was in the
+        registry, so every archived copy was accepted as a live ledger and could
+        republish the very rows it had been retired for);
+      - it lives in ledgers/archive/, whatever it is called.
+    """
+    p = Path(path)
+    if p.name in RETIRED:
+        return RETIRED[p.name]
+    if ARCHIVE_DIR in p.parts:
+        return (f"{p.name} is in ledgers/{ARCHIVE_DIR}/: a retired ledger kept as "
+                "evidence. See ledgers/archive/README.md for why it was retired.")
+    for name, why in RETIRED.items():
+        # Only the archive naming pattern: <stem>-<YYYYmmddTHHMMSSZ>-<label>.sqlite3.
+        # A bare `startswith(stem + "-")` also matched the LIVE ledger, because
+        # canary-public-3 starts with canary-. The Makefile guard caught that
+        # within a minute of it being written, which is the guard earning its keep.
+        if ARCHIVE_RE.match(p.name) and p.name.startswith(Path(name).stem + "-"):
+            return f"{p.name} is an archive of {name}: {why}"
+    return None
 
 
 def ledger_path(explicit: str | None = None, *, allow_retired: bool = False) -> str:

@@ -24,14 +24,25 @@ from .netaddr import truncate_ip  # re-exported: callers imported it from here
 #: Every table that may be read out as part of the proof graph.
 PROOF_TABLES = ("request", "mint", "sighting", "published")
 
-#: A sighting the server recorded as organic, on a secret the operator had already
-#: published by hand when the fetch happened. One definition, in SQL, shared with
-#: scripts/build_results.py - two spellings of this rule would eventually disagree
-#: about the one number the project asks to be believed on. The comparison is on
-#: ISO-8601 UTC strings, which order correctly as text.
+#: A sighting the server recorded as organic that is NOT evidence a third party
+#: found a secret on its own. Two ways that happens, and both are structural rather
+#: than opt-in, because an opt-in step is one somebody eventually forgets (F-0004):
+#:
+#:   1. the operator had already published that secret by hand when the fetch
+#:      happened, so the fetcher was following a link it was given;
+#:   2. the secret was ISSUED to the operator's own probe. A stranger can then only
+#:      have the URL because the operator passed it on - whether or not anyone
+#:      remembered to record the disclosure.
+#:
+#: One definition, in SQL, shared with scripts/build_results.py: two spellings of
+#: this rule would eventually disagree about the one number the project asks to be
+#: believed on. Timestamps are ISO-8601 UTC strings, which order correctly as text.
 SQL_PASTE_TRIGGERED = (
-    "sighting.origin = 'organic' AND EXISTS (SELECT 1 FROM published p "
-    "WHERE p.secret = sighting.secret AND p.ts <= sighting.ts)")
+    "sighting.origin = 'organic' AND ("
+    " EXISTS (SELECT 1 FROM published p"
+    "         WHERE p.secret = sighting.secret AND p.ts <= sighting.ts)"
+    " OR EXISTS (SELECT 1 FROM request r"
+    "            WHERE r.id = sighting.mint_request_id AND r.origin = 'selftest'))")
 SQL_COUNT_ORGANIC = (
     f"SELECT COUNT(*) FROM sighting WHERE origin = 'organic' AND NOT ({SQL_PASTE_TRIGGERED})")
 SQL_COUNT_PASTE = (
@@ -127,6 +138,26 @@ class Ledger:
             self.db.execute(
                 "ALTER TABLE request ADD COLUMN via TEXT NOT NULL DEFAULT 'direct'")
 
+    def _write(self, sql: str, params: tuple) -> int:
+        """One INSERT, committed, with the connection left usable whatever happens.
+
+        Without the rollback, a refused write left this connection inside an open
+        write transaction holding SQLite's write lock. detect.py swallows exactly
+        such a refusal on every re-fetch by an already-sighted context, so the
+        normal case wedged the ledger: later writes failed instantly, reads froze
+        at an old snapshot, another process could not write at all - and the routes
+        catch sqlite3.Error and still answer 200, so the surface kept serving while
+        the ledger recorded nothing.
+        """
+        with self._lock:
+            try:
+                cur = self.db.execute(sql, params)
+                self.db.commit()
+                return int(cur.lastrowid)
+            except Exception:
+                self.db.rollback()
+                raise
+
     # -- writes ----------------------------------------------------------------
     def record_request(self, *, method: str, path: str, status: int, ip: str,
                        ua: str, ctx_id: str, origin: str = "organic",
@@ -141,37 +172,27 @@ class Ledger:
         ip_net = truncate_ip(ip)
         path, ua = cap(path), cap(ua)
         raw = combined_log_line(ip_net, ts, method, path, status, size, ua)
-        with self._lock:
-            cur = self.db.execute(
-                "INSERT INTO request (ts, method, path, status, ip_net, ua, ctx_id,"
-                " raw_line, origin, is_automated, via)"
-                " VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                (ts, method, path, status, ip_net, ua, ctx_id, raw, origin,
-                 1 if is_automated else 0, via))
-            self.db.commit()
-            return int(cur.lastrowid)
+        return self._write(
+            "INSERT INTO request (ts, method, path, status, ip_net, ua, ctx_id,"
+            " raw_line, origin, is_automated, via) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            (ts, method, path, status, ip_net, ua, ctx_id, raw, origin,
+             1 if is_automated else 0, via))
 
     def record_mint(self, *, secret: str, ctx_id: str, path: str,
                     salt_epoch: str, request_id: int, ts: str | None = None) -> int:
-        with self._lock:
-            cur = self.db.execute(
-                "INSERT INTO mint (secret, ctx_id, path, salt_epoch, ts, request_id)"
-                " VALUES (?,?,?,?,?,?)",
-                (secret, ctx_id, path, salt_epoch, ts or now_iso(), request_id))
-            self.db.commit()
-            return int(cur.lastrowid)
+        return self._write(
+            "INSERT INTO mint (secret, ctx_id, path, salt_epoch, ts, request_id)"
+            " VALUES (?,?,?,?,?,?)",
+            (secret, ctx_id, path, salt_epoch, ts or now_iso(), request_id))
 
     def record_sighting(self, *, secret: str, mint_ctx_id: str, seen_ctx_id: str,
                         mint_request_id: int, seen_request_id: int, delta_s: float,
                         origin: str, ts: str | None = None) -> int:
-        with self._lock:
-            cur = self.db.execute(
-                "INSERT INTO sighting (secret, mint_ctx_id, seen_ctx_id, mint_request_id,"
-                " seen_request_id, delta_s, origin, ts) VALUES (?,?,?,?,?,?,?,?)",
-                (secret, mint_ctx_id, seen_ctx_id, mint_request_id, seen_request_id,
-                 float(delta_s), origin, ts or now_iso()))
-            self.db.commit()
-            return int(cur.lastrowid)
+        return self._write(
+            "INSERT INTO sighting (secret, mint_ctx_id, seen_ctx_id, mint_request_id,"
+            " seen_request_id, delta_s, origin, ts) VALUES (?,?,?,?,?,?,?,?)",
+            (secret, mint_ctx_id, seen_ctx_id, mint_request_id, seen_request_id,
+             float(delta_s), origin, ts or now_iso()))
 
     def record_published(self, *, secret: str, method: str, ts: str | None = None) -> int:
         """Record that the operator handed this secret to someone by hand.
@@ -182,12 +203,8 @@ class Ledger:
         """
         if self.mint_for_secret(secret) is None:
             raise ValueError("cannot publish a secret that was never issued")
-        with self._lock:
-            cur = self.db.execute(
-                "INSERT INTO published (secret, ts, method) VALUES (?,?,?)",
-                (secret, ts or now_iso(), method))
-            self.db.commit()
-            return int(cur.lastrowid)
+        return self._write("INSERT INTO published (secret, ts, method) VALUES (?,?,?)",
+                           (secret, ts or now_iso(), method))
 
     # -- reads -----------------------------------------------------------------
     def mint_for_secret(self, secret: str) -> sqlite3.Row | None:
@@ -252,11 +269,8 @@ class Ledger:
         visitor log the gate exists to prevent - but a non-zero value is positive
         evidence that humans arrived and were turned away, which is the claim.
         """
-        with self._lock:
-            self.db.execute(
-                "INSERT INTO gate_rejection (id, n) VALUES (1, 1) "
-                "ON CONFLICT(id) DO UPDATE SET n = n + 1")
-            self.db.commit()
+        self._write("INSERT INTO gate_rejection (id, n) VALUES (1, 1) "
+                    "ON CONFLICT(id) DO UPDATE SET n = n + 1", ())
 
     def counts(self) -> dict[str, int]:
         """The honesty counters.

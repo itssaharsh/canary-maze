@@ -5,6 +5,7 @@ import hmac
 import ipaddress
 import os
 import sqlite3
+import threading
 from pathlib import Path
 
 from flask import Flask, Response, jsonify, request, send_from_directory
@@ -151,17 +152,24 @@ def request_origin_from(headers, default: str, *, ip: str | None = None) -> str:
     return default
 
 
-def _secret_is_owed(secret: str, path: str, ctx: str) -> bool:
-    """Is `secret` the one this context is owed for this path, today or yesterday?
+def _owed_epoch(secret: str, path: str, ctx: str) -> str | None:
+    """The epoch under which `secret` is the one this context is owed, or None.
 
-    Yesterday too, because the edge computes the epoch at its own clock and a
-    request minted a moment before midnight UTC is reported a moment after.
+    Yesterday counts too, because the edge computes the epoch at its own clock and
+    a request minted a moment before midnight UTC is reported a moment after. The
+    epoch that MATCHED is returned and stored on the mint row: recording the
+    ledger's own `salt_epoch()` instead wrote a row whose stored epoch did not
+    verify its own secret, which is exactly what the epoch column exists to prevent.
     """
+    if not secret.isascii():
+        return None
     from datetime import datetime, timedelta, timezone
     now = datetime.now(timezone.utc)
-    return any(hmac.compare_digest(mint.secret_for(path, ctx, epoch=mint.salt_epoch(when)),
-                                   secret)
-               for when in (now, now - timedelta(days=1))) if secret.isascii() else False
+    for when in (now, now - timedelta(days=1)):
+        epoch = mint.salt_epoch(when)
+        if hmac.compare_digest(mint.secret_for(path, ctx, epoch=epoch), secret):
+            return epoch
+    return None
 
 
 def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
@@ -188,12 +196,24 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
     # A retired ledger must never be served again; paths.ledger_path refuses one.
     app.config["LEDGER_PATH"] = db_path or ledger_path()
 
-    def ledger() -> Ledger:
-        if "ledger" not in app.extensions:
-            app.extensions["ledger"] = Ledger(app.config["LEDGER_PATH"])
-        return app.extensions["ledger"]
-
     app.extensions = getattr(app, "extensions", {}) or {}
+    ledger_lock = threading.Lock()
+
+    def ledger() -> Ledger:
+        """Exactly one Ledger per app, however many requests arrive at once.
+
+        This was an unsynchronised check-then-set, so sixteen simultaneous first
+        requests built sixteen connections - each with its own lock, so the lock
+        that makes sharing safe serialised nothing - and in most runs the shared
+        connection ended wedged while every response stayed 200.
+        """
+        led = app.extensions.get("ledger")
+        if led is None:
+            with ledger_lock:
+                led = app.extensions.get("ledger")
+                if led is None:
+                    led = app.extensions["ledger"] = Ledger(app.config["LEDGER_PATH"])
+        return led
 
     # ---- the maze: where a secret is issued -------------------------------
     @app.get("/m/<slug>")
@@ -212,7 +232,10 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
             # only a bare counter, so the exclusion is falsifiable without storing
             # anything about them. The page renders identically, so this is not
             # cloaking.
-            ledger().note_gate_rejection()
+            try:
+                ledger().note_gate_rejection()
+            except sqlite3.Error:
+                app.logger.warning("ledger unavailable; gate counter not moved", exc_info=True)
             return Response(maze.page(slug, f"/m/{slug}"), mimetype="text/html")
 
         secret = mint.secret_for(path, ctx, epoch=epoch)
@@ -246,17 +269,22 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
         body = maze.full_text(slug if slug in maze.slugs() else maze.slugs()[0])
 
         if not is_automated(headers):
-            ledger().note_gate_rejection()
-            return Response(body, mimetype="text/html")
-
-        # Answered 200 like everything else, and NOT recorded: the ledger cannot
-        # delete, so a row per guess would be a permanent, attacker-sized ledger.
-        if ledger().mint_for_secret(secret) is None:
+            try:
+                ledger().note_gate_rejection()
+            except sqlite3.Error:
+                app.logger.warning("ledger unavailable; gate counter not moved", exc_info=True)
             return Response(body, mimetype="text/html")
 
         ctx = derive(headers, ip)
         req_origin = request_origin(request, app.config["ORIGIN"], ip=ip)
         try:
+            # Answered 200 like everything else, and NOT recorded: the ledger cannot
+            # delete, so a row per guess would be a permanent, attacker-sized ledger.
+            # Inside the try, because an unopenable ledger must not break the one
+            # contract this route has - a 500 for the second context ends the
+            # observation just as surely as a 404 would.
+            if ledger().mint_for_secret(secret) is None:
+                return Response(body, mimetype="text/html")
             rid = ledger().record_request(method="GET", path=f"/c/{secret}/{slug}",
                                           status=200, ip=ip,
                                           ua=headers.get("User-Agent", ""), ctx_id=ctx,
@@ -332,10 +360,12 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
             app.logger.error("ingest refused: edge derived context %s, ledger derives %s",
                              body["ctx"], ctx)
             return jsonify({"ok": False, "error": "context mismatch"}), 409
+        owed_epoch = None
         if kind == "mint":
             # The ledger holds the salt, so it does not take the edge's word for the
             # secret: it must be the one this context is owed for this path.
-            if not _secret_is_owed(secret, path, ctx):
+            owed_epoch = _owed_epoch(secret, path, ctx)
+            if owed_epoch is None:
                 app.logger.error("ingest refused: reported secret does not verify for "
                                  "the reported path and context")
                 return jsonify({"ok": False, "error": "secret does not verify"}), 409
@@ -356,7 +386,7 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
                 if ledger().mint_for_secret(secret) is None:
                     try:
                         ledger().record_mint(secret=secret, ctx_id=ctx, path=path,
-                                             salt_epoch=mint.salt_epoch(), request_id=rid)
+                                             salt_epoch=owed_epoch, request_id=rid)
                     except sqlite3.IntegrityError:
                         pass
             else:

@@ -26,19 +26,19 @@ window.CANARY_DATA = {
    "issued": {
     "label": "A",
     "ctx_id": "937a02779f5d",
-    "at": "18:52:08",
+    "at": "19:13:05",
     "ua": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)",
     "net": "20.171.207.0/24",
-    "raw": "20.171.207.0/24 - - [2026-10-03T18:52:08Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\"",
+    "raw": "20.171.207.0/24 - - [2026-10-03T19:13:05Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\"",
     "via": "direct"
    },
    "requested": {
     "label": "B",
     "ctx_id": "acf2d741def9",
-    "at": "18:52:08",
+    "at": "19:13:05",
     "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "net": "104.28.52.0/24",
-    "raw": "104.28.52.0/24 - - [2026-10-03T18:52:08Z] \"GET /c/554e2618e7b1494c/q3-supplier-review HTTP/1.1\" 200 606 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\"",
+    "raw": "104.28.52.0/24 - - [2026-10-03T19:13:05Z] \"GET /c/554e2618e7b1494c/q3-supplier-review HTTP/1.1\" 200 606 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\"",
     "via": "direct"
    }
   }
@@ -61,33 +61,33 @@ window.CANARY_BUNDLE = {
   "requests_direct": 2,
   "requests_reported": 0
  },
- "viewer": "73f56bf68c6d3f99dac03f351bed52224a5dbb9fd49838533b1e937365d12334",
+ "viewer": "e510fcde5dc070755e11ad9378ab1fefbb75e4e14452fe8af05cfb31fa0d3ae2",
  "rows": {
   "request": [
    {
     "id": 1,
-    "ts": "2026-10-03T18:52:08Z",
+    "ts": "2026-10-03T19:13:05Z",
     "method": "GET",
     "path": "/m/q3-supplier-review",
     "status": 200,
     "ip_net": "20.171.207.0/24",
     "ua": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)",
     "ctx_id": "937a02779f5d",
-    "raw_line": "20.171.207.0/24 - - [2026-10-03T18:52:08Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\"",
+    "raw_line": "20.171.207.0/24 - - [2026-10-03T19:13:05Z] \"GET /m/q3-supplier-review HTTP/1.1\" 200 872 \"-\" \"Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; GPTBot/1.2; +https://openai.com/gptbot)\"",
     "origin": "seeded",
     "via": "direct",
     "is_automated": 1
    },
    {
     "id": 2,
-    "ts": "2026-10-03T18:52:08Z",
+    "ts": "2026-10-03T19:13:05Z",
     "method": "GET",
     "path": "/c/554e2618e7b1494c/q3-supplier-review",
     "status": 200,
     "ip_net": "104.28.52.0/24",
     "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "ctx_id": "acf2d741def9",
-    "raw_line": "104.28.52.0/24 - - [2026-10-03T18:52:08Z] \"GET /c/554e2618e7b1494c/q3-supplier-review HTTP/1.1\" 200 606 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\"",
+    "raw_line": "104.28.52.0/24 - - [2026-10-03T19:13:05Z] \"GET /c/554e2618e7b1494c/q3-supplier-review HTTP/1.1\" 200 606 \"-\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36\"",
     "origin": "seeded",
     "via": "direct",
     "is_automated": 1
@@ -100,7 +100,7 @@ window.CANARY_BUNDLE = {
     "ctx_id": "937a02779f5d",
     "path": "/m/q3-supplier-review",
     "salt_epoch": "2026-10-03",
-    "ts": "2026-10-03T18:52:08Z",
+    "ts": "2026-10-03T19:13:05Z",
     "request_id": 1
    }
   ],
@@ -114,17 +114,17 @@ window.CANARY_BUNDLE = {
     "seen_request_id": 2,
     "delta_s": 0.0,
     "origin": "seeded",
-    "ts": "2026-10-03T18:52:08Z"
+    "ts": "2026-10-03T19:13:05Z"
    }
   ],
   "published": []
  },
  "leaves": [
-  "0f92ef22f7349ef8131e66c0d96dd209bdb514062e71ad04f3530675779d4de4",
-  "15f727069cc04b4dc6e590324937bc44dbcf6786e413a7cf8a632f048b7c0077",
-  "ce718abccb84395a633f838ba50370bc8db854c9161d577ba68a98c665649fa7",
-  "54bb73553043dceb4987ce4b3c65d5b578c957adc932e776a1136887fef1d5bc",
-  "ee0894f067de9ae33bf9919a2ca42fc5625aba5d29d6b4874e1c5be57ae99104"
+  "d236d038310bcfb29d22733c567cb513d7749d36814304ca037556b0abfd8e47",
+  "e52034ae301c79881f146245296d87395cfad1be80e5ba71ea2222fdf2dd5545",
+  "4cf3d868255e1652256848e29dfa8ba9d17483e81f2bceb7b2b611133b6d5370",
+  "598b8a5c8dc2789ac0a583f77b63d3eb695b0b63f5b72f044a7a91db0a57e75a",
+  "a4ea5883fa7f084a82a70ce38d775282bbbaed3ca930b54313f8a23060c89bc7"
  ],
- "root": "8ca61488d74632efc0edad8bd71184f6c47502647496a74c81158ce2854e9eaf"
+ "root": "10666c65bbf5d97b5e85e7941136ab24fbf675a5b2e65dbf11a0819ec240a5d8"
 };
