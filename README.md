@@ -1,5 +1,11 @@
 # Canary Maze
 
+**Repo:** <https://github.com/itssaharsh/canary-maze>  
+**Live viewer:** <https://site-nine-hazel-35.vercel.app/viewer/>  
+**Live canary surface:** <https://site-nine-hazel-35.vercel.app/m/q3-supplier-review>  
+**Write-up:** [`SUBMISSION.md`](SUBMISSION.md) · **Results:** [`docs/RESULTS.md`](docs/RESULTS.md)
+
+
 **Record when a planted secret moves between AI clients, instead of guessing from how alike they look.**
 
 **[Live site](https://site-nine-hazel-35.vercel.app)** · **[Live evidence](https://site-nine-hazel-35.vercel.app/viewer/)**

@@ -92,6 +92,14 @@ The verifier is the load-bearing one: it recomputes every hash in the page with
 `crypto.subtle` from the bundle it was shipped, contacts nothing, and names the
 row that fails when any byte is altered.
 
+
+A third recurrence of the same class was caught during the final audit:
+`build_results.py` predated the retirement guard, kept its own hardcoded path and
+regenerated `docs/RESULTS.md` from the quarantined ledger, publishing four
+"organic" sightings that were the operator's own curls. A guard only guards the
+callers that consult it. Fixed, with tests asserting this caller consults it and
+that no hardcoded ledger path reappears. [E0067]
+
 ## Known limitations
 
 Three were deliberately left unfixed, because each needs a design decision rather

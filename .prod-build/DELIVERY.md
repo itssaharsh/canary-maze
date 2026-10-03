@@ -19,12 +19,45 @@ made by accident (ADR-0002).
 |---|---|---|
 | Landing page | https://site-nine-hazel-35.vercel.app | 200, 0 axe violations |
 | Evidence viewer | https://site-nine-hazel-35.vercel.app/viewer/ | 200, makes zero external requests |
-| Canary surface | Cloudflare quick tunnel, printed by `scripts/serve_public.sh` | up; URL changes per run |
-| Repo | this checkout, 31 commits on the work branch | clean |
+| Canary surface | **https://site-nine-hazel-35.vercel.app/m/<slug>** | reachable by every crawler; ledger local via signed hand-off |
+| Repo | **https://github.com/itssaharsh/canary-maze** (public) | fresh clone passes make verify + make demo |
 
 The canary surface is a tunnel to this machine rather than a host, because the
 ledger must be the same file the bundle was built from (ADR-0005). The cost is
 that it is only reachable while the process runs. It does not survive sleep.
+
+## Real results
+
+**On the organizers' own corpus** (`aidigestorg/ai-village`): across
+78,362 computer-use sessions, **46 of
+46** agents present more than one session context; the busiest presents
+**7,465**, median 1,080. This is the
+second independent corpus supporting "a context is not an actor" - the first was
+the collusion.wiki dump, where one actor label spans 741 addresses. An
+identity-per-context assumption would have been wrong by three orders of
+magnitude on the hosts' own data. `scripts/village_spread.py`,
+`docs/village_spread.json`.
+
+**On the infrastructure** (F-0005): of ten crawler user-agents sent to the live
+URL, five - GPTBot, ClaudeBot, PerplexityBot, CCBot, Bytespider - were refused at
+the Cloudflare edge and never reached the application, while the same edge
+replaced our 66-byte `Allow: /` robots.txt with 3871 bytes of its own policy. A
+zero organic result in this kind of measurement may be a property of the host
+rather than the clients, and the bias runs toward the null with no log line at
+the origin. Fixed by moving the public surface to Vercel, which refuses none of
+them, keeping the ledger local behind a signed hand-off (ADR-0006).
+
+**Organic sightings: 0**, reported as-is.
+
+## Deliverables
+
+| Item | Where |
+|---|---|
+| Write-up | `SUBMISSION.md` |
+| Demo video shooting script | `docs/DEMO-SCRIPT.md` |
+| Public repo | https://github.com/itssaharsh/canary-maze |
+| Live surfaces | landing, viewer, canary - all on Vercel |
+| Results | `docs/RESULTS.md`, generated from the ledgers, gated by `make verify` |
 
 ## Acceptance criteria
 
