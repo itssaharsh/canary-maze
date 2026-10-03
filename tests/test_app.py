@@ -126,15 +126,29 @@ def test_x_forwarded_for_is_never_trusted(client):
     led.close()
 
 
-def test_dotfiles_are_never_served(client):
-    """GET /.vercel/project.json returned 200 on the live surface."""
-    for path in ("/.vercel/project.json", "/.env", "/.git/config"):
-        assert client.get(path).status_code == 404, path
+def test_dotfiles_and_stray_files_in_the_viewer_are_never_served(tmp_path, monkeypatch):
+    """Against files that EXIST. The old version asked for paths that are not in
+    viewer/ at all, so they 404'd whether the guards were there or not: deleting
+    both the dotfile check and the allowlist left it green while the mutant served
+    viewer/.gitignore, and anything else dropped in that directory, over a
+    publicly tunnelled surface.
 
+    GET /.vercel/project.json really did return 200 on the live surface once."""
+    import canarymaze.app as appmod
+    viewer = tmp_path / "viewer"
+    viewer.mkdir()
+    (viewer / ".gitignore").write_text("data.js\n", encoding="utf-8")
+    (viewer / ".env").write_text("CANARY_SALT=secret\n", encoding="utf-8")
+    (viewer / "notes.txt").write_text("an export nobody meant to publish\n", encoding="utf-8")
+    (viewer / "data.js").write_text("window.CANARY_DATA={};\n", encoding="utf-8")
+    monkeypatch.setattr(appmod, "VIEWER", viewer)
+    monkeypatch.setenv("CANARY_ALLOW_DEV_SALT", "1")
+    c = appmod.create_app(db_path=str(tmp_path / "t.sqlite3")).test_client()
 
-def test_only_allowlisted_viewer_assets_are_served(client):
-    assert client.get("/canary.sqlite3").status_code == 404
-    assert client.get("/schema.sql").status_code == 404
+    for path in ("/.gitignore", "/.env", "/notes.txt", "/.vercel/project.json",
+                 "/../canarymaze/schema.sql"):
+        assert c.get(path).status_code == 404, f"{path} was served"
+    assert c.get("/data.js").status_code == 200, "an allowlisted asset must still be served"
 
 
 def test_an_unknown_trust_mode_refuses_to_start(monkeypatch):

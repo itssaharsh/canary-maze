@@ -13,6 +13,7 @@ network, and then replay its reports into a real ledger through the real signed
 from __future__ import annotations
 
 import filecmp
+import re
 import importlib.util
 import sys
 import time
@@ -76,6 +77,35 @@ def canary_link(body: str) -> str:
 
 
 # --- the copies the function imports ----------------------------------------
+
+def test_the_deployed_viewer_matches_the_tested_one():
+    """site/viewer/ is what https://.../viewer/ actually serves, and no test loaded
+    it: tests/test_js_parity.py runs viewer/verify.js. Disabling the leaf check in
+    the DEPLOYED copy alone left every test and `make verify` green while the live
+    page called an edited bundle "Verified" - F-0003, on the only copy a judge
+    opens. Byte-compare instead, so the two cannot drift."""
+    stale = [n for n in ("index.html", "app.css", "render.js", "verify.js")
+             if not (API.parent / "viewer" / n).exists()
+             or not filecmp.cmp(API.parent / "viewer" / n, ROOT / "viewer" / n, shallow=False)]
+    assert not stale, f"site/viewer is stale (run scripts/build_site.py): {stale}"
+
+
+def test_the_viewer_never_calls_anything_but_organic_traffic_organic():
+    """A mutant that labelled seeded rows 'organic traffic' in render.js passed
+    every test. The map is small enough to pin."""
+    js = (ROOT / "viewer" / "render.js").read_text(encoding="utf-8")
+    block = js[js.index("var ORIGINS = {"):js.index("};", js.index("var ORIGINS = {"))]
+    labels = dict(re.findall(r'(\w+): "([^"]+)"', block))
+    assert labels.get("organic") == "organic traffic"
+    for origin in ("seeded", "selftest", "paste"):
+        label = labels[origin]
+        # It may SAY organic, but only to deny it ("not organic traffic").
+        assert label != "organic traffic", f"{origin} is labelled organic traffic"
+        assert "organic" not in label or "not organic" in label, f"{origin}: {label!r}"
+        assert origin[:5] in label.lower() or "operator" in label, f"{origin}: {label!r}"
+    # and an origin nobody anticipated must say so rather than fall through
+    assert "unrecognised" in js
+
 
 def test_the_deployed_module_copies_match_their_source():
     """site/api/_cm/ holds COPIES of canarymaze modules, made by build_site.py.

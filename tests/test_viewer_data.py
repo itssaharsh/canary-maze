@@ -20,8 +20,12 @@ def test_the_page_hardcodes_no_claim_or_scope_text():
 
 
 def test_every_rendered_region_starts_hidden():
-    for el in ('id="diff"', 'id="records"', 'id="verify"'):
-        assert f'{el} hidden' in HTML or f'{el}' in HTML and "hidden" in HTML
+    """Parsed as `A or (B and C)`, the old assertion passed whenever the id and the
+    word "hidden" both appeared anywhere in the file - so deleting `hidden` from
+    the markup left it green. A region that does not start hidden flashes its
+    empty skeleton, or shows a stale state, before render.js has any data."""
+    for el in ("diff", "records", "verify"):
+        assert re.search(rf'id="{el}"[^>]*\bhidden\b', HTML), f"#{el} must start hidden"
 
 
 def test_the_awaiting_state_hides_the_second_record_and_the_diff():

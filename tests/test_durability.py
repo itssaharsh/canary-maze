@@ -110,6 +110,34 @@ def test_another_process_can_still_write_after_a_refused_write(tmp_path):
 
 # --- append-only has to mean append-only -------------------------------------
 
+@pytest.mark.parametrize("table", ["request", "mint", "sighting", "published"])
+@pytest.mark.parametrize("stmt", ["UPDATE {t} SET {col} = 'rewritten'",
+                                  "DELETE FROM {t}"])
+def test_no_table_can_be_updated_or_deleted(tmp_path, table, stmt):
+    """Only `request` was covered. Deleting the mint and sighting triggers from
+    the schema left every test green, and `UPDATE sighting SET origin='organic'`
+    would then have rewritten evidence in place."""
+    led = _populated(tmp_path)
+    col = {"request": "ua", "mint": "path", "sighting": "origin", "published": "method"}[table]
+    with pytest.raises(sqlite3.IntegrityError):
+        led.db.execute(stmt.format(t=table, col=col))
+    led.db.rollback()
+    led.close()
+
+
+def _populated(tmp_path):
+    led = Ledger(str(tmp_path / "t.sqlite3"))
+    rid = led.record_request(method="GET", path="/m/x", status=200, ip="198.51.100.7",
+                             ua="GPTBot/1.2", ctx_id="a", origin="selftest")
+    led.record_mint(secret="a" * 16, ctx_id="a", path="/m/x", salt_epoch="e", request_id=rid)
+    led.record_published(secret="a" * 16, method="handed over")
+    rid2 = led.record_request(method="GET", path="/c/x", status=200, ip="192.0.2.9",
+                              ua="O/1", ctx_id="b", origin="selftest")
+    led.record_sighting(secret="a" * 16, mint_ctx_id="a", seen_ctx_id="b",
+                        mint_request_id=rid, seen_request_id=rid2, delta_s=1.0, origin="selftest")
+    return led
+
+
 @pytest.mark.parametrize("table,cols,values", [
     ("sighting", "id, secret, mint_ctx_id, seen_ctx_id, mint_request_id, seen_request_id,"
                  " delta_s, origin, ts",

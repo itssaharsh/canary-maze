@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 BOT = {"User-Agent": "Mozilla/5.0 (compatible; GPTBot/1.2)"}
 OTHER = {"User-Agent": "Mozilla/5.0 (compatible; ClaudeBot/1.0)"}
 KEY = "k" * 48
+IP = "198.51.100.7"
 
 
 @pytest.fixture
@@ -225,3 +226,82 @@ def test_make_demo_cannot_be_pointed_at_another_ledger(tmp_path):
     led.close()
     assert precious.exists() and n == 1, "the ledger named by CANARY_DB must be untouched"
     assert (work / "demo.sqlite3").exists()
+
+
+# --- a missing salt must not mint silently ------------------------------------
+
+def test_the_edge_refuses_to_mint_on_the_committed_development_salt(monkeypatch):
+    """The dev salt is PUBLIC - it is in this repository. The Flask surface refuses
+    to start without CANARY_SALT; the edge function had no such guard, so a Vercel
+    environment missing the variable would serve every visitor a canary link
+    computed from the committed salt. The ledger (which has the real salt) then
+    answers every report 409, report() discards it, and the surface collects
+    nothing while raising nothing. Anyone could also compute the canary owed to a
+    guessable context and fetch it without ever seeing the page."""
+    import importlib.util
+    api = ROOT / "site" / "api"
+    sys.path.insert(0, str(api))
+    try:
+        spec = importlib.util.spec_from_file_location("canary_surface_salt", api / "surface.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+    finally:
+        sys.path.remove(str(api))
+
+    monkeypatch.delenv("CANARY_SALT", raising=False)
+    monkeypatch.delenv("CANARY_ALLOW_DEV_SALT", raising=False)
+    status, _, body, payload = mod.respond("/m/q3-supplier-review", dict(BOT), IP, "https://h")
+    assert "/c/" not in body, "no canary link may be issued under the committed salt"
+    assert payload is None, "and nothing may be reported"
+    assert status == 200, "the page itself is still served"
+
+    monkeypatch.setenv("CANARY_SALT", "f" * 64)
+    _, _, body, payload = mod.respond("/m/q3-supplier-review", dict(BOT), IP, "https://h")
+    assert "/c/" in body and payload is not None, "with a real salt it mints as usual"
+
+
+def test_creating_the_app_without_a_salt_refuses_to_start(monkeypatch):
+    """The guard was only ever called directly by a test, so deleting its call in
+    create_app left every test green."""
+    monkeypatch.delenv("CANARY_SALT", raising=False)
+    monkeypatch.delenv("CANARY_ALLOW_DEV_SALT", raising=False)
+    with pytest.raises(SystemExit):
+        create_app()
+
+
+def test_a_real_salt_actually_changes_the_secret(monkeypatch):
+    """load_salt returning the dev salt unconditionally left every test passing."""
+    from canarymaze import mint
+    monkeypatch.setenv("CANARY_SALT", "a" * 64)
+    with_salt = mint.secret_for("/m/x", "ctx", epoch="2026-10-03")
+    monkeypatch.delenv("CANARY_SALT")
+    assert with_salt != mint.secret_for("/m/x", "ctx", epoch="2026-10-03")
+
+
+# --- a record must say what happened ------------------------------------------
+
+def test_a_head_request_is_recorded_as_head_with_no_body(surface):
+    """Flask serves HEAD through the GET view, and the route hard-coded
+    method='GET' and size=len(body). A link checker probing with HEAD - W3C
+    checklink does, and it is in our own census - produced a record saying the
+    client downloaded 606 bytes by GET. The viewer presents that line as 'the full
+    record, unedited'."""
+    client, db = surface
+    secret = _mint(client)
+    r = client.head(f"/c/{secret}/q3-supplier-review", headers=OTHER,
+                    environ_overrides={"REMOTE_ADDR": "192.0.2.50"})
+    assert r.status_code == 200 and r.get_data() == b""
+    led = Ledger(db)
+    row = led.rows("request")[-1]
+    led.close()
+    assert row["method"] == "HEAD", f"recorded as {row['method']}"
+    assert ' 200 0 ' in row["raw_line"], f"body size must be 0: {row['raw_line']}"
+
+
+def test_the_viewer_and_export_routes_answer(surface):
+    """Neither was covered: making /export.json raise, or GET / return 404, left
+    all tests passing."""
+    client, _ = surface
+    assert client.get("/").status_code == 200
+    r = client.get("/export.json")
+    assert r.status_code == 200 and "counts" in r.get_json()

@@ -55,6 +55,17 @@ def client_ip(req, trust: str = "none") -> str:
     return peer
 
 
+def body_size(req, body: str) -> int:
+    """What the client actually received.
+
+    Flask serves HEAD through the GET view, so both routes hard-coded "GET" and
+    len(body). A link checker probing with HEAD - W3C checklink does, and it is in
+    our own census - produced a record saying it had downloaded 606 bytes by GET,
+    in the line the viewer presents as "the full record, unedited".
+    """
+    return 0 if req.method == "HEAD" else len(body)
+
+
 def _is_loopback(addr: str) -> bool:
     try:
         return ipaddress.ip_address(addr).is_loopback
@@ -246,9 +257,10 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
         # until a review looked for it. A blocked crawler is a lost sighting, which
         # is strictly worse than a missing row.
         try:
-            rid = ledger().record_request(method="GET", path=path, status=200, ip=ip,
-                                          ua=headers.get("User-Agent", ""), ctx_id=ctx,
-                                          origin=req_origin, size=len(body))
+            rid = ledger().record_request(method=request.method, path=path, status=200,
+                                          ip=ip, ua=headers.get("User-Agent", ""),
+                                          ctx_id=ctx, origin=req_origin,
+                                          size=body_size(request, body))
             if ledger().mint_for_secret(secret) is None:
                 try:
                     ledger().record_mint(secret=secret, ctx_id=ctx, path=path,
@@ -285,10 +297,10 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
             # observation just as surely as a 404 would.
             if ledger().mint_for_secret(secret) is None:
                 return Response(body, mimetype="text/html")
-            rid = ledger().record_request(method="GET", path=f"/c/{secret}/{slug}",
-                                          status=200, ip=ip,
+            rid = ledger().record_request(method=request.method,
+                                          path=f"/c/{secret}/{slug}", status=200, ip=ip,
                                           ua=headers.get("User-Agent", ""), ctx_id=ctx,
-                                          origin=req_origin, size=len(body))
+                                          origin=req_origin, size=body_size(request, body))
             detect.on_canary_request(ledger(), secret=secret, seen_ctx_id=ctx,
                                      seen_request_id=rid, origin=req_origin)
         except sqlite3.Error:

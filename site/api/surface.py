@@ -52,6 +52,19 @@ FORWARD = CLIENT_HEADERS | {"x-canary-selftest"}
 GATE_REPORT = {"kind": "gate", "via": EDGE_NAME}
 
 
+def minting_is_safe() -> bool:
+    """Is a real salt configured?
+
+    `mint.load_salt()` falls back to a development salt that is COMMITTED in this
+    repository, so that the tests and `make demo` run on a clean checkout. The
+    Flask surface refuses to start without CANARY_SALT; this function had no such
+    guard, and a Vercel environment missing the variable would have minted on the
+    public salt silently.
+    """
+    return bool(os.environ.get("CANARY_SALT", "").strip()
+                or os.environ.get("CANARY_ALLOW_DEV_SALT"))
+
+
 def forwardable(headers: dict) -> dict:
     """The client's own headers, lower-cased, and only the ones the ledger uses."""
     out = {}
@@ -126,6 +139,13 @@ def respond(path: str, headers: dict, ip: str, base: str, method: str = "GET"):
         # privacy claim; this copy only avoids minting for a browser.
         if not is_automated(client):
             return 200, "text/html", maze.page(slug, page_path), GATE_REPORT
+        if not minting_is_safe():
+            # The page is served; no canary link is issued and nothing is reported.
+            # Serving a link computed from the committed salt would be worse than
+            # serving none: the ledger holds the real salt and refuses every such
+            # report, so the surface would collect nothing while raising nothing -
+            # and anyone could compute the canary owed to a guessable context.
+            return 200, "text/html", maze.page(slug, page_path), None
         ctx = derive(client, ip)
         secret = mint.secret_for(page_path, ctx, epoch=mint.salt_epoch())
         body = maze.page(slug, mint.canary_path(secret, slug))
