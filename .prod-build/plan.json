@@ -492,10 +492,14 @@
         "observe: fresh review recorded, secrets scan clean, demo run three times"
       ],
       "rollback": "n/a",
-      "status": "doing",
+      "status": "done",
       "notes": "",
       "base": "35d0ed2",
-      "started_after": 43
+      "started_after": 43,
+      "evidence": [
+        "E0055",
+        "E0056"
+      ]
     }
   ]
 }
