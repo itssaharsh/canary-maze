@@ -111,7 +111,11 @@ def table(live: dict[str, int] | None, demo: dict[str, int] | None,
                "\"what has been observed in the wild\"; the right one answers "
                "\"does the mechanism work\". Only the left column is evidence "
                "about anyone else's behaviour.")
-    if live is not None and live["organic"] == 0:
+    # Decided from the CELL, not from whether the live ledger is here: a clone that
+    # has run `make demo` has the demo ledger and no live one, and deciding from
+    # the ledger deleted this paragraph there - so the README's own quickstart
+    # order (make demo, then make verify) failed the drift gate on arrival.
+    if g(live, "organic", "**Organic sightings**", 1) == "0":
         out.append("")
         out.append("**Organic sightings stand at 0.** That is reported as-is. "
                    "The operator's own probes are recorded separately as "
@@ -129,6 +133,8 @@ def main() -> int:
     # callers that consult it.
     ap.add_argument("--live", default=None)
     ap.add_argument("--demo", default="demo.sqlite3")
+    ap.add_argument("--results", default=str(RESULTS),
+                    help="file to regenerate or check (default: docs/RESULTS.md)")
     ap.add_argument("--check", action="store_true",
                     help="exit non-zero if RESULTS.md is out of date, writing nothing")
     args = ap.parse_args()
@@ -139,13 +145,14 @@ def main() -> int:
         print("no ledger present; leaving docs/RESULTS.md as committed")
         return 0
 
-    text = RESULTS.read_text(encoding="utf-8")
+    results = Path(args.results)
+    text = results.read_text(encoding="utf-8")
     block = f"{START}\n{table(live, demo, previous=text)}\n{END}"
     if START in text and END in text:
         new = re.sub(re.escape(START) + r".*?" + re.escape(END), lambda _: block,
                      text, flags=re.S)
     else:
-        print(f"{RESULTS} has no {START} / {END} markers", file=sys.stderr)
+        print(f"{results} has no {START} / {END} markers", file=sys.stderr)
         return 1
 
     if args.check:
@@ -153,10 +160,13 @@ def main() -> int:
             print("docs/RESULTS.md is out of date; run: python3 scripts/build_results.py",
                   file=sys.stderr)
             return 1
-        print("docs/RESULTS.md matches the ledgers")
+        absent = [n for n, d in (("live", live), ("demo", demo)) if d is None]
+        print("docs/RESULTS.md matches the ledgers" if not absent else
+              f"docs/RESULTS.md matches the ledger present; the {absent[0]} ledger is "
+              "absent, so its column is kept as committed and was not checked")
         return 0
 
-    RESULTS.write_text(new, encoding="utf-8")
+    results.write_text(new, encoding="utf-8")
     print(f"docs/RESULTS.md counts regenerated "
           f"(live organic {('-' if live is None else live['organic'])}, "
           f"seeded {('-' if demo is None else demo['seeded'])})")

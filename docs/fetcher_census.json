@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-10-03T18:32:58Z",
+ "generated_at": "2026-10-03T18:39:59Z",
  "note": "every URL was handed to the service by the operator; all sightings are paste-triggered, none organic",
  "services": [
   {
@@ -16,8 +16,8 @@
    "key": "wayback-save",
    "service": "Internet Archive, Save Page Now",
    "published_at": "2026-10-03T18:17:21Z",
-   "service_answered": "520",
-   "gate_turned_away": 1,
+   "service_answered": "200",
+   "gate_turned_away": 2,
    "contexts": 0,
    "networks": [],
    "fetches": []

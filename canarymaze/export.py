@@ -77,7 +77,9 @@ def export(led: Ledger) -> dict[str, Any]:
             "origin": "paste" if s["id"] in paste_ids else s["origin"],
             "recorded_origin": s["origin"],
             "elapsed": human_delta(s["delta_s"]),
-            "elapsed_s": s["delta_s"],
+            # a string, not a float: the payload is hashed in two languages and
+            # json.dumps(275.0) and JSON.stringify(275.0) do not agree
+            "elapsed_s": format(float(s["delta_s"]), ".6f"),
             "issued": {
                 "label": a, "ctx_id": s["mint_ctx_id"],
                 "at": _hhmmss(mint_req.get("ts", "")),
@@ -125,8 +127,15 @@ def _claim(state: str, sightings: list[dict], mints: list[dict]) -> str:
         # is the mistake U-0001 was written about.
         same_net = s["issued"]["net"] == s["requested"]["net"]
         where = "" if same_net else ", on a different network"
-        claim = (f"A URL that only context {s['issued']['label']} was ever shown was "
-                 f"requested {when} by context {s['requested']['label']}{where}.")
+        if s["origin"] == "paste":
+            # "only context A was ever shown" is false here by the operator's own
+            # record: the URL was handed out. The sentence has to start from that.
+            claim = (f"A URL issued to context {s['issued']['label']}, and then published "
+                     f"by the operator, was requested {when} by context "
+                     f"{s['requested']['label']}{where}.")
+        else:
+            claim = (f"A URL that only context {s['issued']['label']} was ever shown was "
+                     f"requested {when} by context {s['requested']['label']}{where}.")
         if same_net and s["origin"] in ("organic", "paste"):
             # One machine changing its user-agent produces exactly this record. The
             # tool cannot tell that apart from two clients behind one address, so
@@ -143,8 +152,8 @@ def _claim(state: str, sightings: list[dict], mints: list[dict]) -> str:
             # A real third party fetched it - after the operator handed the URL
             # out. That is a fetcher following a published link, and the headline
             # says so rather than letting it read as two clients sharing.
-            claim += (" The operator had published this URL by hand beforehand, so this "
-                      "shows a fetcher following a published link, not two clients sharing.")
+            claim += (" This shows a fetcher following a published link, not two "
+                      "clients sharing.")
         elif s["origin"] == "seeded":
             claim += " This is a seeded replay, not observed traffic."
         return claim

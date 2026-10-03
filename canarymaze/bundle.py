@@ -33,7 +33,7 @@ from typing import Any
 #: so a reader can see why a sighting is reported as paste-triggered and not organic.
 PROOF_TABLES = ("request", "mint", "sighting", "published")
 
-FORMAT = "canary-maze-bundle/4"
+FORMAT = "canary-maze-bundle/5"
 
 
 def _norm(v: Any) -> str:
@@ -59,12 +59,21 @@ def _norm(v: Any) -> str:
     return "s:" + str(v)
 
 
+#: Fields that are floats whatever their JSON lexeme says. A bundle that passes
+#: through JavaScript comes back with `"delta_s": 275.0` rewritten as `275`; if the
+#: type were read off the lexeme, Python would reject a bundle it had built. The
+#: JavaScript verifier decides by field name, so this one does too.
+FLOAT_FIELDS = frozenset({"delta_s"})
+
+
 def canonical(row: dict[str, Any]) -> bytes:
     """A byte-for-byte reproducible serialization: sorted keys, no whitespace,
     escaped non-ASCII, every value a tagged string. Two readers - in two languages -
     must hash the same row to the same leaf. See `viewer/verify.js` for the
     JavaScript twin; `tests/test_bundle.py` pins them together."""
-    flat = {str(k): _norm(v) for k, v in row.items()}
+    flat = {str(k): (_norm(float(v)) if k in FLOAT_FIELDS and isinstance(v, (int, float))
+                     and not isinstance(v, bool) else _norm(v))
+            for k, v in row.items()}
     return json.dumps(flat, sort_keys=True, separators=(",", ":"),
                       ensure_ascii=True).encode("utf-8")
 
@@ -101,21 +110,52 @@ def merkle_root(leaves: list[str]) -> str:
     return sha256(NODE_TAG + str(len(leaves)).encode() + b"|" + level[0]).hexdigest()
 
 
-def header_leaf(fmt: str, note: str, counts: dict[str, Any]) -> str:
+def payload_digest(payload: Any) -> str:
+    """SHA-256 of what the page DISPLAYS, so the display is bound to the root.
+
+    The page renders one object (the viewer payload) and verified another (the
+    bundle), and nothing compared them: a review changed the organic counter to
+    4127 and the label from 'seeded' to 'organic' in the half of data.js a reader
+    actually sees, and the page still printed "Verified". The digest of the
+    payload now sits in the header, under the root.
+
+    Floats are refused rather than formatted: json.dumps(0.0) is '0.0' and
+    JSON.stringify(0.0) is '0', so one float in the payload would make an honest
+    page fail in the browser. The payload carries none.
+    """
+    def no_floats(v: Any, where: str) -> None:
+        if isinstance(v, float):
+            raise TypeError(f"float at {where}: not portable to the JavaScript verifier")
+        if isinstance(v, dict):
+            for k, x in v.items():
+                no_floats(x, f"{where}.{k}")
+        elif isinstance(v, list):
+            for i, x in enumerate(v):
+                no_floats(x, f"{where}[{i}]")
+    no_floats(payload, "payload")
+    text = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    return sha256(text.encode("utf-8")).hexdigest()
+
+
+def header_leaf(fmt: str, note: str, counts: dict[str, Any], viewer: str = "") -> str:
     """`counts` and `note` are the two fields a reader actually reads, and they
     were outside the hash: a review set counts.sightings_organic to 4127 on a
-    shipped bundle and verification still returned clean. They are covered now."""
-    return leaf({"__header__": {"format": fmt, "note": note, "counts": counts}})
+    shipped bundle and verification still returned clean. They are covered now,
+    and so is `viewer`, the digest of what the page displays."""
+    return leaf({"__header__": {"format": fmt, "note": note, "counts": counts,
+                                "viewer": viewer}})
 
 
-def build(ledger, *, note: str = "") -> dict[str, Any]:
+def build(ledger, *, note: str = "", viewer: str = "") -> dict[str, Any]:
     rows: dict[str, list[dict[str, Any]]] = {t: ledger.rows(t) for t in PROOF_TABLES}
     counts = ledger.counts()
-    leaves = [header_leaf(FORMAT, note, counts)] + [leaf(r) for t in PROOF_TABLES for r in rows[t]]
+    leaves = [header_leaf(FORMAT, note, counts, viewer)] + \
+        [leaf(r) for t in PROOF_TABLES for r in rows[t]]
     return {
         "format": FORMAT,
         "note": note,
         "counts": counts,
+        "viewer": viewer,
         "rows": rows,
         "leaves": leaves,
         "root": merkle_root(leaves),
@@ -151,10 +191,10 @@ def verify(bundle: dict[str, Any]) -> tuple[bool, list[str]]:
         return False, problems
 
     want_header = header_leaf(bundle.get("format"), bundle.get("note", ""),
-                              bundle.get("counts") or {})
+                              bundle.get("counts") or {}, bundle.get("viewer", ""))
     if stored[0] != want_header:
-        problems.append("the header (format, note, counts) does not match its leaf: "
-                        "one of those fields was edited after the bundle was built")
+        problems.append("the header (format, note, counts, viewer) does not match its "
+                        "leaf: one of those fields was edited after the bundle was built")
 
     for i, ((table, row), want) in enumerate(zip(flat, stored[1:])):
         got = leaf(row)
@@ -202,6 +242,59 @@ def verify(bundle: dict[str, Any]) -> tuple[bool, list[str]]:
                             "bundle; a secret that was never issued cannot be published")
 
     return (not problems), problems
+
+
+def verify_display(bundle: dict[str, Any], shown: dict[str, Any]) -> list[str]:
+    """Problems with what a page DISPLAYS, given the bundle it shipped with.
+
+    Two separate things are checked, because they fail differently:
+
+    1. The digest. What is displayed must be byte-for-byte the payload whose hash
+       is in the header, so nothing was edited after the bundle was built.
+    2. The records. Every record on screen must BE one of the rows under the root:
+       same secret, same raw log lines, same counts. A payload exported from a
+       different snapshot than its bundle would pass (1) and still show records
+       the root never covered.
+
+    viewer/verify.js makes the same two checks; tests/test_js_parity.py runs both.
+    """
+    problems: list[str] = []
+    if not bundle.get("viewer"):
+        return ["this bundle does not commit to what the page displays"]
+    try:
+        digest = payload_digest(shown)
+    except TypeError as e:
+        return [f"the display cannot be hashed portably: {e}"]
+    if digest != bundle["viewer"]:
+        problems.append("what this page displays (claim, counters, records) does not "
+                        "match the digest in the bundle header: the display half of "
+                        "data.js was edited after the bundle was built")
+
+    rows = bundle.get("rows") or {}
+    requests = {r.get("id"): r for r in rows.get("request", [])}
+    sightings = {s.get("id"): s for s in rows.get("sighting", [])}
+    if (shown.get("counts") or {}) != (bundle.get("counts") or {}):
+        problems.append("the displayed counters are not the counts under the root")
+    for s in shown.get("sightings") or []:
+        row = sightings.get(s.get("id"))
+        if row is None:
+            problems.append(f"displayed record: sighting id={s.get('id')} is not a row "
+                            "in this bundle")
+            continue
+        a = requests.get(row.get("mint_request_id"), {})
+        b = requests.get(row.get("seen_request_id"), {})
+        same = (s.get("secret") == row.get("secret")
+                and s.get("recorded_origin") == row.get("origin")
+                and (s.get("issued") or {}).get("raw") == a.get("raw_line")
+                and (s.get("requested") or {}).get("raw") == b.get("raw_line")
+                and (s.get("issued") or {}).get("ua") == a.get("ua")
+                and (s.get("requested") or {}).get("ua") == b.get("ua")
+                and (s.get("issued") or {}).get("net") == a.get("ip_net")
+                and (s.get("requested") or {}).get("net") == b.get("ip_net"))
+        if not same:
+            problems.append(f"displayed record for sighting id={s.get('id')} is not the "
+                            "request rows under the root")
+    return problems
 
 
 def verify_file(path: str | Path) -> tuple[bool, list[str]]:

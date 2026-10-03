@@ -13,6 +13,16 @@ rm -f "$DB" "$DB-wal" "$DB-shm"
 echo "Canary Maze :: verify"
 echo
 
+# One dependency, and without it every check below fails with a traceback that
+# says nothing useful. Say the useful thing instead.
+if ! "$PY" -c "import flask" 2>/dev/null; then
+  echo "  Flask is not installed, so the surface cannot be exercised."
+  echo "    $PY -m pip install -r requirements.txt"
+  echo
+  echo "FAIL (missing dependency, not a failed check)"
+  exit 1
+fi
+
 # ---- 1. before/after on a real number -------------------------------------
 BEFORE=$("$PY" - "$DB" <<'PY'
 import sys; sys.path.insert(0, ".")
@@ -20,7 +30,9 @@ from canarymaze.ledger import Ledger
 led = Ledger(sys.argv[1]); print(led.counts()["sightings_seeded"]); led.close()
 PY
 )
-"$PY" scripts/seed_replay.py --db "$DB" >/dev/null 2>&1
+# stderr is kept: discarding it turned every setup problem into "0 -> 0 FAILED"
+SEED_ERR=$("$PY" scripts/seed_replay.py --db "$DB" 2>&1 >/dev/null) || {
+  echo "  the seeded replay could not run:"; echo "$SEED_ERR" | sed 's/^/    /'; }
 AFTER=$("$PY" - "$DB" <<'PY'
 import sys; sys.path.insert(0, ".")
 from canarymaze.ledger import Ledger
@@ -47,7 +59,10 @@ else
   note "gate turned a browser away, stored nothing" "turned away $2, in ledger $1  FAILED"; FAIL=1; fi
 
 # ---- 3. the bundle verifies with no server and no network -----------------
-"$PY" scripts/export_all.py --db "$DB" --bundle bundles/verify.json >/dev/null 2>&1
+# --out keeps this away from viewer/: without it every `make verify` overwrote the
+# viewer's data with this throwaway ledger, and the landing page then published
+# the counters of a test fixture as if they were the product's.
+"$PY" scripts/export_all.py --db "$DB" --bundle bundles/verify.json --out bundles/verify-out >/dev/null 2>&1
 if "$PY" -m canarymaze.bundle bundles/verify.json >/dev/null 2>&1; then
   note "bundle verifies offline" "OK"
 else note "bundle verifies offline" "FAILED"; FAIL=1; fi

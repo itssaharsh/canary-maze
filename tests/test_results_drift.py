@@ -47,10 +47,45 @@ def test_a_present_ledger_that_disagrees_is_still_caught(tmp_path, monkeypatch):
     assert "out of date" in (r.stderr + r.stdout)
 
 
-def test_regenerating_then_checking_is_consistent():
-    """Generate, then check: the two must agree, or the gate is meaningless."""
-    assert run().returncode == 0
-    assert run("--check").returncode == 0
+def test_regenerating_then_checking_is_consistent(tmp_path):
+    """Generate, then check: the two must agree, or the gate is meaningless.
+
+    Against a COPY. This used to regenerate the tracked docs/RESULTS.md, so running
+    the test suite edited a judge-facing document - and on the operator's machine
+    rewrote the live column on every run."""
+    copy = tmp_path / "RESULTS.md"
+    copy.write_text((ROOT / "docs" / "RESULTS.md").read_text(encoding="utf-8"),
+                    encoding="utf-8")
+    assert run("--results", str(copy)).returncode == 0
+    assert run("--check", "--results", str(copy)).returncode == 0
+
+
+def test_a_clone_that_has_run_make_demo_still_passes(tmp_path):
+    """Demo ledger present, live ledger absent: the state of any clone after
+    `make demo`, which is the README's own quickstart order. The live column and
+    the sentence that restates it are kept, so the committed file must still pass."""
+    db = tmp_path / "demo.sqlite3"
+    r = subprocess.run([sys.executable, str(ROOT / "scripts" / "seed_replay.py"),
+                        "--db", str(db)], capture_output=True, text=True, cwd=ROOT)
+    assert r.returncode == 0, r.stderr
+    committed = tmp_path / "RESULTS.md"
+    committed.write_text((ROOT / "docs" / "RESULTS.md").read_text(encoding="utf-8"),
+                         encoding="utf-8")
+    before = committed.read_text(encoding="utf-8")
+    absent = str(tmp_path / "absent.sqlite3")
+    r = run("--check", "--live", absent, "--demo", str(db), "--results", str(committed))
+    assert r.returncode == 0, r.stderr + r.stdout
+    # and regenerating in that state must not rewrite the live column either
+    assert run("--live", absent, "--demo", str(db), "--results", str(committed)).returncode == 0
+    assert committed.read_text(encoding="utf-8") == before
+
+
+def test_the_suite_never_writes_the_tracked_results_file():
+    """Every invocation in this file that can write must name a --results copy."""
+    src = Path(__file__).read_text(encoding="utf-8")
+    writers = [l for l in src.splitlines()
+               if l.strip().startswith(("assert run(", "r = run(")) and "--check" not in l]
+    assert all("--results" in l or '"--live", "canary.sqlite3"' in l for l in writers), writers
 
 
 def test_the_generator_refuses_a_retired_ledger():

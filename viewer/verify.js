@@ -20,6 +20,9 @@
   "use strict";
 
   var LEAF_TAG = 0x00, NODE_TAG = 0x01;
+  /* Exactly bundle.py::FORMAT. A prefix match accepted "canary-maze-bundle/99-anything"
+   * and verified a format this code had never seen. */
+  var FORMAT = "canary-maze-bundle/5";
   /* Same tables, same ORDER, as bundle.py::PROOF_TABLES - the leaves are listed in
    * this order, so a difference here misaligns every hash after the first table. */
   var PROOF_TABLES = ["request", "mint", "sighting", "published"];
@@ -62,7 +65,9 @@
   /* Python's json.dumps(ensure_ascii=True) escapes every non-ASCII character as
    * \\uXXXX. JSON.stringify does not, so we do it afterwards. */
   function escapeNonAscii(s) {
-    return s.replace(/[\u0080-￿]/g, function (c) {
+    /* From U+007F, not U+0080: json.dumps(ensure_ascii=True) escapes DEL too. The
+     * range is written with escapes so no invisible character lives in this file. */
+    return s.replace(/[\u007f-\uffff]/g, function (c) {
       return "\\u" + ("0000" + c.charCodeAt(0).toString(16)).slice(-4);
     });
   }
@@ -126,15 +131,62 @@
     return sha256(concat(new Uint8Array([NODE_TAG]), utf8(String(leaves.length) + "|"), level[0]));
   }
 
-  async function headerLeaf(fmt, note, counts) {
-    return leaf({ __header__: { format: fmt, note: note, counts: counts } });
+  async function headerLeaf(fmt, note, counts, viewer) {
+    return leaf({ __header__: { format: fmt, note: note, counts: counts, viewer: viewer } });
   }
 
-  /* Returns {ok, problems, rows, root}. Contacts nothing. */
-  async function verifyBundle(b) {
+  /* bundle.py::payload_digest - the hash of what the page displays. */
+  async function payloadDigest(shown) {
+    return sha256(utf8(escapeNonAscii(stableStringify(shown))));
+  }
+
+  function sameCounts(a, b) {
+    return stableStringify(a || {}) === stableStringify(b || {});
+  }
+
+  /* bundle.py::verify_display. Two checks that fail differently: the digest pins
+   * the display to what was committed when the bundle was built; the row
+   * comparison requires every record on screen to BE a row under the root. */
+  async function displayProblems(b, shown) {
+    var problems = [];
+    if (!b.viewer) return ["this bundle does not commit to what the page displays"];
+    if ((await payloadDigest(shown)) !== b.viewer) {
+      problems.push("what this page displays (claim, counters, records) does not match " +
+                    "the digest in the bundle header: the display half of data.js was " +
+                    "edited after the bundle was built");
+    }
+    var rows = b.rows || {}, requests = new Map(), sightings = new Map();
+    (rows.request || []).forEach(function (r) { requests.set(r.id, r); });
+    (rows.sighting || []).forEach(function (x) { sightings.set(x.id, x); });
+    if (!sameCounts(shown.counts, b.counts)) {
+      problems.push("the displayed counters are not the counts under the root");
+    }
+    (shown.sightings || []).forEach(function (x) {
+      var row = sightings.get(x.id);
+      if (!row) {
+        problems.push("displayed record: sighting id=" + x.id + " is not a row in this bundle");
+        return;
+      }
+      var a = requests.get(row.mint_request_id) || {}, q = requests.get(row.seen_request_id) || {};
+      var i = x.issued || {}, r = x.requested || {};
+      var same = x.secret === row.secret && x.recorded_origin === row.origin &&
+                 i.raw === a.raw_line && r.raw === q.raw_line &&
+                 i.ua === a.ua && r.ua === q.ua && i.net === a.ip_net && r.net === q.ip_net;
+      if (!same) {
+        problems.push("displayed record for sighting id=" + x.id +
+                      " is not the request rows under the root");
+      }
+    });
+    return problems;
+  }
+
+  /* Returns {ok, problems, rows, root}. Contacts nothing.
+   * `shown` is what the page displays. When it is given, "ok" also means the
+   * display is the bundle's: see displayProblems. */
+  async function verifyBundle(b, shown) {
     var problems = [];
     if (!b) return { ok: false, problems: ["no bundle was shipped with this page"] };
-    if (!b.format || b.format.indexOf("canary-maze-bundle/") !== 0) {
+    if (b.format !== FORMAT) {
       return { ok: false, problems: ["unknown bundle format " + b.format] };
     }
 
@@ -150,10 +202,13 @@
                           flat.length + " rows plus one header leaf"] };
     }
 
-    var wantHeader = await headerLeaf(b.format, b.note || "", b.counts || {});
+    var wantHeader = await headerLeaf(b.format, b.note || "", b.counts || {}, b.viewer || "");
     if (wantHeader !== stored[0]) {
-      problems.push("the header (format, note, counts) does not match its leaf: " +
+      problems.push("the header (format, note, counts, viewer) does not match its leaf: " +
                     "one of those fields was edited after the bundle was built");
+    }
+    if (shown !== undefined) {
+      problems = problems.concat(await displayProblems(b, shown));
     }
 
     for (var i = 0; i < flat.length; i++) {
@@ -173,30 +228,33 @@
     }
 
     // the same self-consistency checks the Python verifier makes
-    var minted = {}, mintTs = {}, reqIds = {};
-    (rows.mint || []).forEach(function (m) { minted[m.secret] = true; mintTs[m.secret] = m.ts; });
-    (rows.request || []).forEach(function (r) { reqIds[r.id] = true; });
+    /* Sets and a Map, not plain objects: {}["constructor"] is truthy, so a sighting
+     * citing the secret "constructor" and request ids "valueOf" / "toString" passed
+     * every check below with no mint or request rows at all. */
+    var minted = new Set(), mintTs = new Map(), reqIds = new Set();
+    (rows.mint || []).forEach(function (m) { minted.add(m.secret); mintTs.set(m.secret, m.ts); });
+    (rows.request || []).forEach(function (r) { reqIds.add(r.id); });
     (rows.sighting || []).forEach(function (s) {
       if (s.mint_ctx_id === s.seen_ctx_id) {
         problems.push("sighting id=" + s.id + " names one context on both sides; that is not a sighting");
       }
-      if (!minted[s.secret]) {
+      if (!minted.has(s.secret)) {
         problems.push("sighting id=" + s.id + " cites a secret with no mint row in this bundle");
       }
       ["mint_request_id", "seen_request_id"].forEach(function (k) {
-        if (!reqIds[s[k]]) {
+        if (!reqIds.has(s[k])) {
           problems.push("sighting id=" + s.id + " cites " + k + "=" + s[k] +
                         " with no matching request row in this bundle");
         }
       });
-      if (mintTs[s.secret] && s.ts && s.ts < mintTs[s.secret]) {
+      if (mintTs.get(s.secret) && s.ts && s.ts < mintTs.get(s.secret)) {
         problems.push("sighting id=" + s.id + " is dated before its mint; a secret " +
                       "cannot be fetched before it exists");
       }
     });
 
     (rows.published || []).forEach(function (p) {
-      if (!minted[p.secret]) {
+      if (!minted.has(p.secret)) {
         problems.push("published id=" + p.id + " names a secret with no mint row in this " +
                       "bundle; a secret that was never issued cannot be published");
       }
@@ -207,5 +265,6 @@
   }
 
   global.CanaryVerify = { verifyBundle: verifyBundle, canonical: canonical,
-                          leaf: leaf, merkleRoot: merkleRoot };
+                          leaf: leaf, merkleRoot: merkleRoot, payloadDigest: payloadDigest,
+                          FORMAT: FORMAT };
 })(window);

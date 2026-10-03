@@ -28,6 +28,10 @@
 
   /* The one marked run of characters on the page, in both records. */
   function markSecret(raw, secret) {
+    /* No secret, nothing to mark. Without this guard an undefined secret was
+     * searched for as the text "undefined", and a user-agent containing that word
+     * made the awaiting state throw and take the whole page down with it. */
+    if (!secret) return esc(raw);
     var i = raw.indexOf(secret);
     if (i < 0) return esc(raw);
     return esc(raw.slice(0, i)) +
@@ -78,7 +82,7 @@
       ["observed", seenBy(s.issued.via), seenBy(s.requested.via)]
     ];
     var html = '<caption>What separates the two request contexts</caption>' +
-      '<thead><tr><th scope="col"></th>' +
+      '<thead><tr><td></td>' +
       '<th scope="col">context ' + esc(s.issued.label) + '</th>' +
       '<th scope="col">context ' + esc(s.requested.label) + '</th></tr></thead><tbody>';
     rows.forEach(function (r) {
@@ -157,7 +161,9 @@
       var m = D.mint_sample;
       $("origin").textContent = "no sighting yet";
       $("role-a").textContent = "Most recent secret issued";
-      $("pre-a").innerHTML = markSecret(m ? m.raw : "", m ? m.secret : "");
+      /* The awaiting record is the page request; the payload deliberately does
+       * not carry the secret, so there is nothing here to mark. */
+      $("pre-a").innerHTML = esc(m ? m.raw : "");
       $("rec-b").hidden = true;
       $("records").hidden = false;
       $("verify").hidden = false;
@@ -184,13 +190,17 @@
       btn.textContent = "Recomputing…";
       out.hidden = true;
       try {
-        var r = await window.CanaryVerify.verifyBundle(window.CANARY_BUNDLE);
+        /* The page is given BOTH objects: the bundle, and what is displayed. A
+         * review found that passing only the bundle let a reader edit the claim,
+         * the label and the counters on screen and still be told "Verified". */
+        var r = await window.CanaryVerify.verifyBundle(window.CANARY_BUNDLE, window.CANARY_DATA);
         out.className = "result " + (r.ok ? "ok" : "bad");
         if (r.ok) {
           out.innerHTML = '<span class="headline">Verified. The server was not contacted.</span>' +
             esc(r.rows) + " hashes recomputed in this page with crypto.subtle · root " +
             esc(String(r.root).slice(0, 4)) + "\u2026" + esc(String(r.root).slice(-2)) +
-            " · matches the root shipped with the bundle";
+            " · matches the root shipped with the bundle · and what this page " +
+            "displays is what that bundle commits to";
           $("status").textContent = r.rows + " hashes recomputed in the page. The root matches. The server was not contacted.";
         } else {
           out.innerHTML = '<span class="headline">Verification failed.</span>' +

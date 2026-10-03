@@ -51,3 +51,8 @@ demo/*
 !demo/brief.md
 !demo/shots.md
 !demo/design.json
+.public_url
+.serve_public.out
+.serve.log
+.tunnel.log
+bundles/

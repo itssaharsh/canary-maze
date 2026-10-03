@@ -173,6 +173,28 @@ class Ledger:
         with self._lock:
             return self.db.execute("SELECT * FROM request WHERE id = ?", (request_id,)).fetchone()
 
+    def snapshot(self):
+        """Hold ONE read snapshot across several reads.
+
+        The viewer payload and the bundle are built by separate calls. On a ledger
+        that is still receiving traffic - from another process - a request landing
+        between those calls would make the page display counts and records its own
+        bundle does not contain, and an honest page would then fail its own
+        verification. In WAL mode a read transaction sees a single point in time.
+        """
+        import contextlib
+
+        @contextlib.contextmanager
+        def _snap():
+            with self._lock:
+                self.db.execute("BEGIN")
+            try:
+                yield self
+            finally:
+                with self._lock:
+                    self.db.execute("COMMIT")
+        return _snap()
+
     def paste_triggered_ids(self) -> set[int]:
         """Ids of sightings recorded as organic that the paste rule reclassifies."""
         with self._lock:

@@ -199,13 +199,28 @@ def test_the_canonical_form_is_portable_between_python_and_javascript():
     assert canonical({"k": "café"}) == b'{"k":"s:caf\\u00e9"}'
 
 
-def test_the_javascript_verifier_mirrors_every_python_check():
-    """If a check exists in Python and not in JS, the page would call a tampered
-    bundle clean. Pin the list rather than trusting it stays in sync."""
+def test_the_javascript_verifier_names_every_check_the_python_one_makes():
+    """A cheap guard that runs without Node: the wording of each check exists on
+    both sides. It proves nothing about behaviour - a review rightly pointed out
+    that this was the ONLY thing "pinning the two together" and that it never
+    executed the JavaScript. tests/test_js_parity.py now runs verify.js for real;
+    this stays for the reader who has no Node installed."""
     js = (Path(__file__).resolve().parents[1] / "viewer" / "verify.js").read_text(encoding="utf-8")
     for marker in ("does not match its leaf", "the root does not match the leaves",
                    "names one context on both sides", "no mint row in this bundle",
                    "with no matching request row", "before its mint",
-                   "header (format, note, counts)", "plus one header leaf"):
+                   "header (format, note, counts, viewer)", "plus one header leaf",
+                   "does not commit to what the page displays",
+                   "is not the request rows under the root",
+                   "a secret that was never issued cannot be published"):
         assert marker in js, f"viewer/verify.js is missing the {marker!r} check"
     assert "crypto.subtle.digest" in js, "the page must actually hash, not read a verdict"
+
+
+def test_the_two_verifiers_declare_the_same_format():
+    """The JavaScript compares the format exactly, so the constant has to move in
+    both files at once or every bundle fails in the browser."""
+    import re
+    from canarymaze.bundle import FORMAT
+    js = (Path(__file__).resolve().parents[1] / "viewer" / "verify.js").read_text(encoding="utf-8")
+    assert re.search(r'var FORMAT = "([^"]+)"', js).group(1) == FORMAT

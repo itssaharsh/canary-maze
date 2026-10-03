@@ -1,6 +1,10 @@
 .PHONY: install test demo verify results serve clean clean-ledger
 PY ?= python3
-LEDGER ?= ledgers/canary-public.sqlite3
+# Resolved through canarymaze/paths.py, never typed here. A ledger path written
+# into this file named a RETIRED ledger as "the live ledger" for two generations,
+# and `make clean-ledger` would have deleted the only copy of the evidence behind
+# F-0004 while leaving the real live ledger untouched.
+LEDGER ?= $(shell $(PY) -c "from canarymaze.paths import ledger_path; print(ledger_path())")
 
 install:
 	$(PY) -m pip install -r requirements.txt -r requirements-dev.txt
@@ -18,15 +22,14 @@ verify:
 results:
 	@$(PY) scripts/build_results.py
 
-# The live ledger is ledgers/canary-public.sqlite3. canary.sqlite3 is the RETIRED
-# one (see ledgers/archive/README.md): it holds a sighting that is really the
-# operator's own curl, recorded before origin was resolved per request. Pointing
-# a server at it would republish that row as third-party evidence.
+# Runs the ledger's own process on the live ledger. Retired ledgers are refused by
+# canarymaze/paths.py; see ledgers/archive/README.md for why each one was retired.
+# For the public surface use scripts/keep_alive.sh, which also runs the tunnel and
+# keeps Vercel pointed at it.
 serve:
 	CANARY_DB=$(PWD)/$(LEDGER) $(PY) -m canarymaze.app
 
-# NEVER delete a ledger here. The live one is ledgers/canary-public.sqlite3 and
-# `make clean` gets run reflexively between demo runs - including while the public
+# NEVER delete a ledger here. `make clean` gets run reflexively between demo runs - including while the public
 # surface is live, which silently unlinks the file the server is still writing to
 # and loses every piece of evidence collected so far (F-0002). Only demo/verify
 # artefacts go here, and they are named distinctly so no glob can catch a ledger.

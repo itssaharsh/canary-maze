@@ -23,9 +23,9 @@ from the data, which it had done once before the generator existed.
 | Paste-triggered sightings | 3 | 0 |
 | Seeded sightings | 0 | 1 |
 | Operator self-test sightings | 2 | 0 |
-| Humans turned away by the gate | 0 | 0 |
+| Humans turned away by the gate | 15 | 0 |
 | Human requests in the ledger | 0 | 0 |
-| Requests recorded | 24 | 2 |
+| Requests recorded | 59 | 2 |
 
 The two columns are never added together. The left one answers "what has been observed in the wild"; the right one answers "does the mechanism work". Only the left column is evidence about anyone else's behaviour.
 
