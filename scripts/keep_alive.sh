@@ -128,16 +128,9 @@ path_ok() {
   return 1
 }
 
-# Deploy exactly what is committed. `git archive` cannot see the working tree, so
+# Deploy exactly what is committed (scripts/deploy_site.sh uses `git archive`), so
 # an edit in progress - or a landing page built from a test fixture - cannot ship.
-deploy_head() {
-  local tmp; tmp="$(mktemp -d)"
-  git archive HEAD site | tar -x -C "$tmp" || { rm -rf "$tmp"; return 1; }
-  cp -r site/.vercel "$tmp/site/.vercel" 2>/dev/null
-  ( cd "$tmp/site" && vercel deploy --prod --yes >/dev/null 2>&1 ); local rc=$?
-  rm -rf "$tmp"
-  return $rc
-}
+deploy_head() { bash scripts/deploy_site.sh >/dev/null 2>&1; }
 
 DEPLOY_TIMES=""          # epoch seconds of recent deploys, for the hourly cap
 BACKOFF=0
