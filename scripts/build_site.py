@@ -34,6 +34,24 @@ def build_api() -> None:
     print(f"api: {len(API_MODULES)} modules copied to site/api/_cm/")
 
 
+def verify_transcript() -> str:
+    """The real output of `make verify`, captured now.
+
+    It used to be hand-typed into the page, and it drifted: two of its five lines
+    were checks the command had stopped printing, one of them advertising a
+    "model enabled vs off" comparison for a build that has no model. A transcript
+    a reader can reproduce in one command is worse than none when it is wrong.
+    """
+    r = subprocess.run(["bash", "scripts/verify.sh"], cwd=ROOT, capture_output=True, text=True)
+    body = "\n".join(ln.rstrip() for ln in r.stdout.splitlines() if ln.strip())
+    body = re.sub(r"\b(OK|PASS)\b", r'<span class="g">\1</span>', escape(body))
+    return "$ make verify\n\n" + body
+
+
+def escape(t: str) -> str:
+    return t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
 def main() -> int:
     data = json.loads((VIEWER / "data.json").read_text(encoding="utf-8"))
     counts = data["viewer"]["counts"]
@@ -47,17 +65,18 @@ def main() -> int:
         shutil.copy(VIEWER / f, SITE / "viewer" / f)
 
     html = (SITE / "index.html").read_text(encoding="utf-8")
+    # These counters describe the SEEDED REPLAY that viewer/data.json holds, and the
+    # page says so. The live surface's numbers are generated into docs/RESULTS.md by
+    # scripts/build_results.py; an earlier page captioned the demo fixture's counters
+    # "every number below comes from the ledger", and for a while one of them came
+    # from a throwaway test ledger that make verify had overwritten the file with.
     rows = [
-        ("Mints", counts["mints"], "secrets issued to automated contexts"),
-        ("Seeded sightings", counts["sightings_seeded"],
+        ("Secrets issued", counts["mints"], "to automated contexts, through the real gate and mint"),
+        ("Sightings in this replay", counts["sightings_seeded"],
          "two clients we control, driven through the real gate, mint and detector"),
-        ("Organic sightings", counts["sightings_organic"],
-         "reported exactly as it stands — this is the honest number, not a rounding"),
-        ("Paste-triggered", counts["sightings_paste"],
-         "counted separately: a fetcher following a human&rsquo;s paste is <em>not</em> two agents sharing"),
-        ("Humans turned away", counts["humans_turned_away"],
-         "the gate fired this many times and stored nothing about any of them"),
-        ("Human requests in ledger", counts["human_requests"],
+        ("Organic sightings here", counts["sightings_organic"],
+         "0 by construction: a scripted replay observes nobody"),
+        ("Human requests stored", counts["human_requests"],
          "must be 0 — a non-zero value would mean a human reached storage"),
         ("Hashes in the bundle", leaves, "each one recomputed in your browser by the button above"),
         ("Tests", n_tests, "<code>make verify</code> PASS"),
@@ -67,6 +86,14 @@ def main() -> int:
         for k, v, d in rows)
     html = re.sub(r"(<!--COUNTS-->).*?(<!--/COUNTS-->)",
                   lambda m: m.group(1) + "\n" + body + "\n    " + m.group(2),
+                  html, flags=re.S)
+    html = re.sub(r"(<!--VERIFY-->).*?(<!--/VERIFY-->)",
+                  lambda m: m.group(1) + verify_transcript() + m.group(2),
+                  html, flags=re.S)
+    # The scope line travels with the data, so the page cannot state a different
+    # bound from the one the viewer shows.
+    html = re.sub(r"(<!--SCOPE-->).*?(<!--/SCOPE-->)",
+                  lambda m: m.group(1) + escape(data["viewer"]["scope_line"]) + m.group(2),
                   html, flags=re.S)
     (SITE / "index.html").write_text(html, encoding="utf-8")
     print(f"site built: {len(rows)} counters from viewer/data.json, {n_tests} tests")

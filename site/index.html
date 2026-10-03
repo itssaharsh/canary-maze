@@ -110,6 +110,7 @@ footer a{color:var(--ink)}
     </span>
   </nav>
 
+  <main>
   <header class="hero">
     <div>
       <h1>Watch a secret move between AI clients.</h1>
@@ -121,9 +122,10 @@ footer a{color:var(--ink)}
       </div>
     </div>
     <figure>
-      <div class="shot"><img src="img/records.png" alt="Two access-log records. The same 16-character secret is marked in both: issued to context A, then requested by context B." width="1120" height="330"></div>
-      <figcaption>The actual product. One secret, marked in both records — issued to one context,
-        fetched by another. Seeded replay data, labelled as seeded on its own face.</figcaption>
+      <div class="shot"><img src="img/records.png" alt="Two access-log records. The upper one is the page request that issued a secret to context A; the lower one is context B fetching that secret, with the 16-character secret marked inside the requested URL." width="1120" height="330"></div>
+      <figcaption>The actual product. The marked run of characters is the secret, in the
+        request line of the context that <em>fetched</em> it; the record above is the page
+        request that issued it. Seeded replay data, labelled as seeded on its own face.</figcaption>
     </figure>
   </header>
 
@@ -178,35 +180,39 @@ footer a{color:var(--ink)}
     <p class="lede">This is the part that makes it evidence rather than a dashboard. The
       verifier is stdlib Python. It makes no network call and does not need the server
       running — it would still work if this site were taken down permanently.</p>
-    <pre class="term" tabindex="0" role="region" aria-label="make verify output">$ make verify
+    <pre class="term" tabindex="0" role="region" aria-label="make verify output"><!--VERIFY-->$ make verify
 
+Canary Maze :: verify
   sightings before -&gt; after                            0 -&gt; 1  <span class="g">OK</span>
-  human requests in ledger                             0  <span class="g">OK</span>
+  gate turned a browser away, stored nothing           turned away 1, in ledger 0  <span class="g">OK</span>
   bundle verifies offline                              <span class="g">OK</span>
   an edited row is caught and named                    <span class="g">OK</span>
-  proof graph with the model enabled vs off            byte-identical  <span class="g">OK</span>
-
-<span class="g">PASS</span></pre>
+  laundered rows cannot reach the bundle               byte-identical  <span class="g">OK</span>
+<span class="g">PASS</span><!--/VERIFY--></pre>
     <figure style="margin-top:28px">
-      <div class="shot"><img src="img/verified.png" alt="‘Verified. The server was not contacted.’ — 4 rows checked, the Merkle root, recomputed in the page from the bundle file alone." width="1120" height="420"></div>
-      <figcaption>Recomputed in the browser, from the bundle file alone.</figcaption>
+      <div class="shot"><img src="img/verified.png" alt="The viewer's verification strip: ‘Verified. The server was not contacted.’ with the number of hashes recomputed, the Merkle root, and a note that what the page displays is what the bundle commits to." width="1120" height="420"></div>
+      <figcaption>Recomputed in your browser with <code>crypto.subtle</code>, from the bundle
+        file alone. Edit any record — or any counter the page displays — and it names what
+        no longer matches.</figcaption>
     </figure>
   </section>
 
   <section>
     <h2 id="real-h">What is real here</h2>
-    <p class="lede">Every number below comes from the ledger, not from a slide.</p>
+    <p class="lede">Every number below is generated from the artefact this page links to —
+      the <strong>seeded replay</strong>, which is the deterministic demo a judge can
+      reproduce offline. It observes nobody, so its organic count is 0 by construction.
+      The <strong>live public surface</strong> is reported separately, and generated the
+      same way, in <a href="https://github.com/itssaharsh/canary-maze/blob/master/docs/RESULTS.md">docs/RESULTS.md</a>.</p>
     <div class="tablewrap" role="region" aria-labelledby="real-h" tabindex="0">
     <table>
 <!--COUNTS-->
-      <tr><th>Mints</th><td class="num">1</td><td>secrets issued to automated contexts</td></tr>
-      <tr><th>Seeded sightings</th><td class="num">1</td><td>two clients we control, driven through the real gate, mint and detector</td></tr>
-      <tr><th>Organic sightings</th><td class="num">0</td><td>reported exactly as it stands — this is the honest number, not a rounding</td></tr>
-      <tr><th>Paste-triggered</th><td class="num">0</td><td>counted separately: a fetcher following a human&rsquo;s paste is <em>not</em> two agents sharing</td></tr>
-      <tr><th>Humans turned away</th><td class="num">1</td><td>the gate fired this many times and stored nothing about any of them</td></tr>
-      <tr><th>Human requests in ledger</th><td class="num zero">0</td><td>must be 0 — a non-zero value would mean a human reached storage</td></tr>
+      <tr><th>Secrets issued</th><td class="num">1</td><td>to automated contexts, through the real gate and mint</td></tr>
+      <tr><th>Sightings in this replay</th><td class="num">1</td><td>two clients we control, driven through the real gate, mint and detector</td></tr>
+      <tr><th>Organic sightings here</th><td class="num">0</td><td>0 by construction: a scripted replay observes nobody</td></tr>
+      <tr><th>Human requests stored</th><td class="num zero">0</td><td>must be 0 — a non-zero value would mean a human reached storage</td></tr>
       <tr><th>Hashes in the bundle</th><td class="num">5</td><td>each one recomputed in your browser by the button above</td></tr>
-      <tr><th>Tests</th><td class="num">219</td><td><code>make verify</code> PASS</td></tr>
+      <tr><th>Tests</th><td class="num">224</td><td><code>make verify</code> PASS</td></tr>
     <!--/COUNTS-->
     </table>
     </div>
@@ -216,9 +222,9 @@ footer a{color:var(--ink)}
     <h2>What a sighting does not establish</h2>
     <p class="lede">The most important section, and it is on the product’s own face too.</p>
     <ul class="limits">
-      <li><strong>It is not two operators.</strong> One operator can rotate addresses — in
-        the AI Village dump, a single actor label spans <strong>741</strong> of them. The schema has
-        no <code>actor</code> table and no join that would produce one.</li>
+      <li><strong>It is not two operators.</strong> One operator can rotate addresses:
+        <!--SCOPE-->A sighting establishes that the secret moved between two request contexts. It does not establish that they are two different operators - one operator can rotate addresses. In the organizers' collusion.wiki dump, the busiest named agent label wrote 317 revisions from 308 distinct addresses.<!--/SCOPE--> The schema has no <code>actor</code> table and no
+        join that would produce one.</li>
       <li><strong>The HMAC bounds provenance, not distinctness.</strong> A secret that verifies
         was issued by us and cannot be forged. That says nothing about how many actors
         touched it. An earlier draft of this project claimed otherwise; that claim was
@@ -235,14 +241,25 @@ footer a{color:var(--ink)}
         computes the rows, the leaves and the root. The bundle proves nothing has been edited
         since it was built; it does not prove it was built honestly. Publishing the root
         somewhere we do not control would close that, and this build does not.</li>
-      <li><strong>A client can manufacture a second context against itself</strong> by adding one
-        header, because header order is part of the context id. The diff above makes it
-        visible &mdash; user-agent and network would both read as matching &mdash; but nothing
-        refuses the record.</li>
-      <li><strong>No third-party traffic yet.</strong> Every row in the live ledger so far was
-        generated by us. The organic counter above says 0 because it is 0.</li>
+      <li><strong>A client can manufacture a second context against itself</strong> by
+        changing its user-agent, or by adding or dropping one of the standard request
+        headers the context id looks at. (Adding an arbitrary header, or reordering them,
+        no longer does it — that was a real defect, and it is recorded as
+        <code>F-0006</code>.) The diff above makes the attempt visible, because the network
+        would read as matching, but nothing refuses the record.</li>
+      <li><strong>No organic sighting yet.</strong> Third-party fetchers <em>have</em> reached
+        the live surface and been recorded — but only ones the operator handed a URL to, so
+        every one of them is reported as paste-triggered and none is counted as organic. The
+        operator publishing a URL is itself a row in the ledger, written before the URL is
+        handed over, which is what makes that separation checkable rather than asserted.</li>
+      <li><strong>The ledger records what an edge reported.</strong> The public surface runs on
+        a host that does not refuse crawlers; the ledger is on the operator's machine, and the
+        two are joined by a signed hand-off. Every row names the edge that reported it, and a
+        row this process saw itself is marked differently from one it was told about.</li>
     </ul>
   </section>
+
+  </main>
 
   <footer>
     <div class="flinks">
