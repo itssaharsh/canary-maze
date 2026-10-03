@@ -1,7 +1,9 @@
 # Results
 
-**Numbers are reported exactly as they stand.** Generated from the same data the
-viewer renders; nothing here is hand-typed.
+**Numbers are reported exactly as they stand.** The counts below are generated
+from the ledgers by `scripts/build_results.py`; nothing in that table is typed by
+hand. `python3 scripts/build_results.py --check` fails if this file has drifted
+from the data, which it had done once before the generator existed.
 
 ## Live surfaces
 
@@ -13,14 +15,22 @@ viewer renders; nothing here is hand-typed.
 
 ## Counts
 
-| Category | Count |
-|---|---|
-| Mints | 1 |
-| Seeded sightings | 1 |
-| **Organic sightings** | **0** |
-| Paste-triggered | 0 |
-| Humans turned away by the gate | 1 |
-| Human requests in the ledger | 0 |
+<!-- counts:start -->
+| Category | Live public surface | Seeded replay |
+|---|---|---|
+| Secrets minted | 3 | 1 |
+| **Organic sightings** | 0 | 0 |
+| Paste-triggered sightings | 0 | 0 |
+| Seeded sightings | 0 | 1 |
+| Operator self-test sightings | 0 | 0 |
+| Humans turned away by the gate | 0 | 0 |
+| Human requests in the ledger | 0 | 0 |
+| Requests recorded | 3 | 2 |
+
+The two columns are never added together. The left one answers "what has been observed in the wild"; the right one answers "does the mechanism work". Only the left column is evidence about anyone else's behaviour.
+
+**Organic sightings stand at 0.** That is reported as-is. The operator's own probes are recorded separately as self-tests (see F-0004) precisely so this number cannot be quietly inflated by our own traffic.
+<!-- counts:end -->
 
 ## The honest reading
 

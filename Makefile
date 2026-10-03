@@ -1,5 +1,6 @@
-.PHONY: install test demo verify serve clean clean-ledger
+.PHONY: install test demo verify results serve clean clean-ledger
 PY ?= python3
+LEDGER ?= ledgers/canary-public.sqlite3
 
 install:
 	$(PY) -m pip install -r requirements.txt -r requirements-dev.txt
@@ -12,14 +13,23 @@ demo:
 
 verify:
 	@bash scripts/verify.sh
+	@$(PY) scripts/build_results.py --check
 
+results:
+	@$(PY) scripts/build_results.py
+
+# The live ledger is ledgers/canary-public.sqlite3. canary.sqlite3 is the RETIRED
+# one (see ledgers/archive/README.md): it holds a sighting that is really the
+# operator's own curl, recorded before origin was resolved per request. Pointing
+# a server at it would republish that row as third-party evidence.
 serve:
-	CANARY_DB=$(PWD)/canary.sqlite3 $(PY) -m canarymaze.app
+	CANARY_DB=$(PWD)/$(LEDGER) $(PY) -m canarymaze.app
 
-# NEVER delete canary.sqlite3 here. It is the production ledger, and `make clean`
-# gets run reflexively between demo runs - including while the public surface is
-# live, which silently unlinks the file the server is still writing to and loses
-# every piece of evidence collected so far. Only demo/verify artefacts go here.
+# NEVER delete a ledger here. The live one is ledgers/canary-public.sqlite3 and
+# `make clean` gets run reflexively between demo runs - including while the public
+# surface is live, which silently unlinks the file the server is still writing to
+# and loses every piece of evidence collected so far (F-0002). Only demo/verify
+# artefacts go here, and they are named distinctly so no glob can catch a ledger.
 clean:
 	rm -f demo.sqlite3 demo.sqlite3-wal demo.sqlite3-shm
 	rm -f verify.sqlite3 verify.sqlite3-wal verify.sqlite3-shm
@@ -28,7 +38,8 @@ clean:
 
 # Explicit, separate, and never run by accident.
 clean-ledger:
-	@echo "This deletes the PRODUCTION ledger at canary.sqlite3 and every record in it."
+	@echo "This deletes the LIVE ledger at $(LEDGER) and every record in it."
+	@echo "Nothing in ledgers/archive/ is touched; retired ledgers are kept on purpose."
 	@echo "Export a bundle first if you want to keep the evidence:"
-	@echo "    python3 scripts/export_all.py --db canary.sqlite3 --bundle bundles/keep.json"
-	@read -p "type DELETE to confirm: " ok; [ "$$ok" = "DELETE" ] && rm -f canary.sqlite3* || echo "aborted"
+	@echo "    python3 scripts/export_all.py --db $(LEDGER) --bundle bundles/keep.json"
+	@read -p "type DELETE to confirm: " ok; [ "$$ok" = "DELETE" ] && rm -f $(LEDGER)* || echo "aborted"
