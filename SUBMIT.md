@@ -115,7 +115,7 @@ Saharsh — saharsh7002@gmail.com
 
 ```
 make verify          # expect: PASS, five checks
-python3 -m pytest -q # expect: 145 passed
+python3 -m pytest -q # expect: 224 passed
 ```
 
 And click these:
@@ -132,7 +132,7 @@ Have this ready; it is the first Q&A question at every event.
 
 | Claim | Status |
 |---|---|
-| The gate, mint, detector and bundle | **real**, running, 145 tests |
+| The gate, mint, detector and bundle | **real**, running, 224 tests |
 | Offline verification in the browser | **real** — recomputed with `crypto.subtle`, zero network requests, confirmed with the panel open |
 | The seeded two-client replay | **real code, synthetic traffic** — labelled "seeded" on its own face, never counted as organic |
 | The 78,362-session corpus result | **real**, on their data, reproducible |

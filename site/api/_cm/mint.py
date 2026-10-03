@@ -14,8 +14,14 @@ this wrong and it must not come back:
   form "false positives are bounded by HMAC collision" is FALSE and is not made
   anywhere in this codebase. See docs/memory/decisions/ADR-0002.
 
-The salt rotates daily. The epoch is stored on every mint row, so rotation never
-invalidates history: an old secret still verifies under the salt of its own epoch.
+What rotates, and what does not. The DATE is an input to the HMAC, so the secret
+issued for one context and path changes every day; the epoch is stored on every
+mint row, so yesterday's secret still resolves. The SALT itself is long-lived and
+nothing here rotates it. An earlier version of this docstring and of
+ARCHITECTURE.md said "the salt rotates daily" and promised a leak a bounded blast
+radius; that was never implemented and the promise was wrong. A leaked salt forges
+every day's secrets, past and future, until it is replaced by hand - and replacing
+it orphans every secret already issued, which is why nothing does it on a timer.
 """
 from __future__ import annotations
 
@@ -29,15 +35,19 @@ _DEV_SALT = "canary-maze-development-salt-not-for-deployment"
 
 
 def salt_epoch(when: datetime | None = None) -> str:
-    """The current rotation epoch. Daily is a deliberate compromise: long enough
-    that a crawler's revisit on the same day resolves to the same secret, short
-    enough that a leaked salt has a bounded blast radius."""
+    """Today's date, which is an input to every secret.
+
+    Daily is a deliberate compromise: long enough that a crawler's revisit on the
+    same day resolves to the same secret, short enough that a secret scraped from
+    a page is not useful against a different context for ever. It does NOT bound a
+    salt leak: the salt is the same every day."""
     when = when or datetime.now(timezone.utc)
     return when.strftime("%Y-%m-%d")
 
 
 def load_salt(epoch: str | None = None) -> str:
-    """The only secret in the system. Never committed; set CANARY_SALT in the
+    """The secret that makes a canary unforgeable. Never committed; set CANARY_SALT
+    in the
     environment. Falls back to a fixed development salt so tests and `make demo`
     run on a clean checkout with no setup, which is also why the fallback is
     obviously named rather than random: a random fallback would make the demo
@@ -45,7 +55,15 @@ def load_salt(epoch: str | None = None) -> str:
 
     THE FALLBACK IS COMMITTED AND PUBLIC. Serving on it would let any reader of
     this repository forge a secret, so `app.require_production_salt()` refuses to
-    start the server without CANARY_SALT. Never remove that guard."""
+    start the server without CANARY_SALT. Never remove that guard.
+
+    `epoch` is accepted and ignored: there is one salt. The parameter is kept
+    because callers pass it and because per-epoch keys are the obvious upgrade if
+    a leak ever needs a bounded radius.
+
+    Two other long-lived secrets exist: CANARY_INGEST_KEY (signs the edge's
+    hand-off; whoever holds it can write ledger rows) and CANARY_SELFTEST_TOKEN
+    (marks traffic as the operator's own)."""
     return os.environ.get("CANARY_SALT") or _DEV_SALT
 
 

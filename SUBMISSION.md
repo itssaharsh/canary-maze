@@ -146,7 +146,7 @@ confirmed in a browser with the network panel open. Edit any record in
 an edited row being caught **and named**, and the disabled semantic-matching
 table being unable to change the bundle by a single byte.
 
-143 tests.
+224 tests.
 
 ## Limitations, in full
 
