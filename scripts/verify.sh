@@ -87,7 +87,7 @@ else note "an edited row is caught and named" "FAILED"; FAIL=1; fi
 # earlier version of this file and it described a feature that does not exist.
 # What is tested is the STRUCTURAL guarantee: rows in the `laundered` table - the
 # only place a model's output would ever land - cannot reach the bundle, because
-# the bundle writer reads a fixed three-table allowlist and Ledger.rows() raises on
+# the bundle writer reads a fixed allowlist of proof tables and Ledger.rows() raises on
 # anything else. That property holds whether or not the feature is ever built.
 SAME=$("$PY" - "$DB" <<'PY'
 import json, sys; sys.path.insert(0, ".")

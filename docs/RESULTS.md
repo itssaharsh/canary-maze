@@ -18,18 +18,29 @@ from the data, which it had done once before the generator existed.
 <!-- counts:start -->
 | Category | Live public surface | Seeded replay |
 |---|---|---|
-| Secrets minted | 16 | 1 |
-| **Organic sightings** | 0 | 0 |
-| Paste-triggered sightings | 3 | 0 |
-| Seeded sightings | 0 | 1 |
+| **Organic sightings** - a third party fetched a secret nobody handed it | 0 | 0 |
+| Paste-triggered sightings - a third party fetched a link the operator published | 3 | 0 |
 | Operator self-test sightings | 2 | 0 |
-| Humans turned away by the gate | 15 | 0 |
-| Human requests in the ledger | 0 | 0 |
-| Requests recorded | 59 | 2 |
+| Seeded-replay sightings | 0 | 1 |
+| Requests recorded from third parties | 9 | 0 |
+| Requests recorded from the operator's own probes | 50 | 0 |
+| Requests recorded in the seeded replay | 0 | 2 |
+| Secrets issued to third parties | 0 | 0 |
+| Secrets issued to the operator's own probes | 16 | 0 |
+| Secrets issued in the seeded replay | 0 | 1 |
+| Secrets the operator published by hand | 13 | 0 |
+| Browser-shaped requests turned away, nothing stored | 15 | 0 |
+| Human requests stored | 0 | 0 |
 
-The two columns are never added together. The left one answers "what has been observed in the wild"; the right one answers "does the mechanism work". Only the left column is evidence about anyone else's behaviour.
+The two columns are never added together. The left one is what the public surface has recorded; the right one shows the mechanism working on a scripted replay. Nothing in the right column is an observation.
 
-**Organic sightings stand at 0.** That is reported as-is. The operator's own probes are recorded separately as self-tests (see F-0004) precisely so this number cannot be quietly inflated by our own traffic.
+**Organic sightings stand at 0.** No third party has been observed fetching a secret it was not handed. That is reported as-is.
+
+**3 sightings are paste-triggered**: a third-party fetcher followed a link the operator had published first (the census below). They show the surface and the ledger recording real third-party infrastructure. They are not evidence that anyone shares anything with anyone, and they are never counted as organic.
+
+9 requests from third parties and 50 requests from the operator's own probes are recorded. The operator's are labelled as self-tests at the moment they are written (F-0004), so they cannot inflate any third-party number.
+
+15 browser-shaped requests were turned away and nothing about them was stored. That counter moves for anything that arrives with a browser's header set - people, the operator's own browser, and headless-browser fetch services alike. It counts the gate firing, not humans.
 <!-- counts:end -->
 
 ## Real results on the organizers' own corpus
@@ -74,23 +85,22 @@ Each of 12 public fetch services was handed one canary URL of its own. The opera
 
 | Service | Outcome | Contexts | Network(s) it came from | User-agent it presented |
 |---|---|---|---|---|
-| Jina Reader (page-to-text for LLMs) | arrived browser-shaped; gate stored nothing | - | - | - |
-| Internet Archive, Save Page Now | arrived browser-shaped; gate stored nothing | - | - | - |
+| Jina Reader (page-to-text for LLMs) | a browser-shaped request arrived in its window; gate stored nothing | - | - | - |
+| Internet Archive, Save Page Now | a browser-shaped request arrived in its window; gate stored nothing | - | - | - |
 | W3C Nu HTML checker | recorded | 1 | 52.22.66.0/24 | `Validator.nu/LV https://validator.w3.org/services` |
 | W3C Link Checker | recorded | 1 | 52.22.66.0/24 | `W3C-checklink/5.0.0` |
-| Microlink (link previews) | arrived browser-shaped; gate stored nothing | - | - | - |
-| AllOrigins (CORS proxy) | never arrived | - | - | - |
-| CodeTabs (CORS proxy) | never arrived | - | - | - |
-| corsproxy.io (CORS proxy) | never arrived | - | - | - |
-| WordPress mShots (page screenshots) | arrived browser-shaped; gate stored nothing | - | - | - |
-| thum.io (page screenshots) | arrived browser-shaped; gate stored nothing | - | - | - |
-| Google PageSpeed Insights | never arrived | - | - | - |
+| Microlink (link previews) | a browser-shaped request arrived in its window; gate stored nothing | - | - | - |
+| AllOrigins (CORS proxy) | nothing recorded | - | - | - |
+| CodeTabs (CORS proxy) | nothing recorded | - | - | - |
+| corsproxy.io (CORS proxy) | nothing recorded | - | - | - |
+| WordPress mShots (page screenshots) | a browser-shaped request arrived in its window; gate stored nothing | - | - | - |
+| thum.io (page screenshots) | a browser-shaped request arrived in its window; gate stored nothing | - | - | - |
+| Google PageSpeed Insights | nothing recorded | - | - | - |
 | Google Translate (page proxy) | recorded | 1 | 64.233.173.0/24 | `canary-maze-census/1.0 (+https://github.com/itssaharsh/can…` |
 
-- **3 of 12** reached the surface and were recorded, through the real public function and the signed hand-off into the ledger.
-- **0** of those used **more than one request context for a single URL** - one service, one link, several contexts. That is the reason this tool says "context" and never "actor", observed on live third-party traffic.
-- **5** arrived with a full browser header set, so the human-exclusion gate declined to record them and stored nothing; the only trace is the bare counter moving in that service's window. That is the gate's stated cost - it would rather lose a sighting than ledger a human - shown rather than described. (Attribution of a gate event to a service is by time window, so it is approximate: the gate keeps no record that could make it exact.)
-- **4** never arrived: the service answered its caller without fetching the page, refused the request, or was rate-limited.
+- **3 of 12** reached the surface and were recorded, through the real public function and the signed hand-off into the ledger. The table gives the network and the user-agent each one presented; nothing about who operates them is inferred from either.
+- For **5**, a request with a full browser header set arrived while that service was the only one being asked, so the human-exclusion gate declined to record it and stored nothing; the only trace is the bare counter moving. That is the gate's stated cost - it would rather lose a sighting than ledger a human - shown rather than described. A full browser header set is what a headless browser sends, which is what a screenshot or page-reading service runs. Attribution is by time window, with a quiet period before each service; the gate keeps no record that could make it exact.
+- For **4**, nothing was recorded: the service answered its caller without fetching the page, refused the request, or was rate-limited.
 
 What this is not: evidence that any of these services shares anything with any other. Each fetched a link it was given. Reproduce with `python3 scripts/fetcher_census.py`; raw output in `docs/fetcher_census.json`.
 <!-- census:end -->

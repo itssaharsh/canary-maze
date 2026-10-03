@@ -97,7 +97,7 @@ def report(payload: dict) -> bool:
         return False
 
 
-def respond(path: str, headers: dict, ip: str, base: str):
+def respond(path: str, headers: dict, ip: str, base: str, method: str = "GET"):
     """Decide the response for one GET. Pure: no network, no socket.
 
     Returns (status, content_type, body, report) where `report` is the payload to
@@ -129,8 +129,11 @@ def respond(path: str, headers: dict, ip: str, base: str):
         ctx = derive(client, ip)
         secret = mint.secret_for(page_path, ctx, epoch=mint.salt_epoch())
         body = maze.page(slug, mint.canary_path(secret, slug))
+        # `ctx` travels with the report so the ledger can refuse a row whose context
+        # it would derive differently: a silent disagreement there binds a secret
+        # to a context nothing can ever match again.
         return 200, "text/html", body, {
-            "kind": "mint", "method": "GET", "path": page_path, "ip": ip,
+            "kind": "mint", "method": method, "path": page_path, "ip": ip, "ctx": ctx,
             "headers": client, "via": EDGE_NAME, "secret": secret, "size": len(body)}
 
     if len(parts) == 3 and parts[0] == "c":
@@ -141,15 +144,16 @@ def respond(path: str, headers: dict, ip: str, base: str):
         if not is_automated(client):
             return 200, "text/html", body, GATE_REPORT
         return 200, "text/html", body, {
-            "kind": "canary", "method": "GET", "path": f"/c/{secret}/{slug}",
-            "ip": ip, "headers": client, "via": EDGE_NAME, "secret": secret,
-            "size": len(body)}
+            "kind": "canary", "method": method, "path": f"/c/{secret}/{slug}",
+            "ip": ip, "ctx": derive(client, ip), "headers": client, "via": EDGE_NAME,
+            "secret": secret, "size": len(body)}
 
     return 404, "text/plain", "not found", None
 
 
 class handler(BaseHTTPRequestHandler):
-    def _send(self, body: str, status: int = 200, ctype: str = "text/html") -> None:
+    def _send(self, body: str, status: int = 200, ctype: str = "text/html",
+              head: bool = False) -> None:
         raw = body.encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", f"{ctype}; charset=utf-8")
@@ -157,18 +161,28 @@ class handler(BaseHTTPRequestHandler):
         # No caching: a cached canary page would hide the very fetch we record.
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        self.wfile.write(raw)
+        if not head:
+            self.wfile.write(raw)
 
-    def do_GET(self) -> None:                       # noqa: N802
+    def _handle(self, method: str) -> None:
         headers = {k: v for k, v in self.headers.items()}
         lower = {k.lower(): v for k, v in headers.items()}
         ip = client_ip(lower)
         host = lower.get("x-forwarded-host") or lower.get("host") or ""
         base = f"https://{host}" if host else ""
-        status, ctype, body, payload = respond(self.path, headers, ip, base)
+        status, ctype, body, payload = respond(self.path, headers, ip, base, method)
         if payload is not None:
             report(payload)
-        self._send(body, status=status, ctype=ctype)
+        self._send(body, status=status, ctype=ctype, head=(method == "HEAD"))
+
+    def do_GET(self) -> None:                       # noqa: N802
+        self._handle("GET")
+
+    def do_HEAD(self) -> None:                      # noqa: N802
+        """A client that probes before it reads is still a client. The Flask surface
+        answered HEAD and this one returned 501, so on the public surface alone a
+        canary URL was refused to any fetcher that checks first."""
+        self._handle("HEAD")
 
     def log_message(self, *a) -> None:              # noqa: D102
         return                                       # Vercel captures stdout itself

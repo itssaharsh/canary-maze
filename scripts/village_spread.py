@@ -1,27 +1,25 @@
 #!/usr/bin/env python3
-"""Measure how many distinct session contexts one agent presents, in the AI
-Village corpus.
+"""Count computer-use sessions per agent in the AI Village corpus.
 
-Why this exists
----------------
-Canary Maze's central honest claim is "a sighting shows a secret moved between
-two request CONTEXTS, not that there are two operators". Until this ran, that
-claim rested on ONE measurement, from the collusion.wiki dump: a single actor
-label carrying 899 revisions across 741 distinct addresses.
+What this measures, and what it does not
+----------------------------------------
+It counts rows of `computer_use_sessions` per agent. That is all. The table holds
+no address, no user-agent and no header, so it CANNOT say how many request
+contexts - in the sense this tool derives them - an agent presents. The dataset's
+own schema notes that the scaffold starts a fresh session every ~40 actions, so a
+session is a slice of one agent's work, not a network identity.
 
-This looks for the same shape in a second, independent corpus - the organizers'
-own. If one agent presents many session contexts there too, the claim is
-supported twice, from unrelated datasets.
+An earlier version of this project reported these counts as "46 of 46 agents
+present more than one session context" and concluded that "an identity-per-context
+assumption would have been wrong by three orders of magnitude on the hosts' own
+data". The numbers were right and the inference did not follow: thousands of
+sessions from one machine are one context. A review said so, correctly. The
+direct measurement behind "a context is not an actor" is scripts/label_spread.py,
+on the collusion.wiki dump, which does record addresses.
 
-An earlier version of this script reported nothing, and the null was an artefact:
-it read `agents.jsonl.gz`, which is a CURRENT-STATE table, so
-`current_computer_use_session_id` is 1 per agent by construction. The history is
-in `computer_use_sessions.jsonl.gz`. A field named `id` is also not "identity-ish"
-by name, which is how the earlier key-matching heuristic walked past the only
-column that answers the question. Measure the join you mean, not the one whose
-name looks right.
-
-The build does not depend on this. It is evidence for the write-up.
+What the count is still good for: it sizes the corpus for the analysis in
+scripts/village_sightings.py, which treats a session as the unit an artifact is
+first used in.
 
 Usage
 -----
@@ -31,8 +29,9 @@ Usage
 Terms agreed to when access was requested: research and analysis only, no
 training or fine-tuning without written permission, no attempt to re-identify
 anyone, cite AI Digest / AI Village, and tell them about resulting publications.
-No identifier, goal or message content is printed or stored by this script - only
-counts and model names that the dataset itself publishes.
+This script prints and stores no identifier, goal or message content - only counts
+and the model names the dataset itself publishes. (It does read the id columns in
+order to count them.)
 """
 from __future__ import annotations
 
@@ -132,8 +131,8 @@ def main() -> int:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(result, indent=1), encoding="utf-8")
     print(f"written: {args.json}")
-    print("\nEvery agent presenting more than one session is the second corpus "
-          "supporting 'a context is not an actor'. Cite AI Digest / AI Village.")
+    print("\nThese are session counts. The table carries no address, user-agent or "
+          "header, so this is not a count of request contexts. Cite AI Digest / AI Village.")
     return 0
 
 

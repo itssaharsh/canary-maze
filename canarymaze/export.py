@@ -25,9 +25,13 @@ from .ledger import Ledger
 SCOPE_LINE = (
     "A sighting establishes that the secret moved between two request contexts. "
     "It does not establish that they are two different operators - one operator "
-    "can rotate addresses. In the organizers' collusion.wiki dump, one actor label "
-    "spans 741 of them."
+    "can rotate addresses. In the organizers' collusion.wiki dump, the busiest named "
+    "agent label wrote 317 revisions from 308 distinct addresses."
 )
+# The figure above is produced by scripts/label_spread.py from the public dump and
+# pinned to docs/label_spread.json by tests/test_export.py. It replaced "one actor
+# label spans 741 addresses", which was the dump's BLANK label - the pool of every
+# unlabelled edit - presented as one actor. A review opened the row and found it.
 
 #: Which sighting leads the page when there are several: the strongest class of
 #: evidence present. Never the other way round - an operator's own probe must not

@@ -37,11 +37,23 @@ def post(client, payload, *, key=KEY, ts=None, sig=None):
                        headers={TS_HEADER: ts, SIG_HEADER: sig})
 
 
+PATH = "/m/q3-supplier-review"
+
+
+def owed(headers=BOT, ip="198.51.100.7", path=PATH) -> str:
+    """The secret this context really is owed - what an honest edge would report.
+    The ledger holds the salt and checks, so an invented one is refused."""
+    from canarymaze import mint
+    from canarymaze.context import derive
+    return mint.secret_for(path, derive(headers, ip), epoch=mint.salt_epoch())
+
+
 def mint_payload(**over):
-    p = {"kind": "mint", "method": "GET", "path": "/m/q3-supplier-review",
-         "ip": "198.51.100.7", "headers": dict(BOT), "via": "vercel",
-         "secret": "abc123abc123abc1", "size": 500}
+    p = {"kind": "mint", "method": "GET", "path": PATH,
+         "ip": "198.51.100.7", "headers": dict(BOT), "via": "vercel", "size": 500}
     p.update(over)
+    p.setdefault("secret", owed(p["headers"], p["ip"], p["path"]) if p["kind"] == "mint"
+                 else owed())
     return p
 
 
@@ -131,8 +143,8 @@ def test_a_forwarded_canary_fetch_by_another_context_is_a_sighting(surface):
     client, db = surface
     post(client, mint_payload())
     other = {"User-Agent": "Mozilla/5.0 (compatible; ClaudeBot/1.0)"}
-    r = post(client, mint_payload(kind="canary", kind_path=None,
-                                  path="/c/abc123abc123abc1/q3-supplier-review",
+    r = post(client, mint_payload(kind="canary", secret=owed(),
+                                  path=f"/c/{owed()}/q3-supplier-review",
                                   headers=other, ip="192.0.2.50"))
     assert r.status_code == 200
 
@@ -144,9 +156,48 @@ def test_a_forwarded_canary_fetch_by_another_context_is_a_sighting(surface):
 def test_the_same_context_refetching_is_not_a_sighting(surface):
     client, db = surface
     post(client, mint_payload())
-    r = post(client, mint_payload(kind="canary",
-                                  path="/c/abc123abc123abc1/q3-supplier-review"))
+    r = post(client, mint_payload(kind="canary", secret=owed(),
+                                  path=f"/c/{owed()}/q3-supplier-review"))
     assert r.status_code == 200
     led = Ledger(db)
     assert led.counts()["sightings_organic"] == 0
     led.close()
+
+
+# --- the ledger does not take the edge's word for it --------------------------
+
+def test_a_mint_report_with_an_invented_secret_is_refused(surface):
+    """The edge is signed, not trusted. The ledger holds the salt, so it checks
+    that the reported secret is the one this context is owed for this path; a
+    compromised or buggy edge cannot bind arbitrary strings to contexts."""
+    client, db = surface
+    r = post(client, mint_payload(secret="abc123abc123abc1"))
+    assert r.status_code == 409
+    led = Ledger(db)
+    c = led.counts()
+    led.close()
+    assert c["requests"] == 0 and c["mints"] == 0, "refused BEFORE anything is written"
+
+
+def test_a_report_whose_context_the_ledger_derives_differently_is_refused(surface):
+    """If the edge and the ledger ever disagree about a context again (F-0006),
+    the row is refused loudly instead of quietly binding a secret to a context
+    that nothing can ever match."""
+    client, db = surface
+    r = post(client, mint_payload(ctx="0123456789ab"))
+    assert r.status_code == 409 and "context" in r.get_json()["error"]
+    assert Ledger(db).counts()["requests"] == 0
+
+
+def test_a_report_of_an_unknown_kind_is_refused(surface):
+    client, db = surface
+    assert post(client, mint_payload(kind="something-else")).status_code == 400
+    assert Ledger(db).counts()["requests"] == 0
+
+
+def test_a_forwarded_fetch_of_a_secret_never_issued_stores_nothing(surface):
+    client, db = surface
+    r = post(client, mint_payload(kind="canary", secret="f" * 16,
+                                  path="/c/" + "f" * 16 + "/q3-supplier-review"))
+    assert r.status_code == 200 and r.get_json()["recorded"] is False
+    assert Ledger(db).counts()["requests"] == 0

@@ -3,7 +3,11 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PY="${PY:-python3}"
-DB="${CANARY_DB:-demo.sqlite3}"
+# ALWAYS demo.sqlite3, never $CANARY_DB. This script deletes its database before
+# it starts, and it used to take the path from the environment: with CANARY_DB
+# exported at the live ledger - which every operator shell that sources .env has -
+# `make demo` deleted the live ledger and wrote the seeded replay in its place.
+DB="demo.sqlite3"
 
 echo "==> clean"
 rm -f "$DB" "$DB-wal" "$DB-shm"
@@ -13,7 +17,7 @@ echo "==> seeded two-client replay (through the real gate, mint and detector)"
 
 echo
 echo "==> export bundle and viewer"
-"$PY" scripts/export_all.py --db "$DB" --note "make demo"
+"$PY" scripts/export_all.py --db "$DB" --note "make demo" --out viewer
 
 echo
 echo "==> verify the bundle offline"

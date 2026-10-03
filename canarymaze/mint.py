@@ -10,7 +10,7 @@ this wrong and it must not come back:
 
   IT DOES NOT bound actor distinctness. That two different contexts touched one
   secret is a fact about request contexts, not about operators. One operator can
-  rotate addresses - 741 of them in the organizers' own dump. Any claim of the
+  rotate addresses - one named label wrote from 308 in the organizers' own dump. Any claim of the
   form "false positives are bounded by HMAC collision" is FALSE and is not made
   anywhere in this codebase. See docs/memory/decisions/ADR-0002.
 

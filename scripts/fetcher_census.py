@@ -194,8 +194,10 @@ def outcome(row: dict) -> str:
     if row["contexts"]:
         return "recorded"
     if row["gate_turned_away"]:
-        return "arrived browser-shaped; gate stored nothing"
-    return "never arrived"
+        return "a browser-shaped request arrived in its window; gate stored nothing"
+    # Not "never arrived": the ledger only knows that nothing was recorded. A
+    # request the edge refused, or one that came later, looks the same from here.
+    return "nothing recorded"
 
 
 def render(rows: list[dict]) -> str:
@@ -216,21 +218,31 @@ def render(rows: list[dict]) -> str:
         nets = ", ".join(r["networks"]) or "-"
         out.append(f"| {r['service']} | {outcome(r)} | {r['contexts'] or '-'} | "
                    f"{nets} | {('`' + ua + '`') if ua else '-'} |")
+    out += ["", f"- **{len(reached)} of {len(rows)}** reached the surface and were recorded, "
+            "through the real public function and the signed hand-off into the ledger. "
+            "The table gives the network and the user-agent each one presented; nothing "
+            "about who operates them is inferred from either."]
+    if multi:
+        # Only said when it happened. An earlier version printed this sentence
+        # with a count of 0 - asserting an observation the same line denied.
+        out.append(f"- **{len(multi)}** of those used more than one request context for a "
+                   "single URL: one service, one link, several contexts.")
+    if gated:
+        out.append(
+            f"- For **{len(gated)}**, a request with a full browser header set arrived while "
+            "that service was the only one being asked, so the human-exclusion gate declined "
+            "to record it and stored nothing; the only trace is the bare counter moving. That "
+            "is the gate's stated cost - it would rather lose a sighting than ledger a human - "
+            "shown rather than described. A full browser header set is what a headless "
+            "browser sends, which is what a screenshot or page-reading service runs. "
+            "Attribution is by time "
+            "window, with a quiet period before each service; the gate keeps no record that "
+            "could make it exact.")
+    quiet = len(rows) - len(reached) - len(gated)
+    if quiet:
+        out.append(f"- For **{quiet}**, nothing was recorded: the service answered its caller "
+                   "without fetching the page, refused the request, or was rate-limited.")
     out += [
-        "",
-        f"- **{len(reached)} of {len(rows)}** reached the surface and were recorded, through "
-        "the real public function and the signed hand-off into the ledger.",
-        f"- **{len(multi)}** of those used **more than one request context for a single URL** - "
-        "one service, one link, several contexts. That is the reason this tool says "
-        "\"context\" and never \"actor\", observed on live third-party traffic.",
-        f"- **{len(gated)}** arrived with a full browser header set, so the human-exclusion "
-        "gate declined to record them and stored nothing; the only trace is the bare "
-        "counter moving in that service's window. That is the gate's stated cost - it "
-        "would rather lose a sighting than ledger a human - shown rather than described. "
-        "(Attribution of a gate event to a service is by time window, so it is approximate: "
-        "the gate keeps no record that could make it exact.)",
-        f"- **{len(rows) - len(reached) - len(gated)}** never arrived: the service answered "
-        "its caller without fetching the page, refused the request, or was rate-limited.",
         "",
         "What this is not: evidence that any of these services shares anything with any "
         "other. Each fetched a link it was given. Reproduce with "

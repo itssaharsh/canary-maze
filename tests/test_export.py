@@ -66,7 +66,15 @@ def test_the_scope_line_is_always_present_and_bounds_the_claim(ledger):
     for _ in range(1):
         p = export(ledger)
         assert "does not establish that they are two different operators" in p["scope_line"]
-        assert "741" in p["scope_line"]
+        # the figure is the one scripts/label_spread.py measured, not a typed one
+        import json
+        from pathlib import Path
+        m = json.loads((Path(__file__).resolve().parents[1] / "docs" /
+                        "label_spread.json").read_text(encoding="utf-8"))
+        t = m["busiest_named_agent_label"]
+        assert f"{t['revisions']} revisions from {t['addresses']} distinct addresses" in p["scope_line"]
+        assert "741" not in p["scope_line"], \
+            "741 addresses was the BLANK label, the pool of unlabelled edits - not one actor"
 
 
 def test_the_claim_never_says_actor_or_operator_as_a_conclusion(ledger):

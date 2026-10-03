@@ -4,8 +4,9 @@
 --
 --  1. There is NO `actor` table, and no join anywhere produces one. The unit is a
 --     REQUEST CONTEXT. One operator can present as many contexts: in the organizers'
---     collusion.wiki dump, a single actor label carries 899 revisions across 741
---     distinct addresses. A sighting therefore establishes that a secret moved
+--     collusion.wiki dump, the busiest named agent label wrote 317 revisions from
+--     308 distinct addresses in 96 /16 networks (scripts/label_spread.py).
+--     A sighting therefore establishes that a secret moved
 --     between two request contexts, and nothing more. See docs/memory/decisions/ADR-0002.
 --
 --  2. The tables are append-only, enforced by triggers rather than by convention,

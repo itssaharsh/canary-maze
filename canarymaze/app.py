@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hmac
+import ipaddress
 import os
 import sqlite3
 from pathlib import Path
@@ -11,7 +12,7 @@ from flask import Flask, Response, jsonify, request, send_from_directory
 from . import detect, maze, mint
 from .context import derive
 from .gate import is_automated
-from .ingest import SIG_HEADER, TS_HEADER, ingest_key
+from .ingest import SIG_HEADER, TS_HEADER, SeenSignatures, ingest_key
 from .ingest import verify as ingest_verify
 from .paths import ledger_path
 from .ledger import Ledger, truncate_ip
@@ -27,7 +28,7 @@ ALLOWED_ASSETS = {"app.css", "render.js", "verify.js", "data.js", "data.json"}
 #:   "none"       - default. Only the real peer address is used.
 #:   "cloudflare" - trust CF-Connecting-IP, which Cloudflare's edge SETS (it does
 #:                  not merely append), so a client cannot forge it through the
-#:                  tunnel. This is what scripts/serve_public.sh runs under.
+#:                  tunnel. This is what scripts/keep_alive.sh runs under.
 TRUST_MODES = ("none", "cloudflare")
 
 
@@ -41,11 +42,23 @@ def client_ip(req, trust: str = "none") -> str:
     the shipped tunnel deploy the left-most entry is entirely attacker-controlled -
     the comment claiming the deploy made it safe had the direction backwards.
     """
-    if trust == "cloudflare":
+    peer = req.remote_addr or "0.0.0.0"
+    if trust == "cloudflare" and _is_loopback(peer):
+        # Believed ONLY from cloudflared, which dials loopback. The header used to
+        # be believed from any peer while the server listened on every interface,
+        # so anyone who could reach the port chose the network recorded for them -
+        # including the operator's, which made their traffic a "self-test".
         cf = (req.headers.get("CF-Connecting-IP") or "").strip()
         if cf:
             return cf
-    return req.remote_addr or "0.0.0.0"
+    return peer
+
+
+def _is_loopback(addr: str) -> bool:
+    try:
+        return ipaddress.ip_address(addr).is_loopback
+    except ValueError:
+        return False
 
 
 def require_production_salt() -> None:
@@ -128,9 +141,27 @@ def request_origin_from(headers, default: str, *, ip: str | None = None) -> str:
         return default
     lower = {str(k).lower(): str(v) for k, v in dict(headers).items()}
     sent = (lower.get(SELFTEST_HEADER.lower()) or "").strip()
-    if sent and hmac.compare_digest(sent, token):
+    # Compared as BYTES. compare_digest raises TypeError on a non-ASCII str, and
+    # the header went into it raw: one request header, with no knowledge of the
+    # token, made the route 500 and the fetch vanish from the ledger - the opt-out
+    # this function's docstring says cannot exist.
+    if sent and hmac.compare_digest(sent.encode("utf-8", "replace"),
+                                    token.encode("utf-8", "replace")):
         return "selftest"
     return default
+
+
+def _secret_is_owed(secret: str, path: str, ctx: str) -> bool:
+    """Is `secret` the one this context is owed for this path, today or yesterday?
+
+    Yesterday too, because the edge computes the epoch at its own clock and a
+    request minted a moment before midnight UTC is reported a moment after.
+    """
+    from datetime import datetime, timedelta, timezone
+    now = datetime.now(timezone.utc)
+    return any(hmac.compare_digest(mint.secret_for(path, ctx, epoch=mint.salt_epoch(when)),
+                                   secret)
+               for when in (now, now - timedelta(days=1))) if secret.isascii() else False
 
 
 def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
@@ -145,6 +176,10 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
         # tests and the demo pass an explicit path.
         require_production_salt()
     app = Flask(__name__)
+    # Nothing this service receives is large. An unauthenticated 40 MB POST to
+    # /ingest used to be read and parsed in full before the signature was checked.
+    app.config["MAX_CONTENT_LENGTH"] = 256 * 1024
+    seen_signatures = SeenSignatures()
     app.config["ORIGIN"] = origin
     trust = os.environ.get("CANARY_TRUST_PROXY", "none").strip().lower()
     if trust not in TRUST_MODES:
@@ -214,6 +249,11 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
             ledger().note_gate_rejection()
             return Response(body, mimetype="text/html")
 
+        # Answered 200 like everything else, and NOT recorded: the ledger cannot
+        # delete, so a row per guess would be a permanent, attacker-sized ledger.
+        if ledger().mint_for_secret(secret) is None:
+            return Response(body, mimetype="text/html")
+
         ctx = derive(headers, ip)
         req_origin = request_origin(request, app.config["ORIGIN"], ip=ip)
         try:
@@ -256,6 +296,9 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
         if not ok:
             app.logger.warning("ingest refused: %s", why)
             return jsonify({"ok": False, "error": why}), 403
+        if not seen_signatures.first_time(request.headers.get(SIG_HEADER, "")):
+            app.logger.warning("ingest refused: this signed report was already delivered")
+            return jsonify({"ok": False, "error": "already delivered"}), 409
 
         if body.get("kind") == "gate":
             # The edge turned a browser away and says so. It sends nothing about
@@ -278,21 +321,45 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
             return jsonify({"ok": True, "recorded": False, "reason": "human"}), 200
 
         ctx = derive(headers, ip)
+        kind = body.get("kind")
+        secret = str(body.get("secret") or "")
+
+        # Everything is checked BEFORE a row is written, because a row is for ever.
+        if body.get("ctx") and body["ctx"] != ctx:
+            # The edge minted for one context and this process derives another from
+            # the same request. A row written now would bind the secret to a
+            # context no later request could ever match. Refuse, loudly.
+            app.logger.error("ingest refused: edge derived context %s, ledger derives %s",
+                             body["ctx"], ctx)
+            return jsonify({"ok": False, "error": "context mismatch"}), 409
+        if kind == "mint":
+            # The ledger holds the salt, so it does not take the edge's word for the
+            # secret: it must be the one this context is owed for this path.
+            if not _secret_is_owed(secret, path, ctx):
+                app.logger.error("ingest refused: reported secret does not verify for "
+                                 "the reported path and context")
+                return jsonify({"ok": False, "error": "secret does not verify"}), 409
+        elif kind == "canary":
+            if ledger().mint_for_secret(secret) is None:
+                # never issued: answered at the edge, and not stored here
+                return jsonify({"ok": True, "recorded": False, "reason": "unknown secret"}), 200
+        else:
+            return jsonify({"ok": False, "error": "unknown kind"}), 400
+
         req_origin = request_origin_from(headers, app.config["ORIGIN"], ip=ip)
+        method = "HEAD" if str(body.get("method") or "GET").upper() == "HEAD" else "GET"
         try:
             rid = ledger().record_request(
-                method=str(body.get("method") or "GET"), path=path, status=200,
-                ip=ip, ua=ua, ctx_id=ctx, origin=req_origin,
-                size=int(body.get("size") or 0), via=edge)
-            secret = body.get("secret")
-            if body.get("kind") == "mint" and secret:
+                method=method, path=path, status=200, ip=ip, ua=ua, ctx_id=ctx,
+                origin=req_origin, size=int(body.get("size") or 0), via=edge)
+            if kind == "mint":
                 if ledger().mint_for_secret(secret) is None:
                     try:
                         ledger().record_mint(secret=secret, ctx_id=ctx, path=path,
                                              salt_epoch=mint.salt_epoch(), request_id=rid)
                     except sqlite3.IntegrityError:
                         pass
-            elif body.get("kind") == "canary" and secret:
+            else:
                 detect.on_canary_request(ledger(), secret=secret, seen_ctx_id=ctx,
                                          seen_request_id=rid, origin=req_origin)
         except sqlite3.Error:
@@ -343,4 +410,6 @@ def create_app(db_path: str | None = None, origin: str = "organic") -> Flask:
 if __name__ == "__main__":  # pragma: no cover
     if not os.environ.get("CANARY_ALLOW_DEV_SALT"):
         require_production_salt()
-    create_app().run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
+    # Loopback by default: the tunnel dials 127.0.0.1 and nothing else needs the port.
+    create_app().run(host=os.environ.get("CANARY_BIND", "127.0.0.1"),
+                     port=int(os.environ.get("PORT", 8000)))

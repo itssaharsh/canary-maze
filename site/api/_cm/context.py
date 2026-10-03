@@ -1,8 +1,10 @@
 """Derive a REQUEST CONTEXT identifier.
 
 A context is not an actor and this module must never be read as producing one.
-One operator can present as many contexts: in the AI Village collusion.wiki dump a
-single actor label carries 899 revisions across 741 distinct addresses. So a
+One operator can present as many contexts: in the organizers' collusion.wiki dump
+the busiest named agent label wrote 317 revisions from 308 distinct addresses,
+and 1740 of the 1768 named agent labels with two or more revisions wrote
+from more than one /16 network (scripts/label_spread.py). So a
 sighting across two contexts establishes that a secret moved between two request
 contexts, and that is the whole of the claim. See docs/memory/decisions/ADR-0002.
 

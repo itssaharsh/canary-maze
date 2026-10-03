@@ -42,6 +42,36 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+#: The longest user-agent or path the ledger will keep. Rows cannot be deleted, so
+#: an unbounded field is a permanent one: 300 requests with a 12 kB user-agent wrote
+#: 13 MB that then travelled in every later bundle.
+MAX_FIELD = 512
+TRUNCATED = "[truncated]"
+
+
+def cap(text: str) -> str:
+    """Bound a client-controlled field, visibly rather than silently."""
+    text = text or ""
+    return text if len(text) <= MAX_FIELD else text[:MAX_FIELD - len(TRUNCATED)] + TRUNCATED
+
+
+def log_escape(text: str) -> str:
+    """Make client text safe to sit inside one access-log line.
+
+    The line is what the viewer shows as "the record". A quote in a user-agent
+    closed the quoted field and what followed read as more of the log; a newline
+    made one request look like two. Quotes, backslashes and control characters are
+    written as a backslash, an x and two hex digits, the way nginx writes them, so
+    the line always has exactly the three quoted fields its format has.
+    """
+    out = []
+    for ch in text or "":
+        o = ord(ch)
+        risky = ch == '"' or ch == "\\" or o < 0x20 or o == 0x7F
+        out.append("\\x%02X" % o if risky else ch)
+    return "".join(out)
+
+
 def combined_log_line(ip_net: str, ts: str, method: str, path: str,
                       status: int, size: int, ua: str) -> str:
     """Render a row the way an operator reads it in their own access log.
@@ -49,8 +79,8 @@ def combined_log_line(ip_net: str, ts: str, method: str, path: str,
     The address is already truncated, so this is the record as we are willing to
     publish it, not a reconstruction of the original line.
     """
-    return (f'{ip_net} - - [{ts}] "{method} {path} HTTP/1.1" '
-            f'{status} {size} "-" "{ua}"')
+    return (f'{ip_net} - - [{ts}] "{log_escape(method)} {log_escape(path)} HTTP/1.1" '
+            f'{status} {size} "-" "{log_escape(ua)}"')
 
 
 @dataclass(frozen=True)
@@ -109,6 +139,7 @@ class Ledger:
             raise ValueError(f"origin must be one of {ORIGINS}, got {origin!r}")
         ts = ts or now_iso()
         ip_net = truncate_ip(ip)
+        path, ua = cap(path), cap(ua)
         raw = combined_log_line(ip_net, ts, method, path, status, size, ua)
         with self._lock:
             cur = self.db.execute(

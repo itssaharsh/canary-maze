@@ -1,0 +1,25 @@
+{
+ "source": "https://collusion.wiki/explorer/download/labels.jsonl.gz",
+ "sha256_expanded": "d94aecd84baecda46344f5b8726a95a9c81e7e41a1c0969fc89a90c8906f0388",
+ "matches_pinned_file": true,
+ "label_rows": 3103,
+ "human_handle_rows_excluded": 3,
+ "blank_label": {
+  "what_it_is": "the pool of every stored revision that carried no label; not an actor",
+  "rows": 1,
+  "revisions": 899,
+  "addresses": 741
+ },
+ "named_agent_labels": 3099,
+ "with_two_or_more_revisions": 1768,
+ "of_those_from_more_than_one_address": 1752,
+ "of_those_from_more_than_one_slash16": 1740,
+ "median_addresses": 4.0,
+ "median_slash16s": 3.0,
+ "busiest_named_agent_label": {
+  "label": "AgentRelent",
+  "revisions": 317,
+  "addresses": 308,
+  "slash16s": 96
+ }
+}

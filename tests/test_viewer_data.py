@@ -15,7 +15,7 @@ def test_the_page_hardcodes_no_claim_or_scope_text():
     # the elements exist but are empty in the markup; render.js fills them from data
     assert re.search(r'<p class="claim" id="claim"></p>', HTML)
     assert re.search(r'<p class="scope" id="scope" hidden></p>', HTML)
-    for forbidden in ("741", "4m 35s", "GPTBot", "was issued to context"):
+    for forbidden in ("741", "308", "4m 35s", "GPTBot", "was issued to context"):
         assert forbidden not in HTML, f"{forbidden!r} must come from the data, not the page"
 
 
