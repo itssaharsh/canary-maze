@@ -52,41 +52,82 @@ Paste the contents of **`SUBMISSION.md`**. If the field is short, paste §"The g
 and §"What it refuses to claim", and link the repo for the rest.
 
 ### Real results (the optional field — fill it)
+
 Paste this:
 
 ```
-Two measurements, both reproducible from the repo.
+Four results, each reproducible from the repo.
 
-1. On your own corpus (aidigestorg/ai-village). Across 78,362 computer-use
-   sessions, 46 of 46 agents present more than one session context. The busiest
-   presents 7,465; median 1,080. This is why the tool says "context" and never
-   "actor": an identity-per-context assumption would have been wrong by three
-   orders of magnitude on your data. A second, unrelated corpus agrees - in the
-   collusion.wiki dump one actor label spans 741 addresses.
-   Reproduce: python3 scripts/village_spread.py  (needs HF_TOKEN + dataset access)
-   Output: docs/village_spread.json
+1. ON YOUR OWN CORPUS. Your tables carry no address or request header, so they
+   cannot say how many request contexts an agent presents to a website. They do
+   carry every command the agents ran. Across 2,019,963 turn rows:
 
-2. On the infrastructure, which we did not go looking for. A public model product
-   asked to read one of our canary URLs returned 403. Our canary route returns 200
-   unconditionally, so the request had never arrived. Measured directly, same URL,
-   same second, varying only the user-agent: GPTBot, ClaudeBot, PerplexityBot,
-   CCBot and Bytespider were refused at the CDN edge and never reached the
-   application; ChatGPT-User, OAI-SearchBot, Googlebot, Google-Extended and curl
-   passed. Five of ten. The same edge replaced our 66-byte "Allow: /" robots.txt
-   with 3871 bytes of its own policy, so we could not publish the permission our
-   own experiment depended on.
+   - 40 of 46 agents fetched with more than one client program, and 29 fetched the
+     SAME url with both a browser and a command-line client (566 of those pairs
+     inside a single session). In the other direction, 29 different agents presented
+     one identical user-agent string: contexts collide as well as multiply.
+   - "Two contexts, one agent" is a property of the definition, not of the agents:
+     58% when a context is a session, 7% when it is the agent's client program -
+     a factor of eight - and 34% vs 62% either side of your 2026-03-24
+     scaffold change. That dependence is the clearest argument we have for why the
+     tool reports contexts and stops.
+   - For the 1,054 URLs that cannot be guessed (a token in the path; API endpoints
+     and the shared ai-village-agents namespace excluded) there were 410 first
+     fetches by a different agent, and 92% were preceded by a visible chat post
+     or broadcast within 7 days; 4% had nothing in the tables we read. The control
+     is what makes that readable: the same test applied where no hand-off is needed
+     (an agent re-fetching its own URL later) fires for only 36%.
 
-   This generalises: a zero result in any crawler-behaviour measurement taken from
-   behind a CDN may be a property of the host rather than the clients, and the bias
-   runs toward the null with no log line at the origin. Anyone doing this should
-   check what their edge admits before reporting what arrived.
-   Written up as docs/memory/failures/F-0005.
+   Reproduce: python3 scripts/village_reuse.py   (~5 min, HF_TOKEN + dataset access)
+   Output: docs/village_reuse.json
 
-Organic sightings on our own surface: 0, reported as-is.
+   A visible channel shows a channel existed, not that it was used. "Not found"
+   means not in the tables we read - prompts, shared documents, email and link
+   clicks are not in them.
+
+2. ON THE COLLUSION.WIKI DUMP (public, ungated). 1,752 of the 1,768 named
+   agent labels with two or more revisions wrote from more than one address, and
+   1,740 from more than one /16 network - each of which our tool would
+   necessarily have seen as more than one context. Median 4 addresses.
+   Reproduce: python3 scripts/label_spread.py   (no credentials)
+
+3. ON THE INFRASTRUCTURE, which we did not go looking for. A public model product
+   asked to read one of our canary URLs returned 403, and the request never reached
+   us. Measured, same URL, same second, varying only the user-agent: GPTBot,
+   ClaudeBot, PerplexityBot, CCBot and Bytespider were refused at the Cloudflare
+   edge; ChatGPT-User, OAI-SearchBot, Googlebot and curl passed. Five of ten. The
+   same edge served its own 3871-byte robots.txt in place of our 66-byte
+   "Allow: /", so we could not publish the permission the experiment depends on.
+
+   This generalises, and it is the result we would most want you to have: a zero
+   in any crawler-behaviour measurement taken from behind a CDN may be a property
+   of the host rather than the clients, and the bias runs toward the null with no
+   log line at the origin. docs/memory/failures/F-0005.
+
+4. ON LIVE THIRD-PARTY FETCHERS. Twelve public fetch services were each handed one
+   canary URL. Three reached the surface and were recorded through the real
+   serverless function and signed hand-off; five arrived with a full browser header
+   set, so the human-exclusion gate declined to record them and stored nothing -
+   the gate's stated cost, shown rather than described. Every one of those URLs was
+   handed over by us, and the act of handing it over is itself a ledger row written
+   first, so all of them are reported as paste-triggered and none is counted as
+   organic.
+
+   ORGANIC SIGHTINGS: 0. Reported as 0.
+
+WITHDRAWN, and recorded as withdrawn rather than quietly dropped: an earlier
+version of this entry cited "one actor label carries 899 revisions across 741
+distinct addresses" (that row's label is the empty string - every unlabelled
+revision pooled) and reported 78,362 of your computer-use sessions as "46 of 46
+agents present more than one session context ... wrong by three orders of
+magnitude" (the counts were right; a session is a ~40-action window your scaffold
+cuts on the agent's one machine, so the inference was not). Both were on the
+product's own face until independent review found them.
 
 Data use: AI Village / AI Digest, research and analysis only, no training or
-fine-tuning, no attempt to re-identify anyone. Happy to share any resulting
-write-up with you.
+fine-tuning, no attempt to re-identify anyone. URL keys and user-agent strings are
+hashed in memory with a per-run key and never written; output is counts and
+quantiles only. Happy to share the write-up with you.
 ```
 
 ### Team names and emails
@@ -114,17 +155,21 @@ Saharsh — saharsh7002@gmail.com
 ## 4. Pre-flight — run this before you submit
 
 ```
-make verify          # expect: PASS, five checks
-python3 -m pytest -q # expect: 235 passed
+pip install -r requirements.txt    # one dependency: Flask
+make demo                          # builds the offline viewer
+make verify                        # five properties, each able to fail
+python3 -m pytest -q
 ```
+
+All four were run in a fresh clone of the public repo before this was written.
+`make verify` passes on a clone with no ledgers; the test suite modifies no
+tracked file.
 
 And click these:
 
 - <https://github.com/itssaharsh/canary-maze> — loads, public
-- <https://site-nine-hazel-35.vercel.app/viewer/> — press *Recompute the hashes locally*, expect "Verified. The server was not contacted."
-- <https://site-nine-hazel-35.vercel.app/m/q3-supplier-review> — loads
-
----
+- <https://site-nine-hazel-35.vercel.app/viewer/> — press *Recompute the hashes locally*; expect "Verified. The server was not contacted."
+- <https://site-nine-hazel-35.vercel.app/m/q3-supplier-review> — a crawler-shaped request gets a canary link; a browser gets the same page without one
 
 ## 5. If a judge asks "what's real?"
 
@@ -132,13 +177,35 @@ Have this ready; it is the first Q&A question at every event.
 
 | Claim | Status |
 |---|---|
-| The gate, mint, detector and bundle | **real**, running, 235 tests |
-| Offline verification in the browser | **real** — recomputed with `crypto.subtle`, zero network requests, confirmed with the panel open |
-| The seeded two-client replay | **real code, synthetic traffic** — labelled "seeded" on its own face, never counted as organic |
-| The 78,362-session corpus result | **real**, on their data, reproducible |
-| The CDN edge measurement | **real**, measured directly |
-| Organic sightings | **zero**, stated as zero |
-| Semantic matching of paraphrased tokens | **ships disabled**, in a separate table, provably cannot change the bundle by a byte |
+| The gate, mint, detector, bundle and the signed edge hand-off | **real**, running, 235 tests |
+| Offline verification in the browser | **real** — every hash recomputed with `crypto.subtle`, zero network requests, and what the page *displays* is bound to the Merkle root, not just what it hashes |
+| The seeded two-client replay | **real code, synthetic traffic** — labelled "seeded" in the claim sentence itself, never counted as organic |
+| Third-party fetchers on the live surface | **real** — three recorded, five turned away by the gate. Every one was handed its URL by us, so all are paste-triggered |
+| Organic sightings | **zero**, stated as zero, and structurally unable to be inflated: organic needs a third party on *both* sides of a sighting |
+| The corpus results | **real**, on your data and on the public collusion.wiki dump, reproducible by the two named scripts |
+| The CDN edge measurement | **real**, measured directly; the host it describes has since been replaced |
+| Semantic matching of paraphrased tokens | **never built**. The `laundered` table exists and is provably unable to change a bundle by a byte; no model is called anywhere |
 
 Nothing in the entry is mocked. The one simulated thing — seeded traffic — says so
-on screen and is counted in its own column.
+in the product's own headline sentence.
+
+## 6. If a judge asks "what went wrong?"
+
+Worth having ready, because the answer is the strongest thing about the entry.
+Seven independent reviewers read the repo, and every finding was adversarially
+re-verified before it was fixed. Twenty-five were confirmed, including:
+
+- the page displayed one object and verified another, so editing the organic
+  counter a reader *sees* still printed "Verified";
+- four inputs on which the Python and JavaScript verifiers disagreed, one of them
+  plantable by any client with a single request;
+- "append-only, enforced by triggers" was enforced against UPDATE and DELETE but
+  not `INSERT OR REPLACE`, so any row could be rewritten under its own id;
+- the shared database connection was built once per concurrent request, and a
+  refused write wedged it while the surface kept answering 200;
+- two headline measurements in the write-up did not support their conclusions.
+
+All fixed, each with a test that fails without the fix. The failures are in
+`docs/memory/failures/` with the reasoning, including the three I caused myself —
+the one that keeps recurring is that **a control which depends on remembering is
+not a control**, and it took four rounds to make it structural.
