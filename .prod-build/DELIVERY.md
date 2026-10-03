@@ -73,7 +73,7 @@ them, keeping the ledger local behind a signed hand-off (ADR-0006).
 | AC-8 | viewer separates organic / seeded / paste counts | `make demo` + `viewer/data.json` | pass, plus a self-test column |
 | AC-9 | clean checkout, no network → viewer builds and prints PASS | `make demo` | pass |
 
-224 tests. `make verify` PASS. Run three times with a reset between.
+235 tests. `make verify` PASS. Run three times with a reset between.
 
 ## What the numbers actually say
 

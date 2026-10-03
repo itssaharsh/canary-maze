@@ -104,3 +104,27 @@ def test_the_generator_defaults_to_the_live_ledger():
         "a hardcoded ledger path here bypasses the retirement registry"
     assert "ledger_path(" in src, "the path must be resolved through the guard"
     assert DEFAULT_LEDGER
+
+
+def test_the_documented_test_count_is_the_real_one():
+    """Four judge-facing documents once gave four different test counts (117, 143,
+    145, 176) while the suite had 224, and syncing them by hand lasted exactly one
+    commit. The suite now refuses to be wrong about itself."""
+    import re
+    import subprocess
+    import sys
+    n = len(re.findall(r"^\S+::", subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "--co", "-p", "no:cacheprovider"],
+        capture_output=True, text=True, cwd=ROOT).stdout, re.M))
+    assert n > 100, "could not collect the suite"
+    wrong = []
+    for name in ("README.md", "SUBMISSION.md", "SUBMIT.md", ".prod-build/DELIVERY.md",
+                 "site/index.html", "docs/RESULTS.md"):
+        f = ROOT / name
+        if not f.exists():
+            continue
+        for m in re.finditer(r"(\d{2,4})\s+tests\b|expect:\s*(\d{2,4})\s+passed", f.read_text(encoding="utf-8")):
+            said = int(m.group(1) or m.group(2))
+            if said != n:
+                wrong.append(f"{name}: says {said}, suite has {n}")
+    assert not wrong, "run python3 scripts/sync_counts.py\n  " + "\n  ".join(wrong)

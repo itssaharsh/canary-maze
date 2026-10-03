@@ -177,17 +177,33 @@ def test_a_stranger_fetching_a_strangers_secret_is_organic(tmp_path):
 
 # --- retired ledgers, and the archives of them --------------------------------
 
-def test_every_archived_ledger_is_refused_as_a_live_one():
+def test_an_archived_ledger_is_refused_as_a_live_one(tmp_path):
     """retire_ledger.py names archives <stem>-<stamp>-<label>.sqlite3, and none of
     those names was in the registry - so every archived copy was accepted as a
-    live ledger and could republish the rows it was retired for."""
-    archive = ROOT / "ledgers" / "archive"
-    files = sorted(archive.glob("*.sqlite3"))
-    assert files, "no archives to check"
-    for f in files:
-        assert is_retired(str(f)), f"{f.name} is accepted as a live ledger"
+    live ledger and could republish the rows it was retired for.
+
+    Synthetic names, plus whatever is really in ledgers/archive/. The real files
+    are gitignored (they are evidence, not source), so a clone has none - and an
+    assertion that there are some made the suite fail on arrival."""
+    names = ["canary-20261003T095144Z-dev.sqlite3",
+             "canary-public-20261003T141052Z-polluted.sqlite3",
+             "anything-at-all.sqlite3"]            # by directory, whatever it is called
+    for n in names:
+        f = tmp_path / "ledgers" / "archive" / n
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.touch()
+        assert is_retired(str(f)), f"{n} is accepted as a live ledger"
         with pytest.raises(SystemExit):
             ledger_path(str(f))
+    for f in sorted((ROOT / "ledgers" / "archive").glob("*.sqlite3")):
+        assert is_retired(str(f)), f"{f.name} is accepted as a live ledger"
+
+
+def test_the_live_ledger_is_not_mistaken_for_an_archive():
+    """The first version of that rule matched any name starting with a retired
+    stem, so `canary-public-3` read as an archive of `canary` and every make
+    target refused to run."""
+    assert is_retired(ledger_path()) is None
 
 
 def test_the_canary_route_answers_200_even_when_the_ledger_cannot_be_opened(tmp_path, monkeypatch):
