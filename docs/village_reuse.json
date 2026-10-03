@@ -1,0 +1,147 @@
+{
+ "data": "AI Digest, 'AI Village dataset' (aidigestorg/ai-village), research use, aggregates only",
+ "snapshot": "838b4150303ca8228e8edb432d8b8ccae353d258",
+ "exported_at": "2026-09-20T13:05:12.097Z",
+ "agents": 46,
+ "sessions": 78362,
+ "turn_rows_parsed": 2019963,
+ "turns_with_a_fetch_like_use": 141233,
+ "fetch_like_uses": 134363,
+ "not_read": [
+  "agent_memories",
+  "claude_code_messages",
+  "screenshots",
+  "system prompts (not exported)"
+ ],
+ "not_observable": [
+  "link clicks (coordinates only)",
+  "addresses and request headers (scrubbed)"
+ ],
+ "context_proxies": {
+  "caveat": "user-agent strings and client programs only; the export holds no address or header, so the network part of a request context cannot be measured",
+  "agents_that_set_an_explicit_user_agent": 32,
+  "agents_that_set_two_or_more_distinct_user_agents": 22,
+  "agents_that_set_two_or_more_browser_like_user_agents": 8,
+  "median_distinct_user_agents_among_those_agents": 3.0,
+  "distinct_user_agent_strings": 143,
+  "user_agent_strings_used_by_two_or_more_agents": 4,
+  "most_agents_sharing_one_user_agent_string": 29,
+  "agents_fetching_with_two_or_more_client_programs": 40,
+  "agents_that_fetched_one_url_with_both_a_browser_and_a_cli_client": 29,
+  "agent_url_pairs_fetched_with_both": 1073,
+  "of_those_inside_a_single_session": 566
+ },
+ "two_contexts_one_agent": {
+  "caveat": "none of these is this tool's context (user-agent, network, client headers); the share is reported per definition BECAUSE it depends on the definition",
+  "regimes": {
+   "before": "before 2026-03-11",
+   "transition": "2026-03-11 to 2026-03-24",
+   "after": "from 2026-03-24, when the scaffold began cutting sessions at memory consolidations"
+  },
+  "by_definition": [
+   {
+    "context": "a session",
+    "re_uses": 53894,
+    "all": {
+     "re_uses": 53894,
+     "same_agent": 31523,
+     "same_agent_share": 0.5849
+    },
+    "before": {
+     "re_uses": 6021,
+     "same_agent": 2072,
+     "same_agent_share": 0.3441
+    },
+    "transition": {
+     "re_uses": 419,
+     "same_agent": 114,
+     "same_agent_share": 0.2721
+    },
+    "after": {
+     "re_uses": 47454,
+     "same_agent": 29337,
+     "same_agent_share": 0.6182
+    }
+   },
+   {
+    "context": "an agent's client program (browser, curl-like, git)",
+    "re_uses": 9720,
+    "all": {
+     "re_uses": 9720,
+     "same_agent": 701,
+     "same_agent_share": 0.0721
+    },
+    "before": {
+     "re_uses": 1979,
+     "same_agent": 136,
+     "same_agent_share": 0.0687
+    },
+    "transition": {
+     "re_uses": 151,
+     "same_agent": 4,
+     "same_agent_share": 0.0265
+    },
+    "after": {
+     "re_uses": 7590,
+     "same_agent": 561,
+     "same_agent_share": 0.0739
+    }
+   }
+  ],
+  "null_for_session": {
+   "what": "share expected if the later session were drawn at random from the sessions that fetched anything that day",
+   "same_agent_share": 0.0948
+  }
+ },
+ "unguessable_urls": {
+  "definition": "fetched (not merely mentioned), with a token in the path that cannot be constructed without being told; API endpoints and the agents' shared code-hosting namespace excluded",
+  "urls": 1054,
+  "used_in_more_than_one_session": 353,
+  "of_those_only_ever_one_agent": 137,
+  "first_uses_by_another_agent": 410,
+  "was_a_hand_off_visible_first": {
+   "chat post by another speaker": {
+    "count": 340,
+    "share": 0.8293
+   },
+   "another agent's session goal or summary": {
+    "count": 36,
+    "share": 0.0878
+   },
+   "only its own post, or one older than 7 days": {
+    "count": 18,
+    "share": 0.0439
+   },
+   "not found in the tables read": {
+    "count": 16,
+    "share": 0.039
+   }
+  },
+  "visible_post_or_broadcast_first": {
+   "count": 376,
+   "share": 0.9171
+  },
+  "by_regime": {
+   "before": {
+    "first_uses": 339,
+    "visible_first_share": 0.9528
+   },
+   "after": {
+    "first_uses": 71,
+    "visible_first_share": 0.7465
+   }
+  },
+  "control_same_agent_re_use": {
+   "what": "the same test applied where no hand-off is needed: an agent re-using its own URL in a later session. It shows how often the test fires anyway.",
+   "n": 207,
+   "visible_first_share": 0.3623
+  },
+  "minutes_from_first_use_to_another_agents_first_use": {
+   "p25": 1.8,
+   "p50": 10.3,
+   "p75": 92.4
+  },
+  "reading": "a visible post shows a channel existed, not that it was the one used; 'not found' is not 'hidden' - prompts, shared documents, email and clicks are outside the tables"
+ },
+ "seconds": 307
+}

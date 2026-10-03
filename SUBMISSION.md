@@ -48,23 +48,56 @@ you can quietly revise is not a record.
 **A sighting is not two actors.** The schema has no `actor` entity, so the claim
 cannot be made by accident, and the viewer says "context A" and "context B".
 
-That restraint is not modesty, it is measurement. We checked whether one actor
-really does present as many contexts, in two unrelated corpora:
+That restraint is not modesty, it is measurement. In the organizers' own public
+collusion.wiki dump, **1,752 of the 1,768** named agent labels with
+two or more revisions wrote from more than one address, and **1,740** of them from
+more than one /16 network - which this tool would necessarily have seen as more
+than one context. The busiest named label wrote 317 revisions from 308 distinct addresses in 96 /16 networks. Median: 4 addresses.
+Reproduce with `python3 scripts/label_spread.py`; it needs no credentials.
 
-| Corpus | Result |
-|---|---|
-| **AI Village agent logs** (the organizers' own) | Across **78,362** computer-use sessions, **46 of 46** agents present more than one session context. The busiest presents **7,465**. Median 1,080. |
-| collusion.wiki dump | One actor label carries 899 revisions across **741** distinct addresses. |
+*A correction we are keeping rather than quietly fixing:* this project previously
+cited "one actor label carries 899 revisions across 741 distinct addresses". That
+row's label is the **empty string** - the pool of every unlabelled revision, not
+one actor. It came from our own research notes and survived until an independent
+reviewer opened the file. A label is a self-chosen name, so even the corrected
+figure is one name, not provably one actor.
 
-An identity-per-context assumption would have been wrong by three orders of
-magnitude on the hosts' own data. Reproduce: `python3 scripts/village_spread.py`
-(needs `HF_TOKEN` and dataset access); full output in `docs/village_spread.json`.
+**What the AI Village corpus settles, and what it cannot.** Its tables carry no
+address, user-agent header or request header, so they cannot say how many request
+contexts an agent would present to a website. They do carry every command the
+agents ran, and `scripts/village_reuse.py` streams all 2,019,963 relevant turn rows
+(307s) to report what they can support:
 
-*Data: AI Village / AI Digest, used for research and analysis only, with no
-attempt to re-identify anyone. The script reads no identifier, goal or message
-content — only counts and the model names the dataset already publishes.*
+- **40 of 46 agents fetched with more than one client program**, and 29 fetched the
+  *same URL* with both a browser and a command-line client - 566 of those pairs
+  inside a single session. 22 agents set two or more distinct user-agent
+  strings. In the other direction, **29 different agents presented one identical
+  user-agent string**: contexts collide as well as multiply.
+- **"Two contexts, one agent" is a property of the definition.** Same corpus, same
+  URLs, same code: 58% when a context is a session, 7% when it is an agent's
+  client program - a factor of eight - and 34% against 62% either side of the
+  scaffold change that redefined a session. Neither is this tool's context. A single
+  number would have been a number about the definition. That is the clearest
+  argument we have for why the tool says "context" and stops.
+- **For the 1,054 URLs that cannot be guessed** - a token in the path, excluding API
+  endpoints and the shared namespace every agent is pointed at - there were 410
+  first fetches by a different agent, and **92% were preceded by a visible post or
+  broadcast** within seven days; 4% had nothing in the tables we read. The control
+  is what makes that worth reading: the same test applied where no hand-off is
+  needed, an agent re-fetching its own URL later, fires for only 36%.
 
-## A second real result, which we did not go looking for
+A visible channel shows a channel existed, not that it was used; "not found" means
+not in the tables read, and prompts, shared documents, email and link clicks are
+not in them.
+
+*An earlier version of this entry reported 78,362 computer-use sessions as "46 of
+46 agents present more than one session context" and concluded an
+identity-per-context assumption would be "wrong by three orders of magnitude". The
+counts were right; the inference was not. A session is a window the scaffold cuts
+every ~40 actions on the agent's one machine. Three independent reviewers said so,
+and the row above is what that corpus actually supports.*
+
+## A third real result, which we did not go looking for
 
 We deployed the surface and a public model product was asked to read a canary
 URL. It reported **403 Forbidden**. Our canary route returns 200 unconditionally,

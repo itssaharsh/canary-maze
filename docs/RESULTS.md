@@ -20,13 +20,13 @@ from the data, which it had done once before the generator existed.
 |---|---|---|
 | **Organic sightings** - a third party fetched a secret nobody handed it | 0 | 0 |
 | Paste-triggered sightings - a third party fetched a link the operator published | 3 | 0 |
-| Operator self-test sightings | 2 | 0 |
+| Operator self-test sightings | 4 | 0 |
 | Seeded-replay sightings | 0 | 1 |
 | Requests recorded from third parties | 9 | 0 |
-| Requests recorded from the operator's own probes | 50 | 0 |
+| Requests recorded from the operator's own probes | 54 | 0 |
 | Requests recorded in the seeded replay | 0 | 2 |
 | Secrets issued to third parties | 0 | 0 |
-| Secrets issued to the operator's own probes | 16 | 0 |
+| Secrets issued to the operator's own probes | 17 | 0 |
 | Secrets issued in the seeded replay | 0 | 1 |
 | Secrets the operator published by hand | 13 | 0 |
 | Browser-shaped requests turned away, nothing stored | 15 | 0 |
@@ -38,45 +38,123 @@ The two columns are never added together. The left one is what the public surfac
 
 **3 sightings are paste-triggered**: a third-party fetcher followed a link the operator had published first (the census below). They show the surface and the ledger recording real third-party infrastructure. They are not evidence that anyone shares anything with anyone, and they are never counted as organic.
 
-9 requests from third parties and 50 requests from the operator's own probes are recorded. The operator's are labelled as self-tests at the moment they are written (F-0004), so they cannot inflate any third-party number.
+9 requests from third parties and 54 requests from the operator's own probes are recorded. The operator's are labelled as self-tests at the moment they are written (F-0004), so they cannot inflate any third-party number.
 
 15 browser-shaped requests were turned away and nothing about them was stored. That counter moves for anything that arrives with a browser's header set - people, the operator's own browser, and headless-browser fetch services alike. It counts the gate firing, not humans.
 <!-- counts:end -->
 
-## Real results on the organizers' own corpus
+## Does one actor present as many contexts? Measured
 
-The claim this product refuses to overstate is that **a sighting shows a secret
-moved between two request contexts, not that there are two operators**. That is
-only worth saying if one actor really does present as many contexts. We measured
-it twice, in unrelated corpora.
-
-**AI Village agent logs** (`aidigestorg/ai-village`, access granted for research use):
+The tool reports that a secret moved between two request CONTEXTS and refuses to
+say two contexts are two actors. In the organizers' public collusion.wiki dump:
 
 | | |
 |---|---|
-| Agents in the corpus | 46 |
-| Computer-use sessions | 78,362 |
-| Agents presenting more than one session | **46 of 46** |
-| Most sessions for a single agent | **7,465** (Gemini 2.5 Pro) |
-| Median sessions per agent | 1,080 |
+| Named agent labels with two or more revisions | **1,768** |
+| Of those, from more than one address | **1,752** (99%) |
+| Of those, from more than one /16 network | **1,740** (98%) |
+| Median per label | 4 addresses, 3 /16 networks |
+| Busiest named agent label | 317 revisions from 308 distinct addresses in 96 /16 networks |
 
-Every agent in the corpus presents more than one session context. The busiest
-presents 7,465. Reproduce with
-`python3 scripts/village_spread.py` (needs `HF_TOKEN` and dataset access);
-the full output is in `docs/village_spread.json`.
+`python3 scripts/label_spread.py` (no credentials; the dump is public and its file
+hash is pinned in the script). Raw output: `docs/label_spread.json`.
 
-**collusion.wiki dump** (independent, measured earlier): one actor label carries
-899 revisions across **741 distinct addresses**.
+**Withdrawn:** "one actor label carries 899 revisions across 741 distinct
+addresses". That row's label is the empty string - every unlabelled revision
+pooled - and it was cited on the product's own face until a reviewer opened the
+file. **Also withdrawn:** reporting 78,362 AI Village computer-use sessions as
+"46 of 46 agents present more than one session context" and "wrong by three orders
+of magnitude". The counts were right and the inference was not: a session is a
+~40-action window the scaffold cuts on the agent's one machine. What that corpus
+can support is in `docs/village_reuse.json` (`scripts/village_reuse.py`).
 
-Two unrelated datasets, same shape. This is why the schema has no `actor` entity
-and why the viewer says "context A" and "context B" rather than naming actors: an
-identity-per-context assumption would have been wrong by three orders of
-magnitude on the organizers' own data.
+*Data: AI Digest / AI Village, research use only, aggregates only; collusion.wiki
+dump, public.*
 
-Data: AI Village / AI Digest. Used for research and analysis only, with no
-attempt to re-identify anyone; no identifier, goal or message content is read,
-printed or stored by the script, only counts and the model names the dataset
-itself publishes.
+## On the organizers' own corpus: how URLs move, and what a "context" is worth
+
+The AI Village export holds no address and no request header, so it cannot say how
+many of this tool's request contexts an agent would present to a website. It does
+hold every command the agents ran. `python3 scripts/village_reuse.py` streams all
+2,019,963 turn rows it needs (307s) and reports three things. Raw output:
+`docs/village_reuse.json`.
+
+A **use** here is a fetch - a URL passed to a network client on its command line,
+or typed alone into the address bar - not any text containing a URL. The village
+quantity is called **re-use**, never a sighting: a canary is issued to exactly one
+context and cannot be guessed, and a village URL is neither.
+
+### 1. One agent, several contexts - as far as this corpus can see
+
+| | |
+|---|---|
+| Agents that fetched with more than one client program | **40 of 46** |
+| Agents that fetched the **same URL** with both a browser and a command-line client | **29** (1,073 agent-URL pairs; 566 of them within one session) |
+| Agents that set two or more distinct user-agent strings | **22** of the 32 that set one at all |
+| And in the other direction: most agents sharing **one** user-agent string | **29** |
+
+Both failure directions, in the hosts' own data. One agent routinely presents
+several contexts; and 29 different agents presented one identical user-agent string, so
+contexts can collide as well as multiply.
+
+### 2. "Two contexts, one agent" is a property of the definition
+
+How often a URL used in one context and again in another was the same agent:
+
+| A "context" is... | Re-uses | Same agent | Before the scaffold change | After |
+|---|---|---|---|---|
+| a session | 53,894 | **58%** | 34% | 62% |
+| an agent's client program | 9,720 | **7%** | 7% | 7% |
+
+Same corpus, same URLs, same code. **The answer moves by a factor of eight with
+the definition of a context**, and by nearly two with the 2026-03-24 scaffold
+change that redefined what a session is. (A null: if the later session were drawn
+at random from that day's, the same-agent share would be 9%.)
+
+Neither row is this tool's context, which includes the network and the client's
+headers. That is the point. A single number here would have been a number about
+the definition, and this is the honest version of the result we first tried to
+report - and the clearest argument we have for why the tool says "context",
+reports what it saw, and stops.
+
+### 3. When a second agent fetched an unguessable URL, had it been posted first?
+
+Restricted to URLs with a token in the path that cannot be constructed without
+being told - the nearest village analogue of a canary - excluding API endpoints
+and the shared code-hosting namespace every agent is pointed at.
+
+| | |
+|---|---|
+| Such URLs, fetched | **1,054** |
+| Used in more than one session | 353 |
+| Of those, only ever by one agent | 137 |
+| **First fetches by a different agent** | **410** |
+
+Of those 410 arrivals, in the seven days before each one:
+
+| | |
+|---|---|
+| another speaker had posted the URL in chat | **83%** |
+| it was in another agent's session goal or summary | 9% |
+| only its own post, or one older than seven days | 4% |
+| **nothing found in the tables read** | **4%** |
+
+**92% of the time a visible hand-off preceded the fetch.** Median 10.3 minutes
+from one agent's first use to another's.
+
+The control matters more than the headline: the same test applied where no
+hand-off is needed - an agent re-fetching its *own* URL in a later session - fires
+for only **36%** (207 cases). So the test discriminates; it is not just
+measuring how chatty the village is.
+
+What this does **not** say: that the post caused the fetch. A visible channel
+shows a channel existed. And "not found" means not found in the tables we read -
+system prompts, shared documents, email and link clicks are not in them, and
+agent_memories, claude_code_messages, screenshots were not read.
+
+*Data: AI Digest / AI Village, research use only. URL keys and user-agent strings
+are hashed in memory with a per-run key and never written; the output holds counts
+and quantiles only.*
 
 ## Real third-party fetchers, paste-triggered
 

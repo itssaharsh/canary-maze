@@ -25,27 +25,33 @@ Secret 7f3a9c…  issued to context A at 11:04:12   (GPTBot/1.2, AS8075)
                 4m 35s later, on a different network
 ```
 
-## Result on the organizers' own corpus
+## Does one actor really present as many contexts?
 
-The claim this tool refuses to overstate is that a sighting shows a secret moved
-between two *contexts*, not that there are two *actors*. We measured whether one
-actor really does present as many contexts, in the AI Village agent logs:
+The claim this tool refuses to make is that two contexts are two actors. That
+restraint is only worth stating if the opposite is actually common, so it is
+measured rather than asserted - in the organizers' own public collusion.wiki dump,
+which records, per label, how many addresses its revisions came from.
 
 | | |
 |---|---|
-| Computer-use sessions analysed | **78,362** |
-| Agents presenting more than one session context | **46 of 46** |
-| Most contexts for a single agent | **7,465** (Gemini 2.5 Pro) |
-| Median | 1,080 |
+| Named agent labels with two or more revisions | **1,768** |
+| Of those, writing from more than one address | **1,752** (99%) |
+| Of those, from more than one /16 network | **1,740** (98%) |
+| Median per label | 4 addresses, 3 /16 networks |
+| Busiest named agent label | 317 revisions from 308 distinct addresses in 96 /16 networks |
 
-Every agent in the corpus presents more than one. An identity-per-context
-assumption would have been wrong by three orders of magnitude on the hosts' own
-data - which is why the schema has no `actor` table and the viewer says
-"context A", never a name. A second, unrelated corpus agrees: in the
-collusion.wiki dump one actor label spans **741** addresses.
+Two addresses in different /16 networks are in different /24 networks, and this
+tool's context includes the /24 - so the third row is a lower bound on how many
+contexts this tool would have derived for those labels. Reproduce with
+`python3 scripts/label_spread.py`; it needs no credentials.
 
-*Data: AI Village / AI Digest, research use only. The script reads no identifier,
-goal or message content - only counts and the model names the dataset publishes.*
+**A correction, kept here rather than quietly fixed.** An earlier version of this
+project said on every page that "one actor label carries 899 revisions across 741
+distinct addresses". That row is real and its label is the **empty string**: it is
+the pool of every revision that carried no label, not one actor. The figure came
+from our own research notes and was repeated until an independent reviewer opened
+the file. A label is also a self-chosen name, so even the corrected figure is one
+name, not provably one actor.
 
 ## Check it yourself in three commands
 
@@ -95,10 +101,12 @@ This is the most important section in the repository.
 
 > A sighting establishes that **the secret moved between two request contexts**. It does
 > **not** establish that they are two different operators — one operator can rotate
-> addresses. In the AI Village dump, one actor label spans **741** of them.
+> addresses. In the organizers' collusion.wiki dump, the busiest named agent label
+> wrote 317 revisions from 308 distinct addresses in 96 /16 networks.
 >
-> Measured again on the organizers' own corpus: across 78,362 computer-use sessions, **46 of 46** agents present more than one session context, and the busiest presents **7,465**. Two unrelated datasets, same shape.
-> (`python3 scripts/village_spread.py`; data: AI Village / AI Digest.)
+> Measured across that whole dump: 1,752 of the
+> 1,768 named agent labels with two or more revisions wrote from more
+> than one address. (`python3 scripts/label_spread.py`.)
 
 The HMAC bounds **token provenance**: a secret that verifies under our salt was issued by us,
 for that path and that context, and cannot be forged without the salt. It does **not** bound
