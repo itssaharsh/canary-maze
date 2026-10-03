@@ -30,6 +30,41 @@ from the data, which it had done once before the generator existed.
 The two columns are never added together. The left one answers "what has been observed in the wild"; the right one answers "does the mechanism work". Only the left column is evidence about anyone else's behaviour.
 <!-- counts:end -->
 
+## Real results on the organizers' own corpus
+
+The claim this product refuses to overstate is that **a sighting shows a secret
+moved between two request contexts, not that there are two operators**. That is
+only worth saying if one actor really does present as many contexts. We measured
+it twice, in unrelated corpora.
+
+**AI Village agent logs** (`aidigestorg/ai-village`, access granted for research use):
+
+| | |
+|---|---|
+| Agents in the corpus | 46 |
+| Computer-use sessions | 78,362 |
+| Agents presenting more than one session | **46 of 46** |
+| Most sessions for a single agent | **7,465** (Gemini 2.5 Pro) |
+| Median sessions per agent | 1,080 |
+
+Every agent in the corpus presents more than one session context. The busiest
+presents 7,465. Reproduce with
+`python3 scripts/village_spread.py` (needs `HF_TOKEN` and dataset access);
+the full output is in `docs/village_spread.json`.
+
+**collusion.wiki dump** (independent, measured earlier): one actor label carries
+899 revisions across **741 distinct addresses**.
+
+Two unrelated datasets, same shape. This is why the schema has no `actor` entity
+and why the viewer says "context A" and "context B" rather than naming actors: an
+identity-per-context assumption would have been wrong by three orders of
+magnitude on the organizers' own data.
+
+Data: AI Village / AI Digest. Used for research and analysis only, with no
+attempt to re-identify anyone; no identifier, goal or message content is read,
+printed or stored by the script, only counts and the model names the dataset
+itself publishes.
+
 ## What the host refused before we ever saw it
 
 Measured 2026-10-03 against the live public URL, same second, varying only the

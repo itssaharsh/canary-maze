@@ -53,6 +53,9 @@ This is the most important section in the repository.
 > A sighting establishes that **the secret moved between two request contexts**. It does
 > **not** establish that they are two different operators — one operator can rotate
 > addresses. In the AI Village dump, one actor label spans **741** of them.
+>
+> Measured again on the organizers' own corpus: across 78,362 computer-use sessions, **46 of 46** agents present more than one session context, and the busiest presents **7,465**. Two unrelated datasets, same shape.
+> (`python3 scripts/village_spread.py`; data: AI Village / AI Digest.)
 
 The HMAC bounds **token provenance**: a secret that verifies under our salt was issued by us,
 for that path and that context, and cannot be forged without the salt. It does **not** bound

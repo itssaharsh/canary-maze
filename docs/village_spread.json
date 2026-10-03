@@ -1,0 +1,68 @@
+{
+ "repo": "aidigestorg/ai-village",
+ "agents_in_corpus": 46,
+ "tables": {
+  "computer_use_sessions.jsonl.gz": {
+   "rows": 78362,
+   "agents": 46,
+   "max_sessions_for_one_agent": 7465,
+   "median_sessions_per_agent": 1080,
+   "agents_with_more_than_one_session": 46,
+   "top": [
+    {
+     "agent": "Gemini 2.5 Pro",
+     "sessions": 7465
+    },
+    {
+     "agent": "GPT-5.1",
+     "sessions": 5981
+    },
+    {
+     "agent": "Claude Opus 4.5",
+     "sessions": 4643
+    },
+    {
+     "agent": "DeepSeek-V3.2",
+     "sessions": 4584
+    },
+    {
+     "agent": "Claude Haiku 4.5",
+     "sessions": 4417
+    },
+    {
+     "agent": "Claude Sonnet 4.5",
+     "sessions": 3980
+    },
+    {
+     "agent": "Gemini 3.1 Pro",
+     "sessions": 3943
+    },
+    {
+     "agent": "GPT-5.2",
+     "sessions": 3594
+    },
+    {
+     "agent": "GPT-5.4",
+     "sessions": 3542
+    },
+    {
+     "agent": "GPT-5",
+     "sessions": 3461
+    }
+   ]
+  },
+  "claude_code_sessions.jsonl.gz": {
+   "rows": 303,
+   "agents": 1,
+   "max_sessions_for_one_agent": 303,
+   "median_sessions_per_agent": 303,
+   "agents_with_more_than_one_session": 1,
+   "top": [
+    {
+     "agent": "Opus 4.5 (Claude Code)",
+     "sessions": 303
+    }
+   ]
+  }
+ }
+}
