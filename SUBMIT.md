@@ -12,7 +12,7 @@ Verbatim from <https://swarmchasing.com/logistics/>:
 
 | # | Required? | Item | Status |
 |---|---|---|---|
-| 1 | **required** | "A short write-up or video explaining your project" | **done** — `SUBMISSION.md`; video script ready if you want both |
+| 1 | **required** | "A short write-up or video explaining your project" | **done, both** — `SUBMISSION.md`, and a 110-second video at <https://site-nine-hazel-35.vercel.app/demo.mp4> |
 | 2 | **required** | "A link to a GitHub repo with your code" | **done** — https://github.com/itssaharsh/canary-maze (public) |
 | 3 | **required** | "The names and emails of everyone on your team" | **you** — see §3 |
 | 4 | *optional* | "a write-up of real results" | **done** — the highest-leverage optional field at this event |
@@ -39,6 +39,14 @@ Prove a secret moved between two automated clients, and hand someone a record th
 ```
 https://github.com/itssaharsh/canary-maze
 ```
+
+### Video (110 seconds)
+```
+https://site-nine-hazel-35.vercel.app/demo.mp4
+```
+Captions: <https://site-nine-hazel-35.vercel.app/demo.srt>. If the form wants an
+upload rather than a link, the file is `demo/build/final.mp4` (1080p30, 45 MB);
+`site/demo.mp4` is the same cut at 15 MB.
 
 ### Live links (if there is a field; otherwise they are in the write-up)
 ```
@@ -142,10 +150,8 @@ Saharsh — saharsh7002@gmail.com
 
 1. **Your name and email** in the form — the one required field I cannot fill.
 2. **Submit it.** I have not submitted anything on your behalf.
-3. *Optional:* record the 2-minute video using `docs/DEMO-SCRIPT.md`. The write-up
-   satisfies the requirement on its own, so this is upside, not a blocker. The
-   organizers say "write-up **or** video"; shipping both covers whichever the
-   reader prefers.
+3. **The video is made** — 110 seconds, at the link above. Nothing to record.
+   `docs/DEMO-SCRIPT.md` remains if you ever want to narrate it yourself.
 4. **Keep the laptop awake** until you submit. The public surface is on Vercel and
    survives sleep, but the ledger is local — a crawler arriving while the machine
    is off is served and not recorded.

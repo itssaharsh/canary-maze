@@ -5,6 +5,7 @@ that verifies with your server switched off.**
 
 AI Swarm Dynamics Hackathon · AI Village × Grove Research
 Repo: <https://github.com/itssaharsh/canary-maze> · Live: <https://site-nine-hazel-35.vercel.app>
+**Video (110s): <https://site-nine-hazel-35.vercel.app/demo.mp4>**
 
 ---
 

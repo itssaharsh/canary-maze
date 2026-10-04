@@ -3,6 +3,7 @@
 **Repo:** <https://github.com/itssaharsh/canary-maze>  
 **Live viewer:** <https://site-nine-hazel-35.vercel.app/viewer/>  
 **Live canary surface:** <https://site-nine-hazel-35.vercel.app/m/q3-supplier-review>  
+**Video (110s):** <https://site-nine-hazel-35.vercel.app/demo.mp4>  
 **Write-up:** [`SUBMISSION.md`](SUBMISSION.md) · **Results:** [`docs/RESULTS.md`](docs/RESULTS.md)
 
 
