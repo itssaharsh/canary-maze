@@ -51,6 +51,7 @@ demo/*
 !demo/brief.md
 !demo/shots.md
 !demo/design.json
+!demo/record_realtime.py
 .public_url
 .serve_public.out
 .serve.log
