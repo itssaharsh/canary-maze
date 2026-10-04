@@ -2,19 +2,19 @@
  "project": {
   "name": "Canary Maze",
   "url": "https://site-nine-hazel-35.vercel.app/viewer/",
-  "target_seconds": 112,
+  "target_seconds": 118,
   "max_seconds": 180
  },
  "style": {
   "design": "design.json",
   "voice": "af_heart",
-  "speed": 0.89,
+  "speed": 0.9,
   "captions": true,
   "music": "auto",
   "sfx": true,
   "viewport": [
    1280,
-   1100
+   1120
   ],
   "dsf": 1,
   "fps": 30,
@@ -24,9 +24,9 @@
  },
  "pronounce": {
   "crypto.subtle": "crypto dot subtle",
-  "Canary Maze": "Canary Maze",
-  "78,362": "seventy-eight thousand, three hundred and sixty-two",
-  "7,465": "seven thousand four hundred and sixty-five"
+  "4127": "four thousand one hundred and twenty seven",
+  "308": "three hundred and eight",
+  "1,752": "one thousand seven hundred and fifty two"
  },
  "scenes": [
   {
@@ -34,7 +34,7 @@
    "type": "clip",
    "from": "aha",
    "offset": -0.6,
-   "say": "This was just checked, with our server switched off. Nothing was contacted.",
+   "say": "This was just checked with our server switched off. Nothing was contacted.",
    "card": {
     "layout": "title",
     "scale": "hero",
@@ -46,14 +46,14 @@
   {
    "id": "problem",
    "type": "card",
-   "say": "When an automated client reads your site, and hands what it found to another one, the strongest thing you can usually say is that the two of them look similar.",
+   "speed": 0.74,
+   "say": "When one automated client reads your site and hands what it found to another, all you can usually say is that the two look similar.",
    "card": {
     "layout": "stat",
     "value": "\u201cthey look similar\u201d",
     "label": "the strongest thing a site operator can say today",
     "reveal": "mask"
-   },
-   "speed": 0.78
+   }
   },
   {
    "id": "claim",
@@ -74,7 +74,7 @@
     },
     {
      "do": "pause",
-     "ms": 2200
+     "ms": 2600
     }
    ]
   },
@@ -82,7 +82,7 @@
    "id": "diff",
    "type": "live",
    "mode": "window",
-   "say": "A URL only context A was ever shown was requested by context B. Different user agent, different network. This one is a seeded replay, and the page says so on its own face.",
+   "say": "A URL only context A was ever shown was requested by context B. Different user agent, different network. This one is a seeded replay, and the page says so itself.",
    "actions": [
     {
      "do": "camera",
@@ -93,7 +93,7 @@
     },
     {
      "do": "pause",
-     "ms": 2600
+     "ms": 3000
     },
     {
      "do": "camera",
@@ -104,7 +104,7 @@
     },
     {
      "do": "pause",
-     "ms": 1600
+     "ms": 1800
     }
    ]
   },
@@ -112,7 +112,8 @@
    "id": "records",
    "type": "live",
    "mode": "window",
-   "say": "The secret is that marked string, there, in context B's request. Context A was only ever shown it.",
+   "speed": 0.86,
+   "say": "The secret is that marked string, there, in context B's request line.",
    "actions": [
     {
      "do": "camera",
@@ -127,10 +128,9 @@
     },
     {
      "do": "pause",
-     "ms": 2400
+     "ms": 2600
     }
-   ],
-   "speed": 0.84
+   ]
   },
   {
    "id": "verify",
@@ -148,15 +148,12 @@
     {
      "do": "click",
      "sel": "#verify-btn",
-     "at": "browser",
-     "zoom": 1.5,
-     "focus": "#verify-btn",
-     "spotlight": true
+     "at": "browser"
     },
     {
      "do": "wait",
      "for": "#verify-result",
-     "timeout": 20000
+     "timeout": 25000
     },
     {
      "do": "mark",
@@ -176,21 +173,110 @@
    ]
   },
   {
+   "id": "tamper",
+   "type": "live",
+   "mode": "window",
+   "say": "So let's lie to it. We change the organic sighting count this page displays, from zero to four thousand, and press it again.",
+   "actions": [
+    {
+     "do": "camera",
+     "focus": "#foot",
+     "zoom": "fit",
+     "at": "displays",
+     "move": "push"
+    },
+    {
+     "do": "eval",
+     "js": "window.CANARY_DATA.counts.sightings_organic = 4127; document.getElementById('foot').innerHTML = document.getElementById('foot').innerHTML.replace(/Organic sightings <b[^>]*>0<\\/b>/, 'Organic sightings <b>4127</b>'); true",
+     "ms": 1800
+    },
+    {
+     "do": "camera",
+     "focus": "#verify",
+     "zoom": "fit",
+     "at": "again",
+     "move": "pull"
+    },
+    {
+     "do": "click",
+     "sel": "#verify-btn"
+    },
+    {
+     "do": "wait",
+     "for": ".result.bad",
+     "timeout": 25000
+    },
+    {
+     "do": "pause",
+     "ms": 900
+    }
+   ],
+   "speed": 0.78
+  },
+  {
+   "id": "caught",
+   "type": "live",
+   "mode": "window",
+   "say": "Caught. The bundle commits to what the page shows, not only to what it hashes. An earlier build of this got that wrong, and an independent review found it.",
+   "actions": [
+    {
+     "do": "camera",
+     "focus": "#verify-result",
+     "zoom": "fit",
+     "at": "Caught",
+     "move": "push"
+    },
+    {
+     "do": "pause",
+     "ms": 2600
+    },
+    {
+     "do": "camera",
+     "focus": "#verify",
+     "zoom": "fit",
+     "at": "shows",
+     "move": "pull"
+    },
+    {
+     "do": "pause",
+     "ms": 2000
+    }
+   ],
+   "speed": 0.76
+  },
+  {
    "id": "corpus",
    "type": "card",
-   "say": "A sighting shows a secret moved between two contexts. Not that there are two operators. We measured that on the AI Village corpus, and every single agent in it presents more than one context.",
+   "say": "A sighting shows a secret moved between two contexts. Not that there are two operators. We measured that, in the organizers' own public dump.",
    "card": {
-    "layout": "stat",
-    "value": "46 of 46",
-    "label": "agents present more than one session context \u00b7 78,362 sessions analysed \u00b7 busiest agent: 7,465",
-    "reveal": "rise"
-   }
+    "layout": "list",
+    "kicker": "collusion.wiki dump \u00b7 scripts/label_spread.py",
+    "title": "One label, many addresses",
+    "items": [
+     {
+      "icon": "1,752",
+      "text": "of 1,768 named agent labels wrote from more than one address",
+      "at": "measured"
+     },
+     {
+      "icon": "1,740",
+      "text": "of them from more than one /16 network \u2014 each one more than one context here",
+      "at": "organizers'"
+     },
+     {
+      "icon": "4",
+      "text": "addresses for the median label",
+      "at": "dump"
+     }
+    ]
+   },
+   "speed": 0.88
   },
   {
    "id": "honesty",
    "type": "live",
    "mode": "window",
-   "say": "Organic sightings: zero, and reported as zero. Humans are turned away by the gate, so they never enter the ledger at all.",
+   "say": "And the counters it will not inflate. Organic sightings: zero, reported as zero. Humans are turned away by the gate and never enter the ledger at all.",
    "actions": [
     {
      "do": "camera",
@@ -201,7 +287,7 @@
     },
     {
      "do": "pause",
-     "ms": 2600
+     "ms": 2800
     }
    ]
   },

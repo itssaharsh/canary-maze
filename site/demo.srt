@@ -1,0 +1,196 @@
+1
+00:00:00,394 --> 00:00:02,350
+This was just checked with our server
+
+2
+00:00:02,350 --> 00:00:03,244
+switched off
+
+3
+00:00:03,244 --> 00:00:04,731
+Nothing was contacted
+
+4
+00:00:05,725 --> 00:00:08,330
+When one automated client reads
+
+5
+00:00:08,330 --> 00:00:11,804
+your site and hands what it found to another
+
+6
+00:00:11,804 --> 00:00:14,795
+all you can usually say is that the two
+
+7
+00:00:14,795 --> 00:00:16,006
+look similar
+
+8
+00:00:17,064 --> 00:00:19,674
+Canary Maze gives every automated
+
+9
+00:00:19,674 --> 00:00:21,654
+visitor its own secret URL
+
+10
+00:00:21,654 --> 00:00:24,914
+then records who else comes asking for it
+
+11
+00:00:24,914 --> 00:00:27,167
+Every sentence on this page is computed
+
+12
+00:00:27,167 --> 00:00:28,273
+from the records
+
+13
+00:00:28,638 --> 00:00:31,769
+A URL only context A was ever shown was
+
+14
+00:00:31,769 --> 00:00:33,913
+requested by context B
+
+15
+00:00:33,913 --> 00:00:35,277
+Different user agent
+
+16
+00:00:35,277 --> 00:00:36,713
+different network
+
+17
+00:00:36,713 --> 00:00:38,692
+This one is a seeded replay
+
+18
+00:00:38,692 --> 00:00:41,143
+and the page says so itself
+
+19
+00:00:41,143 --> 00:00:43,372
+The secret is that marked string
+
+20
+00:00:43,372 --> 00:00:45,751
+there, in context B's request line
+
+21
+00:00:46,120 --> 00:00:48,070
+Now the part that matters
+
+22
+00:00:48,070 --> 00:00:50,892
+This recomputes every hash in your own browser
+
+23
+00:00:50,892 --> 00:00:52,420
+from the bundle alone
+
+24
+00:00:52,420 --> 00:00:53,620
+Verified
+
+25
+00:00:53,620 --> 00:00:55,725
+Five hashes, with crypto.subtle
+
+26
+00:00:55,725 --> 00:00:58,142
+and no request to our server at all
+
+27
+00:00:58,515 --> 00:01:00,490
+So let's lie to it
+
+28
+00:01:00,490 --> 00:01:03,468
+We change the organic sighting count
+
+29
+00:01:03,468 --> 00:01:05,006
+this page displays
+
+30
+00:01:05,006 --> 00:01:07,119
+from zero to four thousand
+
+31
+00:01:07,119 --> 00:01:08,711
+and press it again
+
+32
+00:01:10,916 --> 00:01:11,671
+Caught
+
+33
+00:01:11,671 --> 00:01:15,009
+The bundle commits to what the page shows
+
+34
+00:01:15,009 --> 00:01:17,296
+not only to what it hashes
+
+35
+00:01:17,296 --> 00:01:20,164
+An earlier build of this got that wrong
+
+36
+00:01:20,164 --> 00:01:22,913
+and an independent review found it
+
+37
+00:01:23,857 --> 00:01:26,594
+A sighting shows a secret moved between
+
+38
+00:01:26,594 --> 00:01:27,682
+two contexts
+
+39
+00:01:27,682 --> 00:01:29,857
+Not that there are two operators
+
+40
+00:01:29,857 --> 00:01:31,002
+We measured that
+
+41
+00:01:31,002 --> 00:01:33,442
+in the organizers' own public dump
+
+42
+00:01:34,637 --> 00:01:37,037
+And the counters it will not inflate
+
+43
+00:01:37,037 --> 00:01:38,814
+Organic sightings
+
+44
+00:01:38,814 --> 00:01:41,037
+zero, reported as zero
+
+45
+00:01:41,037 --> 00:01:42,821
+Humans are turned away by the gate
+
+46
+00:01:42,821 --> 00:01:44,691
+and never enter the ledger at all
+
+47
+00:01:45,649 --> 00:01:46,949
+Canary Maze
+
+48
+00:01:46,949 --> 00:01:48,796
+The record checks out without trusting
+
+49
+00:01:48,796 --> 00:01:49,562
+the recorder
+
