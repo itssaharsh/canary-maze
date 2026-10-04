@@ -34,6 +34,12 @@ body{background:var(--canvas);color:var(--ink);font:400 15px/1.55 var(--ff-body)
   height:52px;border-bottom:1px solid var(--line);margin-bottom:36px}
 .bar h1{margin:0;font:600 15px/1 var(--ff-body);letter-spacing:-.01em}
 .bar .ledgerline{font:400 12.5px/1 var(--ff-mono);color:var(--ink-muted)}
+/* A reader who arrives here from a link has no idea what the tool is, so the bar
+   carries the one way out. --accent-text, not --accent, because this is text. */
+.barend{display:flex;align-items:center;gap:18px;flex-wrap:wrap;justify-content:flex-end}
+.bar .back{font:500 13px/1 var(--ff-body);color:var(--accent-text);text-decoration:none;
+  border-bottom:1px solid currentColor;padding-bottom:2px;white-space:nowrap}
+@media (hover:hover) and (pointer:fine){.bar .back:hover{color:var(--accent-press)}}
 :is(button,a,[tabindex]):focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:var(--r-sm)}
 
 .claim{margin:0 0 8px;font:500 20px/1.4 var(--ff-body);max-width:66ch;letter-spacing:-.01em}
@@ -99,6 +105,18 @@ mark.lit::before{clip-path:inset(0 0 0 0)}
 .result.bad .headline{color:var(--danger)}
 .result ul{margin:6px 0 0;padding-left:18px}
 
+/* The instruction that turns the page from a claim into a demonstration. */
+.tamper{margin-top:20px;background:var(--surface-sunken);border:1px solid var(--line);
+  border-radius:var(--r-md);padding:16px 18px;max-width:74ch}
+.tamper h3{margin:0 0 6px;font:600 14px/1.35 var(--ff-body)}
+.tamper ol{margin:0;padding-left:20px;font:400 13.5px/1.75 var(--ff-body)}
+.tamper li+li{margin-top:4px}
+.tamper code{font:400 12.5px/1.5 var(--ff-mono);background:var(--surface-2);
+  border-radius:var(--r-sm);padding:2px 5px;overflow-wrap:anywhere;
+  display:inline-block;margin-top:3px}
+.tamper p{margin:0 0 10px;font:400 13px/1.7 var(--ff-body);color:var(--ink-muted)}
+.tamper ol+p{margin:10px 0 0}
+
 .foot{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);
   font:400 13px/1.9 var(--ff-body);color:var(--ink-muted);
   display:flex;gap:20px;flex-wrap:wrap;align-items:baseline}
@@ -106,6 +124,10 @@ mark.lit::before{clip-path:inset(0 0 0 0)}
 .foot .zero{color:var(--success);font-weight:500}
 
 @media (max-width:760px){
+  /* The bar wraps rather than squeezing the name onto two lines. */
+  .bar{height:auto;min-height:52px;padding:10px 0;align-items:flex-start;gap:10px}
+  .bar h1{white-space:nowrap;padding-top:2px}
+  .barend{gap:4px 14px}
   .claim{font-size:18px}
   .records{padding:14px}
   .rec pre{font-size:12px;padding:10px 12px}

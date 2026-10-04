@@ -30,11 +30,13 @@ a{color:var(--ink)}
 :is(a,button):focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:var(--r-sm)}
 img{max-width:100%;height:auto;display:block}
 
-nav{display:flex;align-items:center;justify-content:space-between;height:64px;
-  border-bottom:1px solid var(--line)}
-nav .name{font:600 16px/1 var(--ff-body);letter-spacing:-.01em;text-decoration:none}
-nav .links{display:flex;gap:20px;font-size:14px}
-nav .links a{color:var(--ink-muted);text-decoration:none}
+nav{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  min-height:64px;padding:10px 0;border-bottom:1px solid var(--line)}
+nav .name{font:600 16px/1 var(--ff-body);letter-spacing:-.01em;text-decoration:none;
+  white-space:nowrap}
+nav .links{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:14px;justify-content:flex-end}
+/* A label may wrap to the next row, never mid-phrase: "How it / works" is unreadable. */
+nav .links a{color:var(--ink-muted);text-decoration:none;white-space:nowrap}
 @media (hover:hover){nav .links a:hover{color:var(--ink)}}
 
 /* hero: text left, the REAL product right */
@@ -105,8 +107,9 @@ footer a{color:var(--ink)}
     <a class="name" href="/">Canary Maze</a>
     <span class="links">
       <a href="#plain">What it is</a>
-      <a href="/viewer/">Live evidence</a>
       <a href="#how">How it works</a>
+      <a href="#try">Try it</a>
+      <a href="#findings">What we found</a>
       <a href="#limits">Limits</a>
     </span>
   </nav>
@@ -211,6 +214,41 @@ footer a{color:var(--ink)}
     </figure>
   </section>
 
+  <section id="try">
+    <h2>Try it</h2>
+    <p class="lede">Four ways in, shortest first. Each one shows you something different,
+      and none of the first three needs anything installed.</p>
+    <div class="three">
+      <div>
+        <span class="step">0 MIN &middot; WATCH</span>
+        <h3><a href="/demo.mp4">The 110-second video</a></h3>
+        <p>The whole thing end to end: a secret issued to one client and fetched by
+          another, verified offline, and then the page is lied to and catches it.</p>
+      </div>
+      <div>
+        <span class="step">1 MIN &middot; IN YOUR BROWSER</span>
+        <h3><a href="/viewer/">Open the evidence and try to break it</a></h3>
+        <p>Press <em>Recompute the hashes locally</em> and watch your network panel stay
+          empty. Then open the page's own <code>data.js</code>, change any record or any
+          number on screen, and press it again. It names what no longer matches.</p>
+      </div>
+      <div>
+        <span class="step">2 MIN &middot; ON YOUR MACHINE</span>
+        <h3>Run it yourself</h3>
+        <p>Three commands, no credentials, no network after the install. Then open
+          <code>viewer/index.html</code> from disk, with nothing running.</p>
+      </div>
+    </div>
+    <pre class="term" tabindex="0" role="region" aria-label="commands to run it yourself">git clone https://github.com/itssaharsh/canary-maze &amp;&amp; cd canary-maze
+pip install -r requirements.txt
+make verify     <span class="g"># five properties, each able to fail</span>
+make demo       <span class="g"># builds the offline viewer</span></pre>
+    <p class="lede" style="margin-top:28px"><strong>5 min &middot; read</strong> &mdash;
+      what it found on the organizers' own corpus and on the public dump, with the two
+      claims we withdrew: <a href="https://github.com/itssaharsh/canary-maze/blob/master/docs/RESULTS.md">docs/RESULTS.md</a>.
+      The code is at <a href="https://github.com/itssaharsh/canary-maze">github.com/itssaharsh/canary-maze</a>.</p>
+  </section>
+
   <section id="verify">
     <h2>Check this without trusting us</h2>
     <p class="lede">This is the part that makes it evidence rather than a dashboard. The
@@ -233,7 +271,7 @@ Canary Maze :: verify
     </figure>
   </section>
 
-  <section>
+  <section id="findings">
     <h2 id="real-h">What is real here</h2>
     <p class="lede">Every number below is generated from the artefact this page links to —
       the <strong>seeded replay</strong>, which is the deterministic demo a judge can
@@ -248,7 +286,7 @@ Canary Maze :: verify
       <tr><th>Organic sightings here</th><td class="num">0</td><td>0 by construction: a scripted replay observes nobody</td></tr>
       <tr><th>Human requests stored</th><td class="num zero">0</td><td>must be 0 — a non-zero value would mean a human reached storage</td></tr>
       <tr><th>Hashes in the bundle</th><td class="num">5</td><td>each one recomputed in your browser by the button above</td></tr>
-      <tr><th>Tests</th><td class="num">249</td><td><code>make verify</code> PASS</td></tr>
+      <tr><th>Tests</th><td class="num">251</td><td><code>make verify</code> PASS</td></tr>
     <!--/COUNTS-->
     </table>
     </div>

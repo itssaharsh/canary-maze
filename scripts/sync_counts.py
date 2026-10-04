@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FILES = ("README.md", "SUBMISSION.md", "SUBMIT.md",
-         "docs/RESULTS.md", "site/index.html")
+         "docs/RESULTS.md", "docs/FORM-ANSWERS.md", "site/index.html")
 
 
 def main() -> int:

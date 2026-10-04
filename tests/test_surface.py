@@ -13,6 +13,7 @@ network, and then replay its reports into a real ledger through the real signed
 from __future__ import annotations
 
 import filecmp
+import json
 import re
 import importlib.util
 import sys
@@ -88,6 +89,39 @@ def test_the_deployed_viewer_matches_the_tested_one():
              if not (API.parent / "viewer" / n).exists()
              or not filecmp.cmp(API.parent / "viewer" / n, ROOT / "viewer" / n, shallow=False)]
     assert not stale, f"site/viewer is stale (run scripts/build_site.py): {stale}"
+
+
+def test_the_tamper_instruction_names_a_key_that_actually_exists():
+    """The viewer tells a reader to paste `CANARY_DATA.counts.sightings_organic = 4127`
+    into the console and watch verification fail. If that key is ever renamed the
+    instruction keeps reading perfectly and silently stops working - the paste would
+    add a NEW key, and a judge following the page's own directions would see
+    "Verified" where the page promised a failure. So pin the path to the payload the
+    exporter actually writes."""
+    html = (ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    paths = re.findall(r"CANARY_DATA\.([A-Za-z0-9_.]+)\s*=", html)
+    assert paths, "the viewer no longer shows a reader how to make verification fail"
+    payload = json.loads((ROOT / "viewer" / "data.json").read_text(encoding="utf-8"))["viewer"]
+    for path in paths:
+        node = payload
+        for part in path.split("."):
+            assert isinstance(node, dict) and part in node, (
+                f"the page tells a reader to set CANARY_DATA.{path}, "
+                f"which is not in the exported payload")
+            node = node[part]
+
+
+def test_the_viewer_is_not_a_dead_end():
+    """A reader arriving straight at the evidence file has no idea what the tool is,
+    and the page used to offer no way to find out. Keep one link out of it, and keep
+    it absolute: the viewer is opened from disk at least as often as over HTTP, where
+    a root-relative href resolves to the reader's filesystem."""
+    html = (ROOT / "viewer" / "index.html").read_text(encoding="utf-8")
+    hrefs = re.findall(r'<a\b[^>]*\bhref="([^"]+)"', html)
+    out = [h for h in hrefs if h.startswith("http")]
+    assert out, "the viewer offers no way back to the explanation"
+    assert not [h for h in hrefs if h.startswith("/")], (
+        f"root-relative link in a page that is opened from file://: {hrefs}")
 
 
 def test_the_viewer_never_calls_anything_but_organic_traffic_organic():

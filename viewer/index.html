@@ -15,7 +15,10 @@
 <div class="wrap">
   <header class="bar">
     <h1>Canary Maze</h1>
-    <span class="ledgerline" id="ledgerline"></span>
+    <div class="barend">
+      <span class="ledgerline" id="ledgerline"></span>
+      <a class="back" href="https://site-nine-hazel-35.vercel.app/#plain">What is this?</a>
+    </div>
   </header>
 
   <main>
@@ -55,6 +58,24 @@
         server switched off permanently.</p>
       <button class="btn" type="button" id="verify-btn">Recompute the hashes locally</button>
       <div class="result" id="verify-result" hidden></div>
+
+      <div class="tamper">
+        <h3>Then make it lie, and watch it get caught</h3>
+        <p class="why">A button that only ever says <i>Verified</i> has shown you nothing.
+          Here is how to make this one fail, which takes about twenty seconds.</p>
+        <ol>
+          <li>Press the button above. It should say <b>Verified</b>.</li>
+          <li>Open your browser console and paste this, which changes the
+            organic-sighting count this page displays:<br>
+            <code>CANARY_DATA.counts.sightings_organic = 4127</code></li>
+          <li>Press the button again. It names what no longer matches &mdash; and it
+            catches the <em>displayed</em> number, not just the hashed records.</li>
+        </ol>
+        <p>Reading this from disk after <code>make demo</code>? Edit any value in
+          <code>data.js</code> beside this file instead, reload, and press it again.
+          Either way, nothing is contacted: with the console's network panel open it
+          stays empty, because the check is arithmetic on a file you already have.</p>
+      </div>
     </section>
 
     <p class="sr" role="status" aria-live="polite" id="status"></p>

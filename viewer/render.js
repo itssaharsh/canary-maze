@@ -21,6 +21,9 @@
 
   function text(el, s) { el.textContent = s == null ? "" : String(s); }
 
+  /* "1 mint", not "1 mints". A live ledger passes through 1 on its way up. */
+  function plural(n, word) { n = n || 0; return n + " " + word + (n === 1 ? "" : "s"); }
+
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -114,7 +117,7 @@
       "<span>Human requests in ledger <b class=\"" +
         ((c.human_requests || 0) === 0 ? "zero" : "") + "\">" +
         (c.human_requests || 0) + "</b></span>";
-    text($("ledgerline"), (c.mints || 0) + " mints · " + (c.requests || 0) + " requests");
+    text($("ledgerline"), plural(c.mints, "mint") + " · " + plural(c.requests, "request"));
 
     /* The scope line only bounds a claim that was actually made. In every other
      * state it would be asserting something about a sighting that does not exist. */

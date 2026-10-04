@@ -189,7 +189,7 @@ Have this ready; it is the first Q&A question at every event.
 
 | Claim | Status |
 |---|---|
-| The gate, mint, detector, bundle and the signed edge hand-off | **real**, running, 249 tests |
+| The gate, mint, detector, bundle and the signed edge hand-off | **real**, running, 251 tests |
 | Offline verification in the browser | **real** — every hash recomputed with `crypto.subtle`, zero network requests, and what the page *displays* is bound to the Merkle root, not just what it hashes |
 | The seeded two-client replay | **real code, synthetic traffic** — labelled "seeded" in the claim sentence itself, never counted as organic |
 | Third-party fetchers on the live surface | **real** — three recorded, five turned away by the gate. Every one was handed its URL by us, so all are paste-triggered |
