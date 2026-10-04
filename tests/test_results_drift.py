@@ -119,7 +119,7 @@ def test_the_documented_test_count_is_the_real_one():
     assert n > 100, "could not collect the suite"
     wrong = []
     for name in ("README.md", "SUBMISSION.md", "SUBMIT.md",
-                 "site/index.html", "docs/RESULTS.md"):
+                 "site/index.html", "docs/RESULTS.md", "docs/FORM-ANSWERS.md"):
         f = ROOT / name
         if not f.exists():
             continue
@@ -128,3 +128,29 @@ def test_the_documented_test_count_is_the_real_one():
             if said != n:
                 wrong.append(f"{name}: says {said}, suite has {n}")
     assert not wrong, "run python3 scripts/sync_counts.py\n  " + "\n  ".join(wrong)
+
+
+def test_the_documented_review_count_does_not_disagree_with_itself():
+    """The same drift, in the one number this project cannot regenerate. Four
+    judge-facing documents claimed how many review findings were confirmed, and
+    three still said "Twenty-five" after a later round took it to 31 - so a judge
+    reading two of them saw two different answers about the review this entry
+    leans on. Unlike the test count there is no command to recompute it from, so
+    the only available guarantee is that the documents agree with each other."""
+    import re
+    WORDS = {"twenty-five": 25, "twenty five": 25, "thirty-one": 31, "thirty one": 31}
+    said = {}
+    for name in ("AGENTS.md", "SUBMIT.md", "SUBMISSION.md", "README.md",
+                 "ARCHITECTURE.md", "docs/FORM-ANSWERS.md"):
+        f = ROOT / name
+        if not f.exists():
+            continue
+        flat = " ".join(f.read_text(encoding="utf-8").split())
+        for m in re.finditer(r"([\w-]+)\s+(?:findings\s+)?(?:were\s+)?confirmed", flat, re.I):
+            tok = m.group(1).lower()
+            n = WORDS.get(tok, int(tok) if tok.isdigit() else None)
+            if n is not None:
+                said.setdefault(n, []).append(name)
+    assert said, "no document states how many review findings were confirmed"
+    assert len(said) == 1, "documents disagree on the review-finding count: " + "; ".join(
+        f"{n} in {sorted(set(v))}" for n, v in sorted(said.items()))

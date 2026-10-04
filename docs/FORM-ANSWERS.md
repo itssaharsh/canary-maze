@@ -187,7 +187,7 @@ refute it. 31 were confirmed and fixed, each with a test that fails without the 
 several were mutation-checked by reverting the fix in a scratch copy to prove the test
 bites. The largest: the page DISPLAYED one object and VERIFIED another, so editing the
 counter a reader sees still printed "Verified". The bundle now commits to a digest of
-what is displayed. 251 tests.
+what is displayed. 252 tests.
 
 AI ASSISTANCE
 

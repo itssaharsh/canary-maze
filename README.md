@@ -291,7 +291,7 @@ tool.
 | Path | What it is |
 |---|---|
 | `canarymaze/` | the product. `gate.py` and `detect.py` are the two functions worth attacking first. |
-| `tests/` | 251 tests. The four decision functions are tested hardest. |
+| `tests/` | 252 tests. The four decision functions are tested hardest. |
 | `scripts/verify.sh` | the deterministic proof. Start here. |
 | `viewer/` | the static viewer. Every line of its copy is computed in `canarymaze/export.py`; nothing is hardcoded, because a hardcoded earlier version contradicted itself on screen. |
 | `hackathon-idea/ai-swarm-dynamics/` | the research package this was selected from: evidence ledger, competitor scans, the adversarial critic pass, and the kill log for 16 rejected ideas. |

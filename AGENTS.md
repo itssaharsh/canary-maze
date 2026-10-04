@@ -19,7 +19,7 @@ What that means for a reader:
   fails if a document has drifted from them.
 - **The review was adversarial and independent.** Seven reviewers with no part in
   the build read the repository along separate dimensions, and every finding was
-  re-verified by a further agent instructed to refute it. Twenty-five were
+  re-verified by a further agent instructed to refute it. 31 were
   confirmed and fixed, each with a test that fails without the fix. Several were
   mutation-checked: the fix is reverted in a scratch copy to prove the test bites.
 - **The mistakes are in the repository, not edited out.** `docs/memory/failures/`
