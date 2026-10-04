@@ -168,11 +168,60 @@ def test_a_reader_told_to_run_the_suite_is_told_how_to_install_it():
         "requirements.txt now ships pytest; the 'one dependency' claim needs rewording"
     assert "pytest" in (ROOT / "requirements-dev.txt").read_text(encoding="utf-8")
     bad = []
+    INSTALL = r"make install|pip install|requirements-dev"
     for name in ("README.md", "SUBMIT.md", "SUBMISSION.md", "docs/FORM-ANSWERS.md"):
         f = ROOT / name
         if not f.exists():
             continue
         for block in re.findall(r"```.*?```", f.read_text(encoding="utf-8"), re.S):
-            if "pytest" in block and not re.search(r"make install|requirements-dev", block):
+            if re.search(INSTALL, block):
+                continue
+            # A block a judge copies whole must not die on a missing dependency.
+            # README's headline "three commands" did exactly that: `make verify`
+            # with no install printed FAIL on a clean machine, which was the first
+            # output the project's own front page produced.
+            if "pytest" in block:
                 bad.append(f"{name}: a block runs pytest without installing it")
+            elif re.search(r"make (verify|demo|test)\b", block):
+                bad.append(f"{name}: a block runs make verify/demo without installing Flask")
     assert not bad, "\n  ".join(bad)
+
+
+def test_the_corpus_tables_are_the_numbers_the_scripts_measured():
+    """README.md and AGENTS.md both promise that `make verify` fails if a document
+    has drifted from the generated data. Until this test existed that was only true
+    of the `counts:` block: the corpus tables in docs/RESULTS.md are hand-typed, and
+    nothing compared them to label_spread.json or village_reuse.json - which is
+    exactly how the withdrawn 741 figure reached the product's own face. The numbers
+    happened to be right; the guarantee was not."""
+    import json
+    results = (ROOT / "docs" / "RESULTS.md").read_text(encoding="utf-8")
+    spread = json.loads((ROOT / "docs" / "label_spread.json").read_text(encoding="utf-8"))
+    reuse = json.loads((ROOT / "docs" / "village_reuse.json").read_text(encoding="utf-8"))
+
+    def pct(x):
+        return f"{round(x * 100)}%"
+
+    want = {
+        "labels with 2+ revisions": f"{spread['with_two_or_more_revisions']:,}",
+        "from >1 address": f"{spread['of_those_from_more_than_one_address']:,}",
+        "from >1 /16": f"{spread['of_those_from_more_than_one_slash16']:,}",
+        "busiest: revisions": str(spread["busiest_named_agent_label"]["revisions"]),
+        "busiest: addresses": str(spread["busiest_named_agent_label"]["addresses"]),
+        "busiest: /16s": str(spread["busiest_named_agent_label"]["slash16s"]),
+        "turn rows parsed": f"{reuse['turn_rows_parsed']:,}",
+        "unguessable urls": f"{reuse['unguessable_urls']['urls']:,}",
+        "first uses by another agent": str(reuse["unguessable_urls"]["first_uses_by_another_agent"]),
+    }
+    for row in reuse["two_contexts_one_agent"]["by_definition"]:
+        tag = "session" if row["context"] == "a session" else "client program"
+        want[f"{tag}: re-uses"] = f"{row['re_uses']:,}"
+        want[f"{tag}: same-agent share"] = pct(row["all"]["same_agent_share"])
+        if tag == "session":
+            want["session: before"] = pct(row["before"]["same_agent_share"])
+            want["session: after"] = pct(row["after"]["same_agent_share"])
+
+    missing = [f"{k} = {v!r}" for k, v in want.items() if v not in results]
+    assert not missing, (
+        "docs/RESULTS.md no longer shows what the scripts measured; regenerate it "
+        "or re-run the script:\n  " + "\n  ".join(missing))

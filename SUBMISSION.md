@@ -133,6 +133,7 @@ No credentials. No dataset access. No network.
 
 ```
 git clone https://github.com/itssaharsh/canary-maze && cd canary-maze
+make install    # Flask, and pytest if you want the suite too
 make verify     # five properties, each able to fail, server stopped
 make demo       # builds the viewer offline
 ```
@@ -147,7 +148,7 @@ confirmed in a browser with the network panel open. Edit any record in
 an edited row being caught **and named**, and the disabled semantic-matching
 table being unable to change the bundle by a single byte.
 
-253 tests.
+254 tests.
 
 ## Limitations, in full
 

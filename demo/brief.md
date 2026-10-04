@@ -15,7 +15,7 @@
 
 HOOK (verified) → PROBLEM (you can only say they look alike) → RECORDS (the claim and the
 two log lines) → WHAT SEPARATES THEM (the diff) → MAGIC (recompute, no network) →
-RESULT (78,362 sessions, 46 of 46) → HONESTY (organic 0, humans never stored) → CTA.
+RESULT (1,752 of 1,768 labels wrote from more than one address) → HONESTY (organic 0, humans never stored) → CTA.
 
 ## Truth constraints — the video must not overstate
 

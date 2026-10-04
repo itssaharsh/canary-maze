@@ -4,7 +4,7 @@ type: feedback
 title: Skeptical evaluator could not name the differentiator from the UI stills
 status: active
 scope: project
-components: viewer/index.html, ui-prototype/index.html
+components: viewer/index.html, site/index.html
 triggers: designing the viewer, writing viewer copy, adding a state to the viewer
 evidence: ARCHITECTURE.md#Decisions
 verified_at: 2026-10-02@81795d7

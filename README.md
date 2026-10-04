@@ -82,6 +82,7 @@ No credentials, no dataset access, no network.
 
 ```
 git clone https://github.com/itssaharsh/canary-maze && cd canary-maze
+make install    # Flask, and pytest if you want the suite too
 make verify     # five properties, each able to fail, with the server stopped
 make demo       # builds the offline viewer
 ```
@@ -150,16 +151,16 @@ flowchart LR
   G -->|human| P[plain page, no row]
   G -->|automated| X[context.derive]
   X --> M["mint: HMAC(salt, path|ctx)"]
-  M --> L[(append-only ledger)]
   M --> Pg[maze page carrying one canary link]
   C2[a different context] -->|GET /c/secret/slug| OK[always 200]
   OK --> D{detect: mint ctx != seen ctx?}
-  D -->|yes| L
+  M -. "POST /ingest, HMAC-signed, timestamped, replay-refused" .-> L
+  D -. same hand-off .-> L[(append-only ledger)]
   L --> B[bundle.json + Merkle root]
   B --> V[offline verifier · no server · no network]
 ```
 
-One deployable, one datastore, **no model on the proof path**. Full reasoning and the five
+Two deployables joined by a signed hand-off, one datastore, **no model on the proof path**. Full reasoning and the five
 decisions in [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ---
@@ -192,7 +193,7 @@ make verify    # deterministic proof, prints PASS or FAIL
 | The seeded two-client replay | **real code, synthetic clients.** Rows are written `origin='seeded'` at insert time and counted separately everywhere. It is the primary deliverable, not a fallback — see below. |
 | Organic sightings from live crawler traffic | **reported exactly as they stand**, however low, in `docs/RESULTS.md` |
 | Paste-triggered sightings | counted as their own category. A fetcher following a human's paste is **not** two agents sharing, and is never presented as such. |
-| Laundered (paraphrased) token matching | **Not built.** It was scoped out, and no model is called anywhere in this repository. The `laundered` table exists as the place such output would land, and the bundle writer cannot read it - a fixed three-table allowlist plus a `ValueError` guard, covered by two tests. So the guarantee is structural rather than a feature flag, and it holds whether or not the feature is ever written. |
+| Laundered (paraphrased) token matching | **Not built.** It was scoped out, and no model is called anywhere in this repository. The `laundered` table exists as the place such output would land, and the bundle writer cannot read it - a fixed four-table allowlist plus a `ValueError` guard, covered by two tests. So the guarantee is structural rather than a feature flag, and it holds whether or not the feature is ever written. |
 | Addresses | truncated to /24 (v4) or /48 (v6) **at the write boundary**; a full address is never stored |
 
 **Why the seeded replay is primary rather than a fallback.** The published experiment closest
@@ -291,7 +292,7 @@ tool.
 | Path | What it is |
 |---|---|
 | `canarymaze/` | the product. `gate.py` and `detect.py` are the two functions worth attacking first. |
-| `tests/` | 253 tests. The four decision functions are tested hardest. |
+| `tests/` | 254 tests. The four decision functions are tested hardest. |
 | `scripts/verify.sh` | the deterministic proof. Start here. |
 | `viewer/` | the static viewer. Every line of its copy is computed in `canarymaze/export.py`; nothing is hardcoded, because a hardcoded earlier version contradicted itself on screen. |
 | `hackathon-idea/ai-swarm-dynamics/` | the research package this was selected from: evidence ledger, competitor scans, the adversarial critic pass, and the kill log for 16 rejected ideas. |

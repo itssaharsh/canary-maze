@@ -88,7 +88,8 @@ named label wrote 317 revisions from 308 addresses across 96 /16 networks.
 We published a canary URL and asked a public model product to read it. It returned 403
 and the request never reached us. Measured directly, same URL, same second, varying
 only the User-Agent: GPTBot, ClaudeBot, PerplexityBot, CCBot and Bytespider were
-refused at the Cloudflare edge; ChatGPT-User, OAI-SearchBot, Googlebot and curl passed.
+refused at the Cloudflare edge; ChatGPT-User, OAI-SearchBot, Googlebot, Google-Extended
+and curl passed.
 Five of ten. The same edge served its own 3,871-byte robots.txt in place of our 66-byte
 "Allow: /", so we could not publish the permission our own experiment depended on.
 
@@ -121,6 +122,7 @@ WITHDRAWN, and recorded as withdrawn in the repository rather than quietly dropp
 Both are replaced above by what the data actually supports.
 
 REPRODUCE
+  make install                        (Flask; pytest too, for the 254-test suite)
   python3 scripts/village_reuse.py    (~5 min; needs HF_TOKEN and dataset access)
   python3 scripts/label_spread.py     (no credentials; the dump is public)
   make verify                         (five properties, each able to fail, no network)
@@ -187,7 +189,7 @@ refute it. 31 were confirmed and fixed, each with a test that fails without the 
 several were mutation-checked by reverting the fix in a scratch copy to prove the test
 bites. The largest: the page DISPLAYED one object and VERIFIED another, so editing the
 counter a reader sees still printed "Verified". The bundle now commits to a digest of
-what is displayed. 253 tests.
+what is displayed. 254 tests.
 
 AI ASSISTANCE
 

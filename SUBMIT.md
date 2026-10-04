@@ -109,9 +109,10 @@ Four results, each reproducible from the repo.
    asked to read one of our canary URLs returned 403, and the request never reached
    us. Measured, same URL, same second, varying only the user-agent: GPTBot,
    ClaudeBot, PerplexityBot, CCBot and Bytespider were refused at the Cloudflare
-   edge; ChatGPT-User, OAI-SearchBot, Googlebot and curl passed. Five of ten. The
-   same edge served its own 3871-byte robots.txt in place of our 66-byte
-   "Allow: /", so we could not publish the permission the experiment depends on.
+   edge; ChatGPT-User, OAI-SearchBot, Googlebot, Google-Extended and curl passed.
+   Five of ten. The same edge served its own 3871-byte robots.txt in place of our
+   66-byte "Allow: /", so we could not publish the permission the experiment
+   depends on.
 
    This generalises, and it is the result we would most want you to have: a zero
    in any crawler-behaviour measurement taken from behind a CDN may be a property
@@ -157,7 +158,7 @@ Saharsh — saharsh7002@gmail.com
 1. **Your name and email** in the form — the one required field I cannot fill.
 2. **Submit it.** I have not submitted anything on your behalf.
 3. **The video is made** — 110 seconds, at the link above. Nothing to record.
-   `docs/DEMO-SCRIPT.md` remains if you ever want to narrate it yourself.
+   `demo/storyboard.json` is what it was built from, if you ever want to recut it.
 4. **Keep the laptop awake** until you submit. The public surface is on Vercel and
    survives sleep, but the ledger is local — a crawler arriving while the machine
    is off is served and not recorded.
@@ -194,7 +195,7 @@ Have this ready; it is the first Q&A question at every event.
 
 | Claim | Status |
 |---|---|
-| The gate, mint, detector, bundle and the signed edge hand-off | **real**, running, 253 tests |
+| The gate, mint, detector, bundle and the signed edge hand-off | **real**, running, 254 tests |
 | Offline verification in the browser | **real** — every hash recomputed with `crypto.subtle`, zero network requests, and what the page *displays* is bound to the Merkle root, not just what it hashes |
 | The seeded two-client replay | **real code, synthetic traffic** — labelled "seeded" in the claim sentence itself, never counted as organic |
 | Third-party fetchers on the live surface | **real** — three recorded, five turned away by the gate. Every one was handed its URL by us, so all are paste-triggered |

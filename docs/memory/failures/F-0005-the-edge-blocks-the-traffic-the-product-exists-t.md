@@ -4,7 +4,7 @@ type: failure
 title: the edge blocks the traffic the product exists to observe, and replaces our robots.txt
 status: active
 scope: global-candidate
-components: scripts/serve_public.sh, docs/RESULTS.md, README.md
+components: scripts/keep_alive.sh, docs/RESULTS.md, README.md
 triggers: deploying behind any CDN, choosing a tunnel or host, interpreting a zero organic count
 evidence: measured 2026-10-03 against the live quick tunnel
 relates: F-0004, ADR-0004, ADR-0005
