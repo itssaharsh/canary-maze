@@ -154,3 +154,25 @@ def test_the_documented_review_count_does_not_disagree_with_itself():
     assert said, "no document states how many review findings were confirmed"
     assert len(said) == 1, "documents disagree on the review-finding count: " + "; ".join(
         f"{n} in {sorted(set(v))}" for n, v in sorted(said.items()))
+
+
+def test_a_reader_told_to_run_the_suite_is_told_how_to_install_it():
+    """SUBMIT.md's pre-flight said `pip install -r requirements.txt` and then
+    `python3 -m pytest -q`, and claimed all of it had been run in a fresh clone.
+    It cannot have been: pytest lives in requirements-dev.txt, so on a real cold
+    clone the last line fails with "No module named pytest". The product's one
+    dependency is the honest claim and worth keeping, which is exactly why the
+    install line has to name the dev file or `make install`."""
+    import re
+    assert "pytest" not in (ROOT / "requirements.txt").read_text(encoding="utf-8"), \
+        "requirements.txt now ships pytest; the 'one dependency' claim needs rewording"
+    assert "pytest" in (ROOT / "requirements-dev.txt").read_text(encoding="utf-8")
+    bad = []
+    for name in ("README.md", "SUBMIT.md", "SUBMISSION.md", "docs/FORM-ANSWERS.md"):
+        f = ROOT / name
+        if not f.exists():
+            continue
+        for block in re.findall(r"```.*?```", f.read_text(encoding="utf-8"), re.S):
+            if "pytest" in block and not re.search(r"make install|requirements-dev", block):
+                bad.append(f"{name}: a block runs pytest without installing it")
+    assert not bad, "\n  ".join(bad)

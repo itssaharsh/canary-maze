@@ -167,11 +167,16 @@ Saharsh — saharsh7002@gmail.com
 ## 4. Pre-flight — run this before you submit
 
 ```
-pip install -r requirements.txt    # one dependency: Flask
+make install                       # Flask to run it, pytest to test it
 make demo                          # builds the offline viewer
 make verify                        # five properties, each able to fail
 python3 -m pytest -q
 ```
+
+`make install` rather than `pip install -r requirements.txt`, because pytest is
+in `requirements-dev.txt`: the product needs one dependency, the suite needs two,
+and installing only the first made the last line here fail with "No module named
+pytest" on exactly the fresh clone this section claims to have run on.
 
 All four were run in a fresh clone of the public repo before this was written.
 `make verify` passes on a clone with no ledgers; the test suite modifies no
@@ -189,7 +194,7 @@ Have this ready; it is the first Q&A question at every event.
 
 | Claim | Status |
 |---|---|
-| The gate, mint, detector, bundle and the signed edge hand-off | **real**, running, 252 tests |
+| The gate, mint, detector, bundle and the signed edge hand-off | **real**, running, 253 tests |
 | Offline verification in the browser | **real** — every hash recomputed with `crypto.subtle`, zero network requests, and what the page *displays* is bound to the Merkle root, not just what it hashes |
 | The seeded two-client replay | **real code, synthetic traffic** — labelled "seeded" in the claim sentence itself, never counted as organic |
 | Third-party fetchers on the live surface | **real** — three recorded, five turned away by the gate. Every one was handed its URL by us, so all are paste-triggered |
