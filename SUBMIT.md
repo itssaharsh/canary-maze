@@ -23,6 +23,12 @@ their corpus and returned a finding. **Do not skip that field.**
 
 ---
 
+> **The actual form fields are answered verbatim in
+> [`docs/FORM-ANSWERS.md`](docs/FORM-ANSWERS.md)** — "What did your tool find?",
+> "Datasets used" (tick **AI Village transcripts** and **German message board**;
+> the latter is the organizers' name for the collusion.wiki dump) and the notes
+> for judges. Every figure in it is checked against the generated JSON.
+
 ## 2. Paste these, in this order
 
 ### Project name
