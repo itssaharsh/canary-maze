@@ -104,6 +104,7 @@ footer a{color:var(--ink)}
   <nav>
     <a class="name" href="/">Canary Maze</a>
     <span class="links">
+      <a href="#plain">What it is</a>
       <a href="/viewer/">Live evidence</a>
       <a href="#how">How it works</a>
       <a href="#limits">Limits</a>
@@ -114,8 +115,9 @@ footer a{color:var(--ink)}
   <header class="hero">
     <div>
       <h1>Watch a secret move between AI clients.</h1>
-      <p class="sub">Every automated visitor gets its own secret. When a different client
-        comes asking for it, that is a record — not a resemblance.</p>
+      <p class="sub">A tool for anyone running a website. It gives every bot that visits
+        its own secret link, so that when a <em>different</em> bot comes asking for that
+        link, you have a dated record of it instead of a hunch.</p>
       <div class="cta">
         <a class="btn primary" href="/viewer/">See the live evidence</a>
         <a class="btn ghost" href="/demo.mp4">Watch the 110-second demo</a>
@@ -129,8 +131,42 @@ footer a{color:var(--ink)}
     </figure>
   </header>
 
+  <section id="plain">
+    <h2>In plain terms</h2>
+    <div class="three">
+      <div>
+        <span class="step">THE PROBLEM</span>
+        <h3>You cannot tell which bots are connected</h3>
+        <p>Automated clients hit your site all day. Sometimes they are related: one finds
+          something, another turns up for it. You have no way to know. Every identifier a
+          client shows you &mdash; its user-agent, its address &mdash; is one the client
+          chose, so comparing them is guesswork. And when you <em>are</em> sure, you have
+          nothing to show anyone else.</p>
+      </div>
+      <div>
+        <span class="step">WHAT THIS DOES</span>
+        <h3>It plants something only one of them was shown</h3>
+        <p>Each automated visitor is served a unique link that nobody else is ever given.
+          If a different one later asks for that exact link, that is written down: two
+          access-log lines, the same secret string in both, with the time between them.
+          Nothing is guessed, and nothing is blocked.</p>
+      </div>
+      <div>
+        <span class="step">WHAT YOU GET</span>
+        <h3>A file that holds up without you</h3>
+        <p>The records are hashed into a bundle. Anyone you hand it to can check it in
+          their own browser, offline, with your server switched off &mdash; so they do not
+          have to take your word for any of it. That is the whole point of the thing.</p>
+      </div>
+    </div>
+    <p class="lede" style="margin-top:32px">Who it is for: someone running a site or a
+      public API who has been asked to <em>show</em> what happened, not just block it.
+      What it will not do: tell you that two clients are two people. It cannot, and it
+      says so on its own face &mdash; see <a href="#limits">the limits</a>.</p>
+  </section>
+
   <section>
-    <h2>Detection asks whether two clients look alike. That is failing.</h2>
+    <h2>Why guessing from what clients look like is failing</h2>
     <blockquote>
       “did get rate-limited (‘please stop rinsing my site’) and continued rinsing the API
       with requests regardless” … he cannot tell “whether it’s the same swarm, let alone

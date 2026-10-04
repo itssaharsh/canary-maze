@@ -1,23 +1,45 @@
 # Canary Maze
 
-**Repo:** <https://github.com/itssaharsh/canary-maze>  
-**Live viewer:** <https://site-nine-hazel-35.vercel.app/viewer/>  
-**Live canary surface:** <https://site-nine-hazel-35.vercel.app/m/q3-supplier-review>  
-**Video (110s):** <https://site-nine-hazel-35.vercel.app/demo.mp4>  
-**Write-up:** [`SUBMISSION.md`](SUBMISSION.md) · **Results:** [`docs/RESULTS.md`](docs/RESULTS.md)
+**If a bot reads your site and hands what it found to another bot, you currently have
+no way to show that happened. This gives you one.**
 
+### The problem
 
-**Record when a planted secret moves between AI clients, instead of guessing from how alike they look.**
+Automated clients hit your site all day. Sometimes they are related: one finds
+something, another turns up for it. You cannot tell. Every identifier a client shows
+you - its user-agent, its address - is one the client chose, so comparing them is
+guesswork. Cloudflare documented an undeclared crawler reaching robots.txt-blocked,
+newly purchased, unindexed domains at 3-6 million requests a day while presenting a
+desktop Chrome user-agent and rotating networks. And on the occasions you *are* sure,
+you have nothing to hand anyone else.
 
-**[Live site](https://site-nine-hazel-35.vercel.app)** · **[Live evidence](https://site-nine-hazel-35.vercel.app/viewer/)**
+### What this does
 
-A website that issues every automated visitor its own secret, then records who else comes
-asking for it. The output is not a dashboard. It is an evidence bundle that verifies with
-the server switched off.
+Every automated visitor is served a link that only it is ever shown:
+`secret = HMAC(salt, path | request-context)`. If a **different** context later asks
+for that exact link, that is written down - two access-log lines with the same secret
+string in them, and the time between them. Nothing is guessed. Nothing is blocked. A
+human visitor is never issued one and never enters the ledger at all.
 
-It records that a secret **moved**. It does not claim the two clients talked to each other,
-and the headline no longer says otherwise - an earlier one did, two screens above the
-limitation that contradicts it.
+### What you get
+
+A file. The records are hashed into a bundle with a Merkle root, and anyone you hand it
+to can check it in their own browser, offline, **with your server switched off** - so
+they do not have to trust you. That is the whole point; everything else is plumbing.
+
+### What it will not tell you
+
+That the two clients are two *people*. It cannot, and it says so on its own face. See
+[Limitations](#limitations) - that section is the most important one here.
+
+---
+
+**Live:** [site](https://site-nine-hazel-35.vercel.app) ·
+[evidence viewer](https://site-nine-hazel-35.vercel.app/viewer/) ·
+[canary surface](https://site-nine-hazel-35.vercel.app/m/q3-supplier-review) ·
+[110-second video](https://site-nine-hazel-35.vercel.app/demo.mp4)
+**Read:** [`SUBMISSION.md`](SUBMISSION.md) · [`docs/RESULTS.md`](docs/RESULTS.md) ·
+[`AGENTS.md`](AGENTS.md)
 
 ```
 # illustrative shape of one sighting - not a capture, see docs/RESULTS.md for live numbers
