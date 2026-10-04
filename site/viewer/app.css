@@ -4,7 +4,9 @@
    printed in. Typeface signals who is speaking: Public Sans is the tool's own voice,
    IBM Plex Mono is the machine's verbatim record (and its 0/O and 1/l/I are
    unambiguous, which matters because hex secrets are compared character by character).
-   Every value below is contrast-measured; see UI-SPEC.md §14. */
+   Every value below is contrast-measured against WCAG 2.2 AA with no rounding:
+   --accent is fill-only because it measures 4.485 as text on the sunken surface,
+   which fails 4.5, and --accent-text exists for the rare accented-text case. */
 :root{
   color-scheme: light;
   --ff-body:"Public Sans",system-ui,sans-serif; --ff-mono:"IBM Plex Mono",ui-monospace,monospace;

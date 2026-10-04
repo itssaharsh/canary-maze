@@ -183,5 +183,6 @@ entire claim is "you do not have to trust me" cannot quietly fix its own numbers
 
 ---
 
-Built solo, online, in the event window. AI assistance was used throughout; see
-`AGENTS.md`.
+Built solo, online, starting ahead of the weekend, which the organizers allow.
+AI assistance was used throughout, heavily; `AGENTS.md` says what that means, what
+it got wrong, and what was done about it.

@@ -273,6 +273,9 @@ tool.
 | `scripts/verify.sh` | the deterministic proof. Start here. |
 | `viewer/` | the static viewer. Every line of its copy is computed in `canarymaze/export.py`; nothing is hardcoded, because a hardcoded earlier version contradicted itself on screen. |
 | `hackathon-idea/ai-swarm-dynamics/` | the research package this was selected from: evidence ledger, competitor scans, the adversarial critic pass, and the kill log for 16 rejected ideas. |
-| `docs/memory/` | the decision records, including the two falsified claims kept so they cannot be reintroduced. |
+| `docs/memory/` | decision records and seven failure records, including the claims that were falsified and are kept so they cannot return. |
+| `docs/RESULTS.md` | every number, generated from the ledgers and the corpora. `make verify` fails if it has drifted. |
+| `demo/` | the storyboard and the recorder the demo video was made with. |
 
-AI assistance was used throughout; see [`AGENTS.md`](AGENTS.md).
+AI assistance was used throughout, heavily. [`AGENTS.md`](AGENTS.md) says what that
+means and what was done about it.

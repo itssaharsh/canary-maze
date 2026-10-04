@@ -210,7 +210,7 @@ def test_make_demo_cannot_be_pointed_at_another_ledger(tmp_path):
     import subprocess
     work = tmp_path / "repo"
     shutil.copytree(ROOT, work, ignore=shutil.ignore_patterns(
-        ".git", "ledgers", "demo", "graphify-out", "*.sqlite3*", "bundles", "__pycache__",
+        ".git", "ledgers", "demo", "*.sqlite3*", "bundles", "__pycache__",
         ".pytest_cache", "hackathon-idea", "site"))
     precious = work / "precious.sqlite3"
     led = Ledger(str(precious))

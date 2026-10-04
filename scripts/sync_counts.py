@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-FILES = ("README.md", "SUBMISSION.md", "SUBMIT.md", ".prod-build/DELIVERY.md",
+FILES = ("README.md", "SUBMISSION.md", "SUBMIT.md",
          "docs/RESULTS.md", "site/index.html")
 
 

@@ -1,1 +1,0 @@
-{"nodes": [{"id": "requirements_dev_pytest", "label": "pytest==8.4.2", "file_type": "code", "source_file": "requirements-dev.txt", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "The only dev dependency; five of the nine acceptance criteria are verified by pytest invocations."}], "edges": [], "hyperedges": []}

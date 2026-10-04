@@ -57,3 +57,13 @@ demo/*
 .serve.log
 .tunnel.log
 bundles/
+
+# Build scaffolding and tooling output. None of it is the submission: it is how the
+# work was driven, not what was produced, and a judge reading this repository has no
+# use for it. Kept on disk, out of the published tree.
+graphify-out/
+prod-idea/
+.prod-build/
+idea_gate.py
+CLAUDE.md
+UI-SPEC.md

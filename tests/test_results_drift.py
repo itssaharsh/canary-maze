@@ -118,7 +118,7 @@ def test_the_documented_test_count_is_the_real_one():
         capture_output=True, text=True, cwd=ROOT).stdout, re.M))
     assert n > 100, "could not collect the suite"
     wrong = []
-    for name in ("README.md", "SUBMISSION.md", "SUBMIT.md", ".prod-build/DELIVERY.md",
+    for name in ("README.md", "SUBMISSION.md", "SUBMIT.md",
                  "site/index.html", "docs/RESULTS.md"):
         f = ROOT / name
         if not f.exists():
